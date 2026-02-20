@@ -139,7 +139,7 @@ elif grafico_selecionado == "Média por Modalidade de Ensino":
     st.dataframe(avg_mod, width='stretch')
 
 show_footer(
-    advisor_text="Orientador: Prof. Dr. César Cândido Xavier • Email: cesarcx@gmail.com",
+    advisor_text="Orientador: Prof. Dr. César Candido Xavier • Email: cesarcx@gmail.com",
     text="Pesquisador: João Octavio Venâncio Borba • UNISO - Universidade de Sorocaba • Email: joaooctaviov.borba@gmail.com",
     links=[("Github", "https://github.com/jaozes"), ("LinkedIn", "https://www.linkedin.com/in/jo%C3%A3o-octavio-vb/"), ("Currículo Lattes", "http://lattes.cnpq.br/0821075410761662")],
     bg_color="#ffffff",
