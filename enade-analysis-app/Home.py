@@ -117,9 +117,53 @@ Use o menu lateral para acessar:
 
 with col2:
     st.plotly_chart(fig)
+    
+    # Legenda do Mapa - Explicação para Acessibilidade e Clareza
+    with st.expander("📊 Legenda do Mapa", expanded=True):
+        st.markdown("**O que este mapa representa:**")
+        st.markdown("""
+        - **Conceito Médio ENADE por Estado:** Cada estado é colorido de acordo com a média dos conceitos ENADE contínuos de todas as IES (Instituições de Ensino Superior) naquele estado.
+        """)
+        
+        st.markdown("**Escala de Cores (Azul):**")
+        
+        # Barra de gradiente visual usando HTML
+        st.markdown("""
+        <div style="background: linear-gradient(to right, #eff3ff, #c6dbef, #9ecae1, #6baed6, #4292c6, #2171b5, #08519c, #08306b); 
+                    height: 25px; 
+                    border-radius: 4px; 
+                    margin: 10px 0;
+                    border: 1px solid #ccc;"></div>
+        """, unsafe_allow_html=True)
+        
+        # Labels abaixo da barra
+        col_scale1, col_scale2, col_scale3 = st.columns([1, 2, 1])
+        with col_scale1:
+            st.caption("Baixo (2.0)")
+        with col_scale2:
+            st.caption("→ Conceito Médio ENADE →")
+        with col_scale3:
+            st.caption("Alto (4.0+)")
+        
+        # Explicação das cores
+        st.markdown("""
+         **Azul claro** = Conceito médio mais baixo (aprox. 2.0 - 2.5)  
+         **Azul escuro** = Conceito médio mais alto (aprox. 3.5 - 4.0+)
+        """)
+
+        
+        st.markdown("---")
+        
+        st.markdown("**Como interagir:**")
+        st.markdown("""
+        - 🖱️ **Passe o mouse** sobre qualquer estado para ver detalhes completos
+        - 📋 Informações exibidas: Conceito médio, número de inscritos, participantes, quantidade de IES e a melhor IES do estado
+        """)
+
 
 show_footer(
-    advisor_text="Orientador: Prof. Dr. César Cândido Xavier • Email: cesarcx@gmail.com",
+
+    advisor_text="Orientador: Prof. Dr. César Candido Xavier • Email: cesarcx@gmail.com",
     text="Pesquisador: João Octavio Venâncio Borba • UNISO - Universidade de Sorocaba • Email: joaooctaviov.borba@gmail.com",
     links=[("Github", "https://github.com/jaozes"), ("LinkedIn", "https://www.linkedin.com/in/jo%C3%A3o-octavio-vb/"), ("Currículo Lattes", "http://lattes.cnpq.br/0821075410761662")],
     bg_color="#ffffff",
