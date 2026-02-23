@@ -49,7 +49,18 @@ if grafico_selecionado == "Média de Conceitos por Área de Avaliação":
     avg_area = avg_area.sort_values('Média', ascending=False)
 
     fig1 = px.bar(avg_area, x='Área', y='Média', color='Média', color_continuous_scale='Viridis')
-    fig1.update_layout(xaxis_tickangle=-45, height=500)
+    fig1.update_layout(
+        xaxis_tickangle=-45, 
+        height=500,
+        coloraxis=dict(
+            colorbar=dict(
+                len=1,  # Define o comprimento da barra de cor (1 = altura total do gráfico)
+                yanchor='middle',
+                y=0.5,
+                thickness=15  # Espessura da barra de cor
+            )
+        )
+    )
     st.plotly_chart(fig1, width='stretch')
 
     st.subheader("Dados da Análise")
@@ -92,6 +103,16 @@ elif grafico_selecionado == "Média por Estado":
     avg_uf = avg_uf.sort_values('Média', ascending=False)
 
     fig2 = px.bar(avg_uf, x='Estado', y='Média', color='Média', color_continuous_scale='Blues')
+    fig2.update_layout(
+        coloraxis=dict(
+            colorbar=dict(
+                len=1,  # Define o comprimento da barra de cor (1 = altura total do gráfico)
+                yanchor='middle',
+                y=0.5,
+                thickness=15  # Espessura da barra de cor
+            )
+        )
+    )
     st.plotly_chart(fig2, width='stretch')
 
     st.subheader("Dados da Análise")

@@ -109,7 +109,7 @@ with col1:
         st.subheader('1º Gráfico das Médias por Curso')
         fig = px.bar(avg_df, x='Área de Avaliação', y='Média', color='Área de Avaliação', color_discrete_sequence=px.colors.qualitative.Dark24)
         fig.update_layout(xaxis_title='Curso', yaxis_title='Média do Conceito Enade (Contínuo)', xaxis_tickangle=-45, height=600, width=1200, margin=dict(l=0, r=0, t=40, b=0))
-        st.plotly_chart(fig, width='stretch')
+        st.plotly_chart(fig, width='stretch', key='chart1')
 
         # Exibir tabela
         st.subheader('Médias por Curso')
@@ -171,9 +171,9 @@ with col2:
 
         # Segundo gráfico: Gráfico de barras vertical
         st.subheader('2º Gráfico das Médias por Curso')
-        fig2 = px.bar(avg_df2, x='Área de Avaliação', y='Média', color='Área de Avaliação', color_discrete_sequence=px.colors.qualitative.Light24)
+        fig2 = px.bar(avg_df2, x='Área de Avaliação', y='Média', color='Área de Avaliação', color_discrete_sequence=px.colors.qualitative.Dark24)
         fig2.update_layout(xaxis_title='Curso', yaxis_title='Média do Conceito Enade (Contínuo)', xaxis_tickangle=-45, height=600, width=1200, margin=dict(l=0, r=0, t=40, b=0))
-        st.plotly_chart(fig2, width='stretch')
+        st.plotly_chart(fig2, width='stretch', key='chart2')
 
         # Exibir tabela
         st.subheader('Médias por Curso')

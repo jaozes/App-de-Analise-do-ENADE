@@ -74,12 +74,26 @@ response = requests.get(geojson_url)
 brazil_states = response.json()
 
 # Create the choropleth map
+# Escala customizada: tons mais escuros a partir de 3
+custom_colorscale = [
+    [0, "#ffffff"],      # 0 - muito claro
+    [0.2, "#e2eaf0"],    # 1
+    [0.4, "#c2d6ff"],    # 2
+    [0.5, '#598eff'],    # 2.5
+    [0.6, "#0d2883"],    # 3 - transição
+    [0.7, "#161675"],    # 3.5 - mais escuro
+    [0.8, "#070747"],    # 4
+    [1, '#000000']       # 5 - mais escuro possível
+]
+
 fig = go.Figure(go.Choropleth(
     geojson=brazil_states,
     locations=aggregated_df['uf'],
     z=aggregated_df['conceito_medio'],
     featureidkey="properties.sigla",
-    colorscale="Blues",
+    colorscale=custom_colorscale,
+    zmin=0,
+    zmax=5,
     hovertemplate='<b>%{location}</b><br>' +
                   'Conceito Médio: %{z:.2f}<br>' +
                   'Inscritos: %{customdata[0]}<br>' +
@@ -90,7 +104,7 @@ fig = go.Figure(go.Choropleth(
 ))
 
 fig.update_geos(fitbounds="locations", visible=False, projection_scale=15)
-fig.update_layout(margin=dict(r=0, t=0, l=0, b=0), height=600, width=800)
+fig.update_layout(margin=dict(r=0, t=0, l=0, b=0), height=700, width=None)
 
 col1, col2 = st.columns(2)
 
@@ -127,9 +141,9 @@ with col2:
         
         st.markdown("**Escala de Cores (Azul):**")
         
-        # Barra de gradiente visual usando HTML
+        # Barra de gradiente visual usando HTML - escala customizada com transição mais rápida para escuro a partir de 3
         st.markdown("""
-        <div style="background: linear-gradient(to right, #eff3ff, #c6dbef, #9ecae1, #6baed6, #4292c6, #2171b5, #08519c, #08306b); 
+        <div style="background: linear-gradient(to right, #f7fbff, #deebf7, #c6dbef, #9ecae1, #6baed6, #3182bd, #08519c, #08306b); 
                     height: 25px; 
                     border-radius: 4px; 
                     margin: 10px 0;
@@ -139,16 +153,16 @@ with col2:
         # Labels abaixo da barra
         col_scale1, col_scale2, col_scale3 = st.columns([1, 2, 1])
         with col_scale1:
-            st.caption("Baixo (2.0)")
+            st.caption("Baixo (0)")
         with col_scale2:
             st.caption("→ Conceito Médio ENADE →")
         with col_scale3:
-            st.caption("Alto (4.0+)")
+            st.caption("Alto (5)")
         
         # Explicação das cores
         st.markdown("""
-         **Azul claro** = Conceito médio mais baixo (aprox. 2.0 - 2.5)  
-         **Azul escuro** = Conceito médio mais alto (aprox. 3.5 - 4.0+)
+         **Azul claro** = Conceito médio mais baixo (0 - 2.5)  
+         **Azul escuro** = Conceito médio mais alto (3.5 - 5)
         """)
 
         
