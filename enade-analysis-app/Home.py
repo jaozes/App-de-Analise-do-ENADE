@@ -103,13 +103,13 @@ fig = go.Figure(go.Choropleth(
     customdata=aggregated_df[['inscritos', 'participantes', 'qtd_ies', 'nota_fg_media', 'nota_ce_media', 'top_ies', 'top_ies_conceito']].values
 ))
 
-fig.update_geos(fitbounds="locations", visible=False, projection_scale=15)
-fig.update_layout(margin=dict(r=0, t=0, l=0, b=0), height=700, width=None)
+fig.update_geos(fitbounds="locations", visible=False)
+fig.update_layout(margin=dict(r=0, t=0, l=0, b=0), height=750, width=None)
 
-col1, col2 = st.columns(2)
+#col1, col2 = st.columns(2)
 
-with col1:
-    st.markdown("""
+#with col1:
+st.markdown("""
 ## Sobre o Projeto
 
 Este projeto analisa os conceitos do **Exame Nacional de Desempenho de Estudantes (ENADE)** de 2023.
@@ -129,11 +129,11 @@ Use o menu lateral para acessar:
 - **Comparação**: Compare dois grupos diferentes de filtros
 """)
 
-with col2:
-    st.plotly_chart(fig)
+#with col2:
+st.plotly_chart(fig, use_container_width=True)
     
     # Legenda do Mapa - Explicação para Acessibilidade e Clareza
-    with st.expander("📊 Legenda do Mapa", expanded=True):
+with st.expander("📊 Legenda do Mapa", expanded=True):
         st.markdown("**O que este mapa representa:**")
         st.markdown("""
         - **Conceito Médio ENADE por Estado:** Cada estado é colorido de acordo com a média dos conceitos ENADE contínuos de todas as IES (Instituições de Ensino Superior) naquele estado.

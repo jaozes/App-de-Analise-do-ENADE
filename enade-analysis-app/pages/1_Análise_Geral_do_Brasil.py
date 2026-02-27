@@ -22,7 +22,8 @@ st.title("📊 Análise Geral do Brasil")
 opcoes_graficos = [
     "Média de Conceitos por Área de Avaliação",
     "Média por Estado",
-    "Média por Modalidade de Ensino"
+    "Média por Modalidade de Ensino",
+    "Quantidade de Alunos por Curso e Estado"
 ]
 grafico_selecionado = st.selectbox("Selecione o gráfico a exibir:", opcoes_graficos)
 
@@ -54,10 +55,10 @@ if grafico_selecionado == "Média de Conceitos por Área de Avaliação":
         height=500,
         coloraxis=dict(
             colorbar=dict(
-                len=1,  # Define o comprimento da barra de cor (1 = altura total do gráfico)
+                len=1,
                 yanchor='middle',
                 y=0.5,
-                thickness=15  # Espessura da barra de cor
+                thickness=15
             )
         )
     )
@@ -106,10 +107,10 @@ elif grafico_selecionado == "Média por Estado":
     fig2.update_layout(
         coloraxis=dict(
             colorbar=dict(
-                len=1,  # Define o comprimento da barra de cor (1 = altura total do gráfico)
+                len=1,
                 yanchor='middle',
                 y=0.5,
-                thickness=15  # Espessura da barra de cor
+                thickness=15
             )
         )
     )
@@ -158,6 +159,138 @@ elif grafico_selecionado == "Média por Modalidade de Ensino":
 
     st.subheader("Dados da Análise")
     st.dataframe(avg_mod, width='stretch')
+
+# Análise de Quantidade de Alunos por Curso e Estado
+elif grafico_selecionado == "Quantidade de Alunos por Curso e Estado":
+    col1, col2 = st.columns(2)
+
+    with col1:
+        # Selector para tipo de quantidade de alunos
+        tipo_quantidade = st.selectbox(
+            "Selecione o tipo de quantidade:",
+            options=["Nº de Concluintes Inscritos", "Nº de Concluintes Participantes"]
+        )
+        
+        # Mapear para nomes das colunas
+        coluna_quantidade = 'Nº de Concluintes Inscritos' if tipo_quantidade == "Nº de Concluintes Inscritos" else 'Nº  de Concluintes Participantes'
+
+    with col2:
+        # Selector para visualização por estado ou por curso
+        tipo_visualizacao = st.selectbox(
+            "Selecione a visualização:",
+            options=["Por Estado", "Por Curso"]
+        )
+
+    col3, col4 = st.columns(2)
+
+    with col3:
+        # Filtro por UF
+        ufs_disponiveis = sorted(df['Sigla da UF** '].unique())
+        ufs_selecionadas = st.multiselect(
+            "Selecione as UFs:",
+            options=ufs_disponiveis,
+            default=[],
+            help="Selecione uma ou mais UFs para filtrar os dados."
+        )
+
+    with col4:
+        # Filtro por Área de Avaliação
+        areas_disponiveis = sorted(df['Área de Avaliação'].unique())
+        areas_selecionadas = st.multiselect(
+            "Selecione as Áreas de Avaliação:",
+            options=areas_disponiveis,
+            default=[],
+            help="Selecione uma ou mais áreas para filtrar os dados."
+        )
+
+    # Aplicar filtros
+    df_filtrado = df
+    if ufs_selecionadas:
+        df_filtrado = df_filtrado[df_filtrado['Sigla da UF** '].isin(ufs_selecionadas)]
+    if areas_selecionadas:
+        df_filtrado = df_filtrado[df_filtrado['Área de Avaliação'].isin(areas_selecionadas)]
+
+    st.subheader(f"Quantidade de Alunos - {tipo_quantidade}")
+
+    if tipo_visualizacao == "Por Estado":
+        # Agrupar por Estado
+        qtd_por_estado = df_filtrado.groupby('Sigla da UF** ')[coluna_quantidade].sum().reset_index()
+        qtd_por_estado.columns = ['Estado', 'Valor']
+        qtd_por_estado = qtd_por_estado.sort_values('Valor', ascending=False)
+
+        # Criar coluna formatada para texto
+        qtd_por_estado['Quantidade'] = qtd_por_estado['Valor'].apply(lambda x: f"{x:,.0f}".replace(",", "."))
+
+        fig4 = px.bar(
+            qtd_por_estado, 
+            x='Estado', 
+            y='Valor', 
+            color='Valor', 
+            color_continuous_scale='Greens',
+            title="Quantidade de Alunos por Estado",
+            custom_data=['Quantidade']
+        )
+        fig4.update_layout(
+            xaxis_tickangle=-45,
+            height=500,
+            coloraxis=dict(
+                colorbar=dict(
+                    len=1,
+                    yanchor='middle',
+                    y=0.5,
+                    thickness=15
+                )
+            )
+        )
+        fig4.update_traces(hovertemplate='<b>%{x}</b><br>Quantidade: %{customdata[0]}<extra></extra>')
+        st.plotly_chart(fig4, width='stretch')
+        
+        st.subheader("Dados da Análise")
+        st.dataframe(
+            qtd_por_estado[['Estado', 'Quantidade']], 
+            width='stretch',
+            hide_index=True
+        )
+
+    else:
+        # Agrupar por Curso (Área de Avaliação)
+        qtd_por_curso = df_filtrado.groupby('Área de Avaliação')[coluna_quantidade].sum().reset_index()
+        qtd_por_curso.columns = ['Curso', 'Valor']
+        qtd_por_curso = qtd_por_curso.sort_values('Valor', ascending=False)
+
+        # Criar coluna formatada para texto
+        qtd_por_curso['Quantidade'] = qtd_por_curso['Valor'].apply(lambda x: f"{x:,.0f}".replace(",", "."))
+
+        fig5 = px.bar(
+            qtd_por_curso, 
+            x='Curso', 
+            y='Valor', 
+            color='Valor', 
+            color_continuous_scale='Oranges',
+            title="Quantidade de Alunos por Curso (Área de Avaliação)",
+            custom_data=['Quantidade']
+        )
+        fig5.update_layout(
+            xaxis_tickangle=-45,
+            height=500,
+            coloraxis=dict(
+                colorbar=dict(
+                    len=1,
+                    yanchor='middle',
+                    y=0.5,
+                    thickness=15
+                )
+            )
+        )
+        fig5.update_traces(hovertemplate='<b>%{x}</b><br>Quantidade: %{customdata[0]}<extra></extra>')
+        st.plotly_chart(fig5, width='stretch')
+        
+        st.subheader("Dados da Análise")
+        st.dataframe(
+            qtd_por_curso[['Curso', 'Quantidade']], 
+            width='stretch',
+            hide_index=True
+        )
 
 show_footer(
     advisor_text="Orientador: Prof. Dr. César Candido Xavier • Email: cesarcx@gmail.com",
