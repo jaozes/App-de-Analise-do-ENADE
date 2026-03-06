@@ -10,7 +10,7 @@ st.set_page_config(layout="centered", page_title="Análise Geral do Brasil - ENA
 
 @st.cache_data
 def load_data():
-    df = pd.read_excel('enade-analysis-app/data/conceito_enade_2023.xlsx', engine='openpyxl')
+    df = pd.read_excel('data/conceito_enade_2023.xlsx', engine='openpyxl')
     df = df.dropna(subset=['Conceito Enade (Contínuo)'])
     return df
 
@@ -23,7 +23,8 @@ opcoes_graficos = [
     "Média de Conceitos por Área de Avaliação",
     "Média por Estado",
     "Média por Modalidade de Ensino",
-    "Quantidade de Alunos por Curso e Estado"
+    "Quantidade de Alunos por Curso e Estado",
+    "Densidade de Cursos no Brasil"
 ]
 grafico_selecionado = st.selectbox("Selecione o gráfico a exibir:", opcoes_graficos)
 
@@ -291,6 +292,130 @@ elif grafico_selecionado == "Quantidade de Alunos por Curso e Estado":
             width='stretch',
             hide_index=True
         )
+
+# Análise de Densidade de Cursos no Brasil
+elif grafico_selecionado == "Densidade de Cursos no Brasil":
+    import plotly.graph_objects as go
+    import requests
+    
+    col1, col2 = st.columns(2)
+
+    with col1:
+        # Filtro por UF
+        ufs_disponiveis = sorted(df['Sigla da UF** '].unique())
+        ufs_selecionadas = st.multiselect(
+            "Selecione as UFs:",
+            options=ufs_disponiveis,
+            default=[],
+            help="Selecione uma ou mais UFs para filtrar os dados."
+        )
+
+    with col2:
+        # Filtro por Área de Avaliação
+        areas_disponiveis = sorted(df['Área de Avaliação'].unique())
+        areas_selecionadas = st.multiselect(
+            "Selecione as Áreas de Avaliação:",
+            options=areas_disponiveis,
+            default=[],
+            help="Selecione uma ou mais áreas para filtrar os dados."
+        )
+
+    # Aplicar filtros
+    df_filtrado = df
+    if ufs_selecionadas:
+        df_filtrado = df_filtrado[df_filtrado['Sigla da UF** '].isin(ufs_selecionadas)]
+    if areas_selecionadas:
+        df_filtrado = df_filtrado[df_filtrado['Área de Avaliação'].isin(areas_selecionadas)]
+
+    # Lista de todos os estados do Brasil (27 estados)
+    todos_estados = ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 
+                     'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 
+                     'SP', 'SE', 'TO']
+    
+    # Calcular quantidade de cursos por estado
+    cursos_por_estado = df_filtrado.groupby('Sigla da UF** ').size().reset_index()
+    cursos_por_estado.columns = ['Estado', 'Quantidade de Cursos']
+    
+    # Adicionar estados que não têm cursos com valor 0
+    estados_faltantes = [e for e in todos_estados if e not in cursos_por_estado['Estado'].values]
+    if estados_faltantes:
+        df_faltantes = pd.DataFrame({
+            'Estado': estados_faltantes,
+            'Quantidade de Cursos': 0
+        })
+        cursos_por_estado = pd.concat([cursos_por_estado, df_faltantes], ignore_index=True)
+    
+    # Calcular total de cursos (para densidade relativa)
+    total_cursos = cursos_por_estado['Quantidade de Cursos'].sum()
+    
+    # Calcular densidade relativa (porcentagem)
+    cursos_por_estado['Densidade Relativa (%)'] = (cursos_por_estado['Quantidade de Cursos'] / total_cursos * 100).round(2)
+    
+    # Ordenar por quantidade de cursos
+    cursos_por_estado = cursos_por_estado.sort_values('Quantidade de Cursos', ascending=False)
+    
+    st.subheader("Densidade de Cursos Avaliados no ENADE por Estado")
+    
+    # Carregar GeoJSON do Brasil
+    geojson_url = "https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/brazil-states.geojson"
+    response = requests.get(geojson_url)
+    brazil_states = response.json()
+    
+    # Escala de cores para densidade (tons de vermelho)
+    custom_colorscale = [
+        [0, "#ffffff"],      # 0% - muito claro
+        [0.2, "#fee0d2"],    # 5%
+        [0.4, "#fcbba1"],    # 10%
+        [0.5, "#fc9272"],    # 15%
+        [0.6, "#fb6a4a"],    # 20%
+        [0.7, "#ef3b2c"],    # 25%
+        [0.8, "#cb181d"],    # 30%
+        [1, "#990000"]       # mais intenso
+    ]
+    
+    # Encontrar o valor máximo de densidade para escala
+    max_densidade = cursos_por_estado['Densidade Relativa (%)'].max()
+    
+    # Criar mapa choropleth usando plotly.graph_objects (mesmo método da Home.py)
+    fig_densidade = go.Figure(go.Choropleth(
+        geojson=brazil_states,
+        locations=cursos_por_estado['Estado'],
+        z=cursos_por_estado['Densidade Relativa (%)'],
+        featureidkey="properties.sigla",
+        colorscale=custom_colorscale,
+        zmin=0,
+        zmax=max_densidade,
+        hovertemplate='<b>%{location}</b><br>' +
+                      'Quantidade de Cursos: %{customdata[0]}<br>' +
+                      'Densidade Relativa: %{customdata[1]:.2f}%<extra></extra>',
+        customdata=cursos_por_estado[['Quantidade de Cursos', 'Densidade Relativa (%)']].values
+    ))
+    
+    fig_densidade.update_geos(
+        scope='south america',
+        showlakes=True,
+        lakecolor='rgb(255, 255, 255)',
+        fitbounds="locations",
+        visible=False
+    )
+    
+    fig_densidade.update_layout(
+        margin=dict(r=0, t=30, l=0, b=0),
+        height=600,
+        title="Densidade de Cursos Avaliados no ENADE por Estado"
+    )
+    
+    st.plotly_chart(fig_densidade, width='stretch')
+    
+    st.subheader("Dados da Análise")
+    # Exibir tabela formatada
+    tabela_dados = cursos_por_estado[['Estado', 'Quantidade de Cursos', 'Densidade Relativa (%)']].copy()
+    tabela_dados['Densidade Relativa (%)'] = tabela_dados['Densidade Relativa (%)'].apply(lambda x: f"{x:.2f}%")
+    st.dataframe(
+        tabela_dados,
+        width='stretch',
+        hide_index=True
+    )
 
 show_footer(
     advisor_text="Orientador: Prof. Dr. César Candido Xavier • Email: cesarcx@gmail.com",
