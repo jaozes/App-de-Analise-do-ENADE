@@ -153,16 +153,17 @@ with st.expander("📊 Legenda do Mapa", expanded=True):
         # Labels abaixo da barra
         col_scale1, col_scale2, col_scale3 = st.columns([1, 2, 1])
         with col_scale1:
-            st.caption("Baixo (0)")
+            st.caption("Baixo (0 - 2)")
         with col_scale2:
-            st.caption("→ Conceito Médio ENADE →")
+            st.caption("→ Médio (2 - 3) →")
         with col_scale3:
-            st.caption("Alto (5)")
+            st.caption("Alto (4 - 5)")
         
         # Explicação das cores
         st.markdown("""
-         **Azul claro** = Conceito médio mais baixo (0 - 2.5)  
-         **Azul escuro** = Conceito médio mais alto (3.5 - 5)
+         **Branco e Azul claro** = Conceito médio mais baixo (0 - 2)  
+         **Azul médio** = Conceito médio intermediário (2 - 3)
+         **Azul escuro** = Conceito médio mais alto (4 - 5)
         """)
 
         
