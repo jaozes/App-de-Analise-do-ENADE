@@ -100,23 +100,6 @@ with col1:
     if selected_grau:
         filtered_df = filtered_df[filtered_df['Grau Acadêmico'].isin(selected_grau)]
 
-    if not filtered_df.empty:
-        avg_df = filtered_df.groupby('Área de Avaliação')['Conceito Enade (Contínuo)'].mean().reset_index()
-        avg_df['Média'] = avg_df['Conceito Enade (Contínuo)'].round(2)
-        avg_df = avg_df.sort_values('Média', ascending=False)
-
-        # Gráfico Plotly
-        st.subheader('1º Gráfico das Médias por Curso')
-        fig = px.bar(avg_df, x='Área de Avaliação', y='Média', color='Área de Avaliação', color_discrete_sequence=px.colors.qualitative.Dark24)
-        fig.update_layout(xaxis_title='Curso', yaxis_title='Média do Conceito Enade (Contínuo)', xaxis_tickangle=-45, height=600, width=1200, margin=dict(l=0, r=0, t=40, b=0))
-        st.plotly_chart(fig, width='stretch', key='chart1')
-
-        # Exibir tabela
-        st.subheader('Médias por Curso')
-        st.dataframe(avg_df[['Área de Avaliação', 'Média']], height=400, width='stretch')
-    else:
-        st.write('Nenhum dado encontrado com os filtros selecionados para o primeiro gráfico.')
-
 # Seção do segundo gráfico
 with col2:
     st.header('2ª Instituição - Filtros')
@@ -164,22 +147,94 @@ with col2:
     if selected_grau2:
         filtered_df2 = filtered_df2[filtered_df2['Grau Acadêmico'].isin(selected_grau2)]
 
-    if not filtered_df2.empty:
-        avg_df2 = filtered_df2.groupby('Área de Avaliação')['Conceito Enade (Contínuo)'].mean().reset_index()
-        avg_df2['Média'] = avg_df2['Conceito Enade (Contínuo)'].round(2)
-        avg_df2 = avg_df2.sort_values('Média', ascending=False)
+# Seção do gráfico comparativo
+st.markdown("---")
+st.header('Comparação Interinstitucional')
 
-        # Segundo gráfico: Gráfico de barras vertical
-        st.subheader('2º Gráfico das Médias por Curso')
-        fig2 = px.bar(avg_df2, x='Área de Avaliação', y='Média', color='Área de Avaliação', color_discrete_sequence=px.colors.qualitative.Dark24)
-        fig2.update_layout(xaxis_title='Curso', yaxis_title='Média do Conceito Enade (Contínuo)', xaxis_tickangle=-45, height=600, width=1200, margin=dict(l=0, r=0, t=40, b=0))
-        st.plotly_chart(fig2, width='stretch', key='chart2')
+# Checkbox para mostrar apenas cursos em comum
+apenas_comum = st.checkbox("Mostrar apenas cursos em comum", value=False)
 
-        # Exibir tabela
-        st.subheader('Médias por Curso')
-        st.dataframe(avg_df2[['Área de Avaliação', 'Média']], height=400, width='stretch')
+# Verificar se ambos os dataframes têm dados
+if not filtered_df.empty and not filtered_df2.empty:
+    # Determinar nome da instituição 1
+    if selected_ies and len(selected_ies) == 1:
+        nome_inst1 = selected_ies[0]
     else:
-        st.write('Nenhum dado encontrado com os filtros selecionados para o segundo gráfico.')
+        nome_inst1 = "Instituição 1"
+    
+    # Determinar nome da instituição 2
+    if selected_ies2 and len(selected_ies2) == 1:
+        nome_inst2 = selected_ies2[0]
+    else:
+        nome_inst2 = "Instituição 2"
+    
+    # Recalcular os dataframes sem o sort para manter a ordem original
+    avg_df = filtered_df.groupby('Área de Avaliação')['Conceito Enade (Contínuo)'].mean().reset_index()
+    avg_df['Média'] = avg_df['Conceito Enade (Contínuo)'].round(2)
+    avg_df["Instituicao"] = nome_inst1
+    
+    avg_df2 = filtered_df2.groupby('Área de Avaliação')['Conceito Enade (Contínuo)'].mean().reset_index()
+    avg_df2['Média'] = avg_df2['Conceito Enade (Contínuo)'].round(2)
+    avg_df2["Instituicao"] = nome_inst2
+    
+    # Unir os dois dataframes
+    df_comparacao = pd.concat([avg_df, avg_df2], ignore_index=True)
+    
+    # Se checkbox marcado, filtrar apenas cursos em comum
+    if apenas_comum:
+        # Encontrar cursos presentes em ambas as instituições
+        cursos_inst1 = set(avg_df['Área de Avaliação'].unique())
+        cursos_inst2 = set(avg_df2['Área de Avaliação'].unique())
+        cursos_comum = cursos_inst1.intersection(cursos_inst2)
+        
+        # Filtrar para manter apenas cursos em comum
+        df_comparacao = df_comparacao[df_comparacao['Área de Avaliação'].isin(cursos_comum)]
+        avg_df = avg_df[avg_df['Área de Avaliação'].isin(cursos_comum)]
+        avg_df2 = avg_df2[avg_df2['Área de Avaliação'].isin(cursos_comum)]
+    
+    # Obter lista de cursos ordenada (ordem decrescente pela média combinada)
+    cursos_ordenados = df_comparacao.groupby('Área de Avaliação')['Média'].mean().sort_values(ascending=False).index.tolist()
+    
+    # Converter 'Área de Avaliação' para categoria ordenada
+    df_comparacao['Área de Avaliação'] = pd.Categorical(df_comparacao['Área de Avaliação'], categories=cursos_ordenados, ordered=True)
+    df_comparacao = df_comparacao.sort_values(['Área de Avaliação', 'Instituicao'])
+    
+    # Criar gráfico de linha comparativo
+    fig_comparativo = px.line(
+        df_comparacao, 
+        x='Área de Avaliação', 
+        y='Média', 
+        color='Instituicao',
+        markers=True,
+        line_shape='linear',
+        title="Comparação Interinstitucional - Média do Conceito ENADE por Curso"
+    )
+    fig_comparativo.update_layout(
+        xaxis_tickangle=-45,
+        template="plotly_white",
+        xaxis_title='Curso',
+        yaxis_title='Média do Conceito ENADE',
+        height=600
+    )
+    # Forçar a ordem dos cursos no eixo X
+    fig_comparativo.update_xaxes(categoryorder='array', categoryarray=cursos_ordenados)
+    st.plotly_chart(fig_comparativo, width='stretch')
+    
+    # Exibir tabelas de médias por curso de cada instituição
+    col_tab1, col_tab2 = st.columns(2)
+    with col_tab1:
+        st.subheader(f'{nome_inst1} - Médias por Curso')
+        st.dataframe(avg_df[['Área de Avaliação', 'Média']], height=400, width='stretch')
+    with col_tab2:
+        st.subheader(f'{nome_inst2} - Médias por Curso')
+        st.dataframe(avg_df2[['Área de Avaliação', 'Média']], height=400, width='stretch')
+    
+elif filtered_df.empty and filtered_df2.empty:
+    st.write('Nenhum dado encontrado com os filtros selecionados para ambas as instituições.')
+elif filtered_df.empty:
+    st.write('Nenhum dado encontrado com os filtros selecionados para a primeira instituição.')
+elif filtered_df2.empty:
+    st.write('Nenhum dado encontrado com os filtros selecionados para a segunda instituição.')
 
 show_footer(
     advisor_text="Orientador: Prof. Dr. César Candido Xavier • Email: cesarcx@gmail.com",
