@@ -30,20 +30,57 @@ grafico_selecionado = st.selectbox("Selecione o gráfico a exibir:", opcoes_graf
 
 # Análise por Área
 if grafico_selecionado == "Média de Conceitos por Área de Avaliação":
-    # Filtro por UF
-    ufs_disponiveis = sorted(df['Sigla da UF** '].unique())
-    ufs_selecionadas = st.multiselect(
-        "Selecione as UFs:",
-        options=ufs_disponiveis,
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        # Filtro por UF
+        ufs_disponiveis = sorted(df['Sigla da UF** '].unique())
+        ufs_selecionadas = st.multiselect(
+            "Selecione as UFs:",
+            options=ufs_disponiveis,
+            default=[],
+            help="Selecione uma ou mais UFs para filtrar os dados."
+        )
+
+    with col2:
+        # Filtro por Modalidade de Ensino
+        modalidades_disponiveis = sorted(df['Modalidade de Ensino'].unique())
+        modalidades_selecionadas = st.multiselect(
+            "Selecione as Modalidades:",
+            options=modalidades_disponiveis,
+            default=[],
+            help="Selecione uma ou mais modalidades para filtrar os dados."
+        )
+
+    with col3:
+        # Filtro por Categoria Administrativa
+        categorias_disponiveis = sorted(df['Categoria Administrativa'].unique())
+        categorias_selecionadas = st.multiselect(
+            "Selecione as Categorias:",
+            options=categorias_disponiveis,
+            default=[],
+            help="Selecione uma ou mais categorias para filtrar os dados."
+        )
+
+    # Filtro por Grau Acadêmico
+    graus_disponiveis = sorted(df['Grau Acadêmico'].unique())
+    graus_selecionados = st.multiselect(
+        "Selecione os Graus:",
+        options=graus_disponiveis,
         default=[],
-        help="Selecione uma ou mais UFs para filtrar os dados."
+        help="Selecione um ou mais graus para filtrar os dados."
     )
 
     # Aplicar filtro
+    df_filtrado = df
     if ufs_selecionadas:
-        df_filtrado = df[df['Sigla da UF** '].isin(ufs_selecionadas)]
-    else:
-        df_filtrado = df
+        df_filtrado = df_filtrado[df_filtrado['Sigla da UF** '].isin(ufs_selecionadas)]
+    if modalidades_selecionadas:
+        df_filtrado = df_filtrado[df_filtrado['Modalidade de Ensino'].isin(modalidades_selecionadas)]
+    if categorias_selecionadas:
+        df_filtrado = df_filtrado[df_filtrado['Categoria Administrativa'].isin(categorias_selecionadas)]
+    if graus_selecionados:
+        df_filtrado = df_filtrado[df_filtrado['Grau Acadêmico'].isin(graus_selecionados)]
 
     st.subheader("Média de Conceitos por Área de Avaliação")
     avg_area = df_filtrado.groupby('Área de Avaliação')['Conceito Enade (Contínuo)'].mean().reset_index().round(2)
@@ -92,12 +129,50 @@ elif grafico_selecionado == "Média por Estado":
             help="Selecione uma ou mais áreas para filtrar os dados."
         )
 
+    col3, col4, col5 = st.columns(3)
+
+    with col3:
+        # Filtro por Modalidade de Ensino
+        modalidades_disponiveis = sorted(df['Modalidade de Ensino'].unique())
+        modalidades_selecionadas = st.multiselect(
+            "Selecione as Modalidades:",
+            options=modalidades_disponiveis,
+            default=[],
+            help="Selecione uma ou mais modalidades para filtrar os dados."
+        )
+
+    with col4:
+        # Filtro por Categoria Administrativa
+        categorias_disponiveis = sorted(df['Categoria Administrativa'].unique())
+        categorias_selecionadas = st.multiselect(
+            "Selecione as Categorias:",
+            options=categorias_disponiveis,
+            default=[],
+            help="Selecione uma ou mais categorias para filtrar os dados."
+        )
+
+    with col5:
+        # Filtro por Grau Acadêmico
+        graus_disponiveis = sorted(df['Grau Acadêmico'].unique())
+        graus_selecionados = st.multiselect(
+            "Selecione os Graus:",
+            options=graus_disponiveis,
+            default=[],
+            help="Selecione um ou mais graus para filtrar os dados."
+        )
+
     # Aplicar filtros
     df_filtrado = df
     if ufs_selecionadas:
         df_filtrado = df_filtrado[df_filtrado['Sigla da UF** '].isin(ufs_selecionadas)]
     if areas_selecionadas:
         df_filtrado = df_filtrado[df_filtrado['Área de Avaliação'].isin(areas_selecionadas)]
+    if modalidades_selecionadas:
+        df_filtrado = df_filtrado[df_filtrado['Modalidade de Ensino'].isin(modalidades_selecionadas)]
+    if categorias_selecionadas:
+        df_filtrado = df_filtrado[df_filtrado['Categoria Administrativa'].isin(categorias_selecionadas)]
+    if graus_selecionados:
+        df_filtrado = df_filtrado[df_filtrado['Grau Acadêmico'].isin(graus_selecionados)]
 
     st.subheader("Média por Estado")
     avg_uf = df_filtrado.groupby('Sigla da UF** ')['Conceito Enade (Contínuo)'].mean().reset_index().round(2)
@@ -144,12 +219,38 @@ elif grafico_selecionado == "Média por Modalidade de Ensino":
             help="Selecione uma ou mais áreas para filtrar os dados."
         )
 
+    col3, col4 = st.columns(2)
+
+    with col3:
+        # Filtro por Categoria Administrativa
+        categorias_disponiveis = sorted(df['Categoria Administrativa'].unique())
+        categorias_selecionadas = st.multiselect(
+            "Selecione as Categorias:",
+            options=categorias_disponiveis,
+            default=[],
+            help="Selecione uma ou mais categorias para filtrar os dados."
+        )
+
+    with col4:
+        # Filtro por Grau Acadêmico
+        graus_disponiveis = sorted(df['Grau Acadêmico'].unique())
+        graus_selecionados = st.multiselect(
+            "Selecione os Graus:",
+            options=graus_disponiveis,
+            default=[],
+            help="Selecione um ou mais graus para filtrar os dados."
+        )
+
     # Aplicar filtros
     df_filtrado = df
     if ufs_selecionadas:
         df_filtrado = df_filtrado[df_filtrado['Sigla da UF** '].isin(ufs_selecionadas)]
     if areas_selecionadas:
         df_filtrado = df_filtrado[df_filtrado['Área de Avaliação'].isin(areas_selecionadas)]
+    if categorias_selecionadas:
+        df_filtrado = df_filtrado[df_filtrado['Categoria Administrativa'].isin(categorias_selecionadas)]
+    if graus_selecionados:
+        df_filtrado = df_filtrado[df_filtrado['Grau Acadêmico'].isin(graus_selecionados)]
 
     st.subheader("Média por Modalidade de Ensino")
     avg_mod = df_filtrado.groupby('Modalidade de Ensino')['Conceito Enade (Contínuo)'].mean().reset_index().round(2)
@@ -204,12 +305,50 @@ elif grafico_selecionado == "Quantidade de Alunos por Curso e Estado":
             help="Selecione uma ou mais áreas para filtrar os dados."
         )
 
+    col5, col6, col7 = st.columns(3)
+
+    with col5:
+        # Filtro por Modalidade de Ensino
+        modalidades_disponiveis = sorted(df['Modalidade de Ensino'].unique())
+        modalidades_selecionadas = st.multiselect(
+            "Selecione as Modalidades:",
+            options=modalidades_disponiveis,
+            default=[],
+            help="Selecione uma ou mais modalidades para filtrar os dados."
+        )
+
+    with col6:
+        # Filtro por Categoria Administrativa
+        categorias_disponiveis = sorted(df['Categoria Administrativa'].unique())
+        categorias_selecionadas = st.multiselect(
+            "Selecione as Categorias:",
+            options=categorias_disponiveis,
+            default=[],
+            help="Selecione uma ou mais categorias para filtrar os dados."
+        )
+
+    with col7:
+        # Filtro por Grau Acadêmico
+        graus_disponiveis = sorted(df['Grau Acadêmico'].unique())
+        graus_selecionados = st.multiselect(
+            "Selecione os Graus:",
+            options=graus_disponiveis,
+            default=[],
+            help="Selecione um ou mais graus para filtrar os dados."
+        )
+
     # Aplicar filtros
     df_filtrado = df
     if ufs_selecionadas:
         df_filtrado = df_filtrado[df_filtrado['Sigla da UF** '].isin(ufs_selecionadas)]
     if areas_selecionadas:
         df_filtrado = df_filtrado[df_filtrado['Área de Avaliação'].isin(areas_selecionadas)]
+    if modalidades_selecionadas:
+        df_filtrado = df_filtrado[df_filtrado['Modalidade de Ensino'].isin(modalidades_selecionadas)]
+    if categorias_selecionadas:
+        df_filtrado = df_filtrado[df_filtrado['Categoria Administrativa'].isin(categorias_selecionadas)]
+    if graus_selecionados:
+        df_filtrado = df_filtrado[df_filtrado['Grau Acadêmico'].isin(graus_selecionados)]
 
     st.subheader(f"Quantidade de Alunos - {tipo_quantidade}")
 
@@ -320,12 +459,50 @@ elif grafico_selecionado == "Densidade de Cursos no Brasil":
             help="Selecione uma ou mais áreas para filtrar os dados."
         )
 
+    col3, col4, col5 = st.columns(3)
+
+    with col3:
+        # Filtro por Modalidade de Ensino
+        modalidades_disponiveis = sorted(df['Modalidade de Ensino'].unique())
+        modalidades_selecionadas = st.multiselect(
+            "Selecione as Modalidades:",
+            options=modalidades_disponiveis,
+            default=[],
+            help="Selecione uma ou mais modalidades para filtrar os dados."
+        )
+
+    with col4:
+        # Filtro por Categoria Administrativa
+        categorias_disponiveis = sorted(df['Categoria Administrativa'].unique())
+        categorias_selecionadas = st.multiselect(
+            "Selecione as Categorias:",
+            options=categorias_disponiveis,
+            default=[],
+            help="Selecione uma ou mais categorias para filtrar os dados."
+        )
+
+    with col5:
+        # Filtro por Grau Acadêmico
+        graus_disponiveis = sorted(df['Grau Acadêmico'].unique())
+        graus_selecionados = st.multiselect(
+            "Selecione os Graus:",
+            options=graus_disponiveis,
+            default=[],
+            help="Selecione um ou mais graus para filtrar os dados."
+        )
+
     # Aplicar filtros
     df_filtrado = df
     if ufs_selecionadas:
         df_filtrado = df_filtrado[df_filtrado['Sigla da UF** '].isin(ufs_selecionadas)]
     if areas_selecionadas:
         df_filtrado = df_filtrado[df_filtrado['Área de Avaliação'].isin(areas_selecionadas)]
+    if modalidades_selecionadas:
+        df_filtrado = df_filtrado[df_filtrado['Modalidade de Ensino'].isin(modalidades_selecionadas)]
+    if categorias_selecionadas:
+        df_filtrado = df_filtrado[df_filtrado['Categoria Administrativa'].isin(categorias_selecionadas)]
+    if graus_selecionados:
+        df_filtrado = df_filtrado[df_filtrado['Grau Acadêmico'].isin(graus_selecionados)]
 
     # Lista de todos os estados do Brasil (27 estados)
     todos_estados = ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 
