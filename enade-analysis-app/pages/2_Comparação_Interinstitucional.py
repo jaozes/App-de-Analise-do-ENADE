@@ -18,6 +18,41 @@ def load_data():
 
 df = load_data()
 
+# abreviações dos cursos para exibição nos eixos X
+ABBR = {
+    "AGRONOMIA": "Agron.",
+    "ARQUITETURA E URBANISMO": "Arq. Urb.",
+    "BIOMEDICINA": "Biom.",
+    "ENFERMAGEM": "Enf.",
+    "ENGENHARIA AMBIENTAL": "Eng. Amb.",
+    "ENGENHARIA CIVIL": "Eng. Civ.",
+    "ENGENHARIA DE ALIMENTOS": "Eng. Alim.",
+    "ENGENHARIA DE COMPUTAÇÃO I": "Eng. Comp. I",
+    "ENGENHARIA DE CONTROLE E AUTOMAÇÃO": "Eng. Ctrl/Aut.",
+    "ENGENHARIA DE PRODUÇÃO": "Eng. Prod.",
+    "ENGENHARIA ELÉTRICA": "Eng. El.",
+    "ENGENHARIA FLORESTAL": "Eng. Flr.",
+    "ENGENHARIA MECÂNICA": "Eng. Mec.",
+    "ENGENHARIA QUÍMICA": "Eng. Quím.",
+    "FARMÁCIA": "Farm.",
+    "FISIOTERAPIA": "Fis.",
+    "FONOAUDIOLOGIA": "Fono.",
+    "MEDICINA": "Med.",
+    "MEDICINA VETERINÁRIA": "Med. Vet.",
+    "NUTRIÇÃO": "Nutri.",
+    "ODONTOLOGIA": "Odont.",
+    "TECNOLOGIA EM AGRONEGÓCIOS": "Tec. Agron.",
+    "TECNOLOGIA EM ESTÉTICA E COSMÉTICA": "Tec. Estética",
+    "TECNOLOGIA EM GESTÃO AMBIENTAL": "Tec. Gest. Amb.",
+    "TECNOLOGIA EM GESTÃO HOSPITALAR": "Tec. Gest. Hosp.",
+    "TECNOLOGIA EM RADIOLOGIA": "Tec. Radiol.",
+    "TECNOLOGIA EM SEGURANÇA NO TRABALHO": "Tec. Seg. Trab.",
+    "ZOOTECNIA": "Zootec."
+}
+
+# coluna abreviada (mantém o nome original para outros usos)
+df['Área_abrev'] = df['Área de Avaliação'].map(ABBR).fillna(df['Área de Avaliação'])
+
 # Função para filtrar dataframe com base nas seleções
 def get_filtered_df(uf, municipio, ies, curso, modalidade, categoria, grau):
     filtered = df.copy()
@@ -61,27 +96,27 @@ with col1:
     filter_cols1_row1 = st.columns(4)
     with filter_cols1_row1[0]:
         uf_options1 = sorted(df['Sigla da UF** '].dropna().unique())
-        selected_uf = st.multiselect('UF', uf_options1, default=st.session_state.uf1, key='uf1')
+        selected_uf = st.multiselect('UF', uf_options1, key='uf1')
     with filter_cols1_row1[1]:
         municipio_options1 = sorted(get_filtered_df(st.session_state.uf1, None, st.session_state.ies1, st.session_state.curso1, st.session_state.mod1, st.session_state.cat1, st.session_state.grau1)['Município do Curso**'].dropna().unique())
-        selected_municipio = st.multiselect('Município', municipio_options1, default=st.session_state.mun1, key='mun1')
+        selected_municipio = st.multiselect('Município', municipio_options1, key='mun1')
     with filter_cols1_row1[2]:
         ies_options1 = sorted(get_filtered_df(st.session_state.uf1, st.session_state.mun1, None, st.session_state.curso1, st.session_state.mod1, st.session_state.cat1, st.session_state.grau1)['Nome da IES*'].dropna().unique())
-        selected_ies = st.multiselect('IES', ies_options1, default=st.session_state.ies1, key='ies1')
+        selected_ies = st.multiselect('IES', ies_options1, key='ies1')
     with filter_cols1_row1[3]:
         curso_options1 = sorted(get_filtered_df(st.session_state.uf1, st.session_state.mun1, st.session_state.ies1, None, st.session_state.mod1, st.session_state.cat1, st.session_state.grau1)['Área de Avaliação'].dropna().unique())
-        selected_curso = st.multiselect('Curso', curso_options1, default=st.session_state.curso1, key='curso1')
+        selected_curso = st.multiselect('Curso', curso_options1, key='curso1')
 
     filter_cols1_row2 = st.columns(3)
     with filter_cols1_row2[0]:
         modalidade_options1 = sorted(get_filtered_df(st.session_state.uf1, st.session_state.mun1, st.session_state.ies1, st.session_state.curso1, None, st.session_state.cat1, st.session_state.grau1)['Modalidade de Ensino'].dropna().unique())
-        selected_modalidade = st.multiselect('Modalidade', modalidade_options1, default=st.session_state.mod1, key='mod1')
+        selected_modalidade = st.multiselect('Modalidade', modalidade_options1, key='mod1')
     with filter_cols1_row2[1]:
         categoria_options1 = sorted(get_filtered_df(st.session_state.uf1, st.session_state.mun1, st.session_state.ies1, st.session_state.curso1, st.session_state.mod1, None, st.session_state.grau1)['Categoria Administrativa'].dropna().unique())
-        selected_categoria = st.multiselect('Categoria', categoria_options1, default=st.session_state.cat1, key='cat1')
+        selected_categoria = st.multiselect('Categoria', categoria_options1, key='cat1')
     with filter_cols1_row2[2]:
         grau_options1 = sorted(get_filtered_df(st.session_state.uf1, st.session_state.mun1, st.session_state.ies1, st.session_state.curso1, st.session_state.mod1, st.session_state.cat1, None)['Grau Acadêmico'].dropna().unique())
-        selected_grau = st.multiselect('Grau', grau_options1, default=st.session_state.grau1, key='grau1')
+        selected_grau = st.multiselect('Grau', grau_options1, key='grau1')
 
     # Filtrar o dataframe para o primeiro gráfico
     filtered_df = df.copy()
@@ -108,27 +143,27 @@ with col2:
     filter_cols2_row1 = st.columns(4)
     with filter_cols2_row1[0]:
         uf_options2 = sorted(get_filtered_df(None, st.session_state.mun2, st.session_state.ies2, st.session_state.curso2, st.session_state.mod2, st.session_state.cat2, st.session_state.grau2)['Sigla da UF** '].dropna().unique())
-        selected_uf2 = st.multiselect('UF', uf_options2, default=st.session_state.uf2, key='uf2')
+        selected_uf2 = st.multiselect('UF', uf_options2, key='uf2')
     with filter_cols2_row1[1]:
         municipio_options2 = sorted(get_filtered_df(st.session_state.uf2, None, st.session_state.ies2, st.session_state.curso2, st.session_state.mod2, st.session_state.cat2, st.session_state.grau2)['Município do Curso**'].dropna().unique())
-        selected_municipio2 = st.multiselect('Município', municipio_options2, default=st.session_state.mun2, key='mun2')
+        selected_municipio2 = st.multiselect('Município', municipio_options2, key='mun2')
     with filter_cols2_row1[2]:
         ies_options2 = sorted(get_filtered_df(st.session_state.uf2, st.session_state.mun2, None, st.session_state.curso2, st.session_state.mod2, st.session_state.cat2, st.session_state.grau2)['Nome da IES*'].dropna().unique())
-        selected_ies2 = st.multiselect('IES', ies_options2, default=st.session_state.ies2, key='ies2')
+        selected_ies2 = st.multiselect('IES', ies_options2, key='ies2')
     with filter_cols2_row1[3]:
         curso_options2 = sorted(get_filtered_df(st.session_state.uf2, st.session_state.mun2, st.session_state.ies2, None, st.session_state.mod2, st.session_state.cat2, st.session_state.grau2)['Área de Avaliação'].dropna().unique())
-        selected_curso2 = st.multiselect('Curso', curso_options2, default=st.session_state.curso2, key='curso2')
+        selected_curso2 = st.multiselect('Curso', curso_options2, key='curso2')
 
     filter_cols2_row2 = st.columns(3)
     with filter_cols2_row2[0]:
         modalidade_options2 = sorted(get_filtered_df(st.session_state.uf2, st.session_state.mun2, st.session_state.ies2, st.session_state.curso2, None, st.session_state.cat2, st.session_state.grau2)['Modalidade de Ensino'].dropna().unique())
-        selected_modalidade2 = st.multiselect('Modalidade', modalidade_options2, default=st.session_state.mod2, key='mod2')
+        selected_modalidade2 = st.multiselect('Modalidade', modalidade_options2, key='mod2')
     with filter_cols2_row2[1]:
         categoria_options2 = sorted(get_filtered_df(st.session_state.uf2, st.session_state.mun2, st.session_state.ies2, st.session_state.curso2, st.session_state.mod2, None, st.session_state.grau2)['Categoria Administrativa'].dropna().unique())
-        selected_categoria2 = st.multiselect('Categoria', categoria_options2, default=st.session_state.cat2, key='cat2')
+        selected_categoria2 = st.multiselect('Categoria', categoria_options2, key='cat2')
     with filter_cols2_row2[2]:
         grau_options2 = sorted(get_filtered_df(st.session_state.uf2, st.session_state.mun2, st.session_state.ies2, st.session_state.curso2, st.session_state.mod2, st.session_state.cat2, None)['Grau Acadêmico'].dropna().unique())
-        selected_grau2 = st.multiselect('Grau', grau_options2, default=st.session_state.grau2, key='grau2')
+        selected_grau2 = st.multiselect('Grau', grau_options2, key='grau2')
 
     # Filtrar o dataframe para o segundo gráfico
     filtered_df2 = df.copy()
@@ -169,11 +204,14 @@ if not filtered_df.empty and not filtered_df2.empty:
         nome_inst2 = "Instituição 2"
     
     # Recalcular os dataframes sem o sort para manter a ordem original
+    # agrupa pelo nome original para manter coluna completa, depois adiciona abreviatura
     avg_df = filtered_df.groupby('Área de Avaliação')['Conceito Enade (Contínuo)'].mean().reset_index()
+    avg_df['Área_abrev'] = avg_df['Área de Avaliação'].map(ABBR).fillna(avg_df['Área de Avaliação'])
     avg_df['Média'] = avg_df['Conceito Enade (Contínuo)'].round(2)
     avg_df["Instituicao"] = nome_inst1
     
     avg_df2 = filtered_df2.groupby('Área de Avaliação')['Conceito Enade (Contínuo)'].mean().reset_index()
+    avg_df2['Área_abrev'] = avg_df2['Área de Avaliação'].map(ABBR).fillna(avg_df2['Área de Avaliação'])
     avg_df2['Média'] = avg_df2['Conceito Enade (Contínuo)'].round(2)
     avg_df2["Instituicao"] = nome_inst2
     
@@ -193,21 +231,23 @@ if not filtered_df.empty and not filtered_df2.empty:
         avg_df2 = avg_df2[avg_df2['Área de Avaliação'].isin(cursos_comum)]
     
     # Obter lista de cursos ordenada (ordem decrescente pela média combinada)
-    cursos_ordenados = df_comparacao.groupby('Área de Avaliação')['Média'].mean().sort_values(ascending=False).index.tolist()
+    # ordenar com base na abreviatura para manter eixo X curto
+    cursos_ordenados = df_comparacao.groupby('Área_abrev')['Média'].mean().sort_values(ascending=False).index.tolist()
     
-    # Converter 'Área de Avaliação' para categoria ordenada
-    df_comparacao['Área de Avaliação'] = pd.Categorical(df_comparacao['Área de Avaliação'], categories=cursos_ordenados, ordered=True)
-    df_comparacao = df_comparacao.sort_values(['Área de Avaliação', 'Instituicao'])
+    # Converter colunas para categoria ordenada usando abreviação
+    df_comparacao['Área_abrev'] = pd.Categorical(df_comparacao['Área_abrev'], categories=cursos_ordenados, ordered=True)
+    df_comparacao = df_comparacao.sort_values(['Área_abrev', 'Instituicao'])
     
     # Criar gráfico de linha comparativo
     fig_comparativo = px.line(
         df_comparacao, 
-        x='Área de Avaliação', 
+        x='Área_abrev', 
         y='Média', 
         color='Instituicao',
         markers=True,
         line_shape='linear',
-        title="Comparação Interinstitucional - Média do Conceito ENADE por Curso"
+        title="Comparação Interinstitucional - Média do Conceito ENADE por Curso",
+        custom_data=['Área de Avaliação','Instituicao']
     )
     fig_comparativo.update_layout(
         xaxis_tickangle=-45,
@@ -216,7 +256,8 @@ if not filtered_df.empty and not filtered_df2.empty:
         yaxis_title='Média do Conceito ENADE',
         height=600
     )
-    # Forçar a ordem dos cursos no eixo X
+    fig_comparativo.update_traces(hovertemplate='<b>%{customdata[0]}</b><br>Instituição: %{customdata[1]}<br>Média: %{y:.2f}<extra></extra>')
+    # Forçar a ordem dos cursos no eixo X (já são abreviados)
     fig_comparativo.update_xaxes(categoryorder='array', categoryarray=cursos_ordenados)
     st.plotly_chart(fig_comparativo, width='stretch')
     
@@ -224,10 +265,11 @@ if not filtered_df.empty and not filtered_df2.empty:
     col_tab1, col_tab2 = st.columns(2)
     with col_tab1:
         st.subheader(f'{nome_inst1} - Médias por Curso')
-        st.dataframe(avg_df[['Área de Avaliação', 'Média']], height=400, width='stretch')
+        # mostramos também a abreviatura para facilitar visualização
+        st.dataframe(avg_df[['Área_abrev','Área de Avaliação', 'Média']], height=400, width='stretch')
     with col_tab2:
         st.subheader(f'{nome_inst2} - Médias por Curso')
-        st.dataframe(avg_df2[['Área de Avaliação', 'Média']], height=400, width='stretch')
+        st.dataframe(avg_df2[['Área_abrev','Área de Avaliação', 'Média']], height=400, width='stretch')
     
 elif filtered_df.empty and filtered_df2.empty:
     st.write('Nenhum dado encontrado com os filtros selecionados para ambas as instituições.')

@@ -16,6 +16,41 @@ def load_data():
 
 df = load_data()
 
+# abreviações dos cursos utilizados nos gráficos de eixo X
+ABBR = {
+    "AGRONOMIA": "Agron.",
+    "ARQUITETURA E URBANISMO": "Arq. Urb.",
+    "BIOMEDICINA": "Biom.",
+    "ENFERMAGEM": "Enf.",
+    "ENGENHARIA AMBIENTAL": "Eng. Amb.",
+    "ENGENHARIA CIVIL": "Eng. Civ.",
+    "ENGENHARIA DE ALIMENTOS": "Eng. Alim.",
+    "ENGENHARIA DE COMPUTAÇÃO I": "Eng. Comp. I",
+    "ENGENHARIA DE CONTROLE E AUTOMAÇÃO": "Eng. Ctrl/Aut.",
+    "ENGENHARIA DE PRODUÇÃO": "Eng. Prod.",
+    "ENGENHARIA ELÉTRICA": "Eng. El.",
+    "ENGENHARIA FLORESTAL": "Eng. Flr.",
+    "ENGENHARIA MECÂNICA": "Eng. Mec.",
+    "ENGENHARIA QUÍMICA": "Eng. Quím.",
+    "FARMÁCIA": "Farm.",
+    "FISIOTERAPIA": "Fis.",
+    "FONOAUDIOLOGIA": "Fono.",
+    "MEDICINA": "Med.",
+    "MEDICINA VETERINÁRIA": "Med. Vet.",
+    "NUTRIÇÃO": "Nutri.",
+    "ODONTOLOGIA": "Odont.",
+    "TECNOLOGIA EM AGRONEGÓCIOS": "Tec. Agron.",
+    "TECNOLOGIA EM ESTÉTICA E COSMÉTICA": "Tec. Estética",
+    "TECNOLOGIA EM GESTÃO AMBIENTAL": "Tec. Gest. Amb.",
+    "TECNOLOGIA EM GESTÃO HOSPITALAR": "Tec. Gest. Hosp.",
+    "TECNOLOGIA EM RADIOLOGIA": "Tec. Radiol.",
+    "TECNOLOGIA EM SEGURANÇA NO TRABALHO": "Tec. Seg. Trab.",
+    "ZOOTECNIA": "Zootec."
+}
+
+# adicionar coluna abreviada para facilitar o uso nos gráficos
+df['Área_abrev'] = df['Área de Avaliação'].map(ABBR).fillna(df['Área de Avaliação'])
+
 st.title("📊 Análise Geral do Brasil")
 
 # Seleção de gráfico
@@ -24,7 +59,8 @@ opcoes_graficos = [
     "Média por Estado",
     "Média por Modalidade de Ensino",
     "Quantidade de Alunos por Curso e Estado",
-    "Densidade de Cursos no Brasil"
+    "Densidade de Cursos no Brasil",
+    "Densidade Relativa de Percentual de Cursos"
 ]
 grafico_selecionado = st.selectbox("Selecione o gráfico a exibir:", opcoes_graficos)
 
@@ -84,12 +120,21 @@ if grafico_selecionado == "Média de Conceitos por Área de Avaliação":
 
     st.subheader("Média de Conceitos por Área de Avaliação")
     avg_area = df_filtrado.groupby('Área de Avaliação')['Conceito Enade (Contínuo)'].mean().reset_index().round(2)
-    avg_area.columns = ['Área', 'Média']
+    avg_area['Área_abrev'] = avg_area['Área de Avaliação'].map(ABBR).fillna(avg_area['Área de Avaliação'])
+    avg_area.columns = ['Área de Avaliação', 'Média', 'Área_abrev']
     avg_area = avg_area.sort_values('Média', ascending=False)
 
-    fig1 = px.bar(avg_area, x='Área', y='Média', color='Média', color_continuous_scale='Viridis')
+    fig1 = px.bar(
+        avg_area,
+        x='Área_abrev',
+        y='Média',
+        color='Média',
+        color_continuous_scale='Viridis',
+        custom_data=['Área de Avaliação']
+    )
     fig1.update_layout(
         xaxis_tickangle=-45, 
+        xaxis_title='Curso',
         height=500,
         coloraxis=dict(
             colorbar=dict(
@@ -100,6 +145,7 @@ if grafico_selecionado == "Média de Conceitos por Área de Avaliação":
             )
         )
     )
+    fig1.update_traces(hovertemplate='<b>%{customdata[0]}</b><br>Média: %{y:.2f}<extra></extra>')
     st.plotly_chart(fig1, width='stretch')
 
     st.subheader("Dados da Análise")
@@ -393,9 +439,10 @@ elif grafico_selecionado == "Quantidade de Alunos por Curso e Estado":
         )
 
     else:
-        # Agrupar por Curso (Área de Avaliação)
+        # Agrupar por Curso (Área de Avaliação) e criar abreviação
         qtd_por_curso = df_filtrado.groupby('Área de Avaliação')[coluna_quantidade].sum().reset_index()
-        qtd_por_curso.columns = ['Curso', 'Valor']
+        qtd_por_curso['Área_abrev'] = qtd_por_curso['Área de Avaliação'].map(ABBR).fillna(qtd_por_curso['Área de Avaliação'])
+        qtd_por_curso.columns = ['Área de Avaliação', 'Valor', 'Área_abrev']
         qtd_por_curso = qtd_por_curso.sort_values('Valor', ascending=False)
 
         # Criar coluna formatada para texto
@@ -403,7 +450,7 @@ elif grafico_selecionado == "Quantidade de Alunos por Curso e Estado":
 
         fig5 = px.bar(
             qtd_por_curso, 
-            x='Curso', 
+            x='Área_abrev', 
             y='Valor', 
             color='Valor', 
             color_continuous_scale='Oranges',
@@ -412,6 +459,7 @@ elif grafico_selecionado == "Quantidade de Alunos por Curso e Estado":
         )
         fig5.update_layout(
             xaxis_tickangle=-45,
+            xaxis_title='Curso',
             height=500,
             coloraxis=dict(
                 colorbar=dict(
@@ -590,6 +638,157 @@ elif grafico_selecionado == "Densidade de Cursos no Brasil":
     tabela_dados['Densidade Relativa (%)'] = tabela_dados['Densidade Relativa (%)'].apply(lambda x: f"{x:.2f}%")
     st.dataframe(
         tabela_dados,
+        width='stretch',
+        hide_index=True
+    )
+
+# Novo mapa: Densidade Relativa de Percentual de Cursos
+elif grafico_selecionado == "Densidade Relativa de Percentual de Cursos":
+    import plotly.graph_objects as go
+    import requests
+
+    # criar layout com colunas para filtros
+    col1, col2 = st.columns(2)
+
+    with col1:
+        # Filtro por UF
+        ufs_disponiveis = sorted(df['Sigla da UF** '].unique())
+        ufs_selecionadas = st.multiselect(
+            "Selecione as UFs:",
+            options=ufs_disponiveis,
+            default=[],
+            help="Selecione uma ou mais UFs para filtrar os dados."
+        )
+
+    with col2:
+        # Filtro por Área de Avaliação
+        areas_disponiveis = sorted(df['Área de Avaliação'].unique())
+        areas_selecionadas = st.multiselect(
+            "Selecione as Áreas de Avaliação:",
+            options=areas_disponiveis,
+            default=[],
+            help="Selecione uma ou mais áreas para filtrar os dados."
+        )
+
+    col3, col4, col5 = st.columns(3)
+    with col3:
+        modalidades_disponiveis = sorted(df['Modalidade de Ensino'].unique())
+        modalidades_selecionadas = st.multiselect(
+            "Selecione as Modalidades:",
+            options=modalidades_disponiveis,
+            default=[],
+            help="Selecione uma ou mais modalidades para filtrar os dados."
+        )
+    with col4:
+        categorias_disponiveis = sorted(df['Categoria Administrativa'].unique())
+        categorias_selecionadas = st.multiselect(
+            "Selecione as Categorias:",
+            options=categorias_disponiveis,
+            default=[],
+            help="Selecione uma ou mais categorias para filtrar os dados."
+        )
+    with col5:
+        graus_disponiveis = sorted(df['Grau Acadêmico'].unique())
+        graus_selecionados = st.multiselect(
+            "Selecione os Graus:",
+            options=graus_disponiveis,
+            default=[],
+            help="Selecione um ou mais graus para filtrar os dados."
+        )
+
+    # Aplicar filtros conforme outros mapas
+    df_filtrado = df
+    if ufs_selecionadas:
+        df_filtrado = df_filtrado[df_filtrado['Sigla da UF** '].isin(ufs_selecionadas)]
+    if areas_selecionadas:
+        df_filtrado = df_filtrado[df_filtrado['Área de Avaliação'].isin(areas_selecionadas)]
+    if modalidades_selecionadas:
+        df_filtrado = df_filtrado[df_filtrado['Modalidade de Ensino'].isin(modalidades_selecionadas)]
+    if categorias_selecionadas:
+        df_filtrado = df_filtrado[df_filtrado['Categoria Administrativa'].isin(categorias_selecionadas)]
+    if graus_selecionados:
+        df_filtrado = df_filtrado[df_filtrado['Grau Acadêmico'].isin(graus_selecionados)]
+
+    # Cálculos para alunos por instituição
+    alunos_por_estado = df_filtrado.groupby('Sigla da UF** ')["Nº de Concluintes Inscritos"].sum().reset_index()
+    instituicoes_por_estado = df_filtrado.groupby('Sigla da UF** ')["Código da IES"].nunique().reset_index()
+    instituicoes_por_estado.columns = ['Estado', 'Instituições']
+    alunos_por_estado.columns = ['Estado', 'Alunos']
+
+    merged = pd.merge(alunos_por_estado, instituicoes_por_estado, on='Estado', how='outer').fillna(0)
+    merged['Ratio'] = merged.apply(lambda r: r['Alunos']/r['Instituições'] if r['Instituições'] > 0 else 0, axis=1)
+
+    # Criar colunas com formatação brasileira (ponto mil, vírgula decimal)
+    fmt = lambda x: f"{x:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+    merged['Alunos_fmt'] = merged['Alunos'].apply(lambda x: f"{x:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+    merged['Instituições_fmt'] = merged['Instituições'].apply(lambda x: f"{x:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+    merged['Ratio_fmt'] = merged['Ratio'].apply(fmt)
+
+    # Garantir todos os estados presentes
+    todos_estados = ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 
+                     'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 
+                     'SP', 'SE', 'TO']
+    estados_faltantes = [e for e in todos_estados if e not in merged['Estado'].values]
+    if estados_faltantes:
+        df_faltantes = pd.DataFrame({
+            'Estado': estados_faltantes,
+            'Alunos': 0,
+            'Instituições': 0,
+            'Ratio': 0
+        })
+        merged = pd.concat([merged, df_faltantes], ignore_index=True)
+
+    # Preparar mapa
+    geojson_url = "https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/brazil-states.geojson"
+    response = requests.get(geojson_url)
+    brazil_states = response.json()
+
+    max_ratio = merged['Ratio'].max()
+    custom_colorscale = [
+        [0, "#ffffff"],
+        [0.2, "#edf8fb"],
+        [0.4, "#b2e2e2"],
+        [0.6, "#66c2a4"],
+        [0.8, "#2ca25f"],
+        [1, "#006d2c"]
+    ]
+
+    fig_ratio = go.Figure(go.Choropleth(
+        geojson=brazil_states,
+        locations=merged['Estado'],
+        z=merged['Ratio'],
+        featureidkey="properties.sigla",
+        colorscale=custom_colorscale,
+        zmin=0,
+        zmax=max_ratio,
+        hovertemplate='<b>%{location}</b><br>' +
+                      'Alunos: %{customdata[0]}<br>' +
+                      'Instituições: %{customdata[1]}<br>' +
+                      'Alunos/IES: %{customdata[2]}<extra></extra>',
+        customdata=merged[['Alunos_fmt', 'Instituições_fmt', 'Ratio_fmt']].values
+    ))
+
+    fig_ratio.update_geos(
+        scope='south america',
+        showlakes=True,
+        lakecolor='rgb(255, 255, 255)',
+        fitbounds="locations",
+        visible=False
+    )
+
+    fig_ratio.update_layout(
+        margin=dict(r=0, t=30, l=0, b=0),
+        height=600,
+        title="Densidade Relativa de Percentual de Cursos"
+    )
+
+    st.plotly_chart(fig_ratio, width='stretch')
+
+    st.subheader("Dados da Análise")
+    tabela_ratio = merged[['Estado', 'Alunos_fmt', 'Instituições_fmt', 'Ratio_fmt']].copy()
+    tabela_ratio.columns = ['Estado', 'Alunos', 'Instituições', 'Alunos/IES']
+    st.dataframe(
+        tabela_ratio,
         width='stretch',
         hide_index=True
     )
