@@ -163,7 +163,7 @@ with st.expander("📊 Legenda do Mapa", expanded=True):
         # Explicação das cores
         st.markdown("""
          **Branco e Azul claro** = Conceito médio mais baixo (0 - 2)  
-         **Azul médio** = Conceito médio intermediário (2 - 3)
+         **Azul médio** = Conceito médio intermediário (2 - 3)   
          **Azul escuro** = Conceito médio mais alto (4 - 5)
         """)
 
