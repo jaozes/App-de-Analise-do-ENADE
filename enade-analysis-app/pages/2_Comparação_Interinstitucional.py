@@ -209,11 +209,13 @@ if not filtered_df.empty and not filtered_df2.empty:
     avg_df['Área_abrev'] = avg_df['Área de Avaliação'].map(ABBR).fillna(avg_df['Área de Avaliação'])
     avg_df['Média'] = avg_df['Conceito Enade (Contínuo)'].round(2)
     avg_df["Instituicao"] = nome_inst1
+    avg_df = avg_df.rename(columns={'Área_abrev': 'Sigla Área'})
     
     avg_df2 = filtered_df2.groupby('Área de Avaliação')['Conceito Enade (Contínuo)'].mean().reset_index()
     avg_df2['Área_abrev'] = avg_df2['Área de Avaliação'].map(ABBR).fillna(avg_df2['Área de Avaliação'])
     avg_df2['Média'] = avg_df2['Conceito Enade (Contínuo)'].round(2)
     avg_df2["Instituicao"] = nome_inst2
+    avg_df2 = avg_df2.rename(columns={'Área_abrev': 'Sigla Área'})
     
     # Unir os dois dataframes
     df_comparacao = pd.concat([avg_df, avg_df2], ignore_index=True)
@@ -232,16 +234,16 @@ if not filtered_df.empty and not filtered_df2.empty:
     
     # Obter lista de cursos ordenada (ordem decrescente pela média combinada)
     # ordenar com base na abreviatura para manter eixo X curto
-    cursos_ordenados = df_comparacao.groupby('Área_abrev')['Média'].mean().sort_values(ascending=False).index.tolist()
+    cursos_ordenados = df_comparacao.groupby('Sigla Área')['Média'].mean().sort_values(ascending=False).index.tolist()
     
     # Converter colunas para categoria ordenada usando abreviação
-    df_comparacao['Área_abrev'] = pd.Categorical(df_comparacao['Área_abrev'], categories=cursos_ordenados, ordered=True)
-    df_comparacao = df_comparacao.sort_values(['Área_abrev', 'Instituicao'])
+    df_comparacao['Sigla Área'] = pd.Categorical(df_comparacao['Sigla Área'], categories=cursos_ordenados, ordered=True)
+    df_comparacao = df_comparacao.sort_values(['Sigla Área', 'Instituicao'])
     
     # Criar gráfico de linha comparativo
     fig_comparativo = px.line(
         df_comparacao, 
-        x='Área_abrev', 
+        x='Sigla Área', 
         y='Média', 
         color='Instituicao',
         markers=True,
@@ -256,7 +258,7 @@ if not filtered_df.empty and not filtered_df2.empty:
         yaxis_title='Média do Conceito ENADE',
         height=600
     )
-    fig_comparativo.update_traces(hovertemplate='<b>%{customdata[0]}</b><br>Instituição: %{customdata[1]}<br>Média: %{y:.2f}<extra></extra>')
+    fig_comparativo.update_traces(hovertemplate='<b>%{customdata[0]}</b><br>Instituição: %{customdata[1]}<br>Média: %{y:.2f}<extra></extra>', hoverlabel=dict(font=dict(size=14)))
     # Forçar a ordem dos cursos no eixo X (já são abreviados)
     fig_comparativo.update_xaxes(categoryorder='array', categoryarray=cursos_ordenados)
     st.plotly_chart(fig_comparativo, width='stretch')
@@ -266,10 +268,10 @@ if not filtered_df.empty and not filtered_df2.empty:
     with col_tab1:
         st.subheader(f'{nome_inst1} - Médias por Curso')
         # mostramos também a abreviatura para facilitar visualização
-        st.dataframe(avg_df[['Área_abrev','Área de Avaliação', 'Média']], height=400, width='stretch')
+        st.dataframe(avg_df[['Sigla Área','Área de Avaliação', 'Média']], height=400, width='stretch')
     with col_tab2:
         st.subheader(f'{nome_inst2} - Médias por Curso')
-        st.dataframe(avg_df2[['Área_abrev','Área de Avaliação', 'Média']], height=400, width='stretch')
+        st.dataframe(avg_df2[['Sigla Área','Área de Avaliação', 'Média']], height=400, width='stretch')
     
 elif filtered_df.empty and filtered_df2.empty:
     st.write('Nenhum dado encontrado com os filtros selecionados para ambas as instituições.')

@@ -121,12 +121,12 @@ if grafico_selecionado == "Média de Conceitos por Área de Avaliação":
     st.subheader("Média de Conceitos por Área de Avaliação")
     avg_area = df_filtrado.groupby('Área de Avaliação')['Conceito Enade (Contínuo)'].mean().reset_index().round(2)
     avg_area['Área_abrev'] = avg_area['Área de Avaliação'].map(ABBR).fillna(avg_area['Área de Avaliação'])
-    avg_area.columns = ['Área de Avaliação', 'Média', 'Área_abrev']
+    avg_area.columns = ['Área de Avaliação', 'Média', 'Sigla Área']
     avg_area = avg_area.sort_values('Média', ascending=False)
 
     fig1 = px.bar(
         avg_area,
-        x='Área_abrev',
+        x='Sigla Área',
         y='Média',
         color='Média',
         color_continuous_scale='Viridis',
@@ -145,7 +145,7 @@ if grafico_selecionado == "Média de Conceitos por Área de Avaliação":
             )
         )
     )
-    fig1.update_traces(hovertemplate='<b>%{customdata[0]}</b><br>Média: %{y:.2f}<extra></extra>')
+    fig1.update_traces(hovertemplate='<b>%{customdata[0]}</b><br>Média: %{y:.2f}<extra></extra>', hoverlabel=dict(font=dict(size=14)))
     st.plotly_chart(fig1, width='stretch')
 
     st.subheader("Dados da Análise")
@@ -236,6 +236,7 @@ elif grafico_selecionado == "Média por Estado":
             )
         )
     )
+    fig2.update_traces(hoverlabel=dict(font=dict(size=14)))
     st.plotly_chart(fig2, width='stretch')
 
     st.subheader("Dados da Análise")
@@ -303,6 +304,7 @@ elif grafico_selecionado == "Média por Modalidade de Ensino":
     avg_mod.columns = ['Modalidade', 'Média']
 
     fig3 = px.pie(avg_mod, names='Modalidade', values='Média', title="Distribuição por Modalidade")
+    fig3.update_traces(hoverlabel=dict(font=dict(size=14)))
     st.plotly_chart(fig3, width='stretch')
 
     st.subheader("Dados da Análise")
@@ -428,7 +430,7 @@ elif grafico_selecionado == "Quantidade de Alunos por Curso e Estado":
                 )
             )
         )
-        fig4.update_traces(hovertemplate='<b>%{x}</b><br>Quantidade: %{customdata[0]}<extra></extra>')
+        fig4.update_traces(hovertemplate='<b>%{x}</b><br>Quantidade: %{customdata[0]}<extra></extra>', hoverlabel=dict(font=dict(size=14)))
         st.plotly_chart(fig4, width='stretch')
         
         st.subheader("Dados da Análise")
@@ -470,7 +472,7 @@ elif grafico_selecionado == "Quantidade de Alunos por Curso e Estado":
                 )
             )
         )
-        fig5.update_traces(hovertemplate='<b>%{x}</b><br>Quantidade: %{customdata[0]}<extra></extra>')
+        fig5.update_traces(hovertemplate='<b>%{x}</b><br>Quantidade: %{customdata[0]}<extra></extra>', hoverlabel=dict(font=dict(size=14)))
         st.plotly_chart(fig5, width='stretch')
         
         st.subheader("Dados da Análise")
@@ -629,7 +631,7 @@ elif grafico_selecionado == "Densidade de Cursos no Brasil":
         height=600,
         title="Densidade de Cursos Avaliados no ENADE por Estado"
     )
-    
+    fig_densidade.update_traces(hoverlabel=dict(font=dict(size=14)))
     st.plotly_chart(fig_densidade, width='stretch')
     
     st.subheader("Dados da Análise")
@@ -781,7 +783,7 @@ elif grafico_selecionado == "Densidade Relativa de Percentual de Cursos":
         height=600,
         title="Densidade Relativa de Percentual de Cursos"
     )
-
+    fig_ratio.update_traces(hoverlabel=dict(font=dict(size=14)))
     st.plotly_chart(fig_ratio, width='stretch')
 
     st.subheader("Dados da Análise")

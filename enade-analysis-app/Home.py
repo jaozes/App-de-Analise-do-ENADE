@@ -105,6 +105,7 @@ fig = go.Figure(go.Choropleth(
 
 fig.update_geos(fitbounds="locations", visible=False)
 fig.update_layout(margin=dict(r=0, t=0, l=0, b=0), height=750, width=None)
+fig.update_traces(hoverlabel=dict(font=dict(size=14)))
 
 #col1, col2 = st.columns(2)
 
