@@ -18,34 +18,34 @@ df = load_data()
 
 # abreviações dos cursos utilizados nos gráficos de eixo X
 ABBR = {
-    "AGRONOMIA": "Agron.",
-    "ARQUITETURA E URBANISMO": "Arq. Urb.",
-    "BIOMEDICINA": "Biom.",
-    "ENFERMAGEM": "Enf.",
-    "ENGENHARIA AMBIENTAL": "Eng. Amb.",
-    "ENGENHARIA CIVIL": "Eng. Civ.",
-    "ENGENHARIA DE ALIMENTOS": "Eng. Alim.",
-    "ENGENHARIA DE COMPUTAÇÃO I": "Eng. Comp. I",
-    "ENGENHARIA DE CONTROLE E AUTOMAÇÃO": "Eng. Ctrl/Aut.",
-    "ENGENHARIA DE PRODUÇÃO": "Eng. Prod.",
-    "ENGENHARIA ELÉTRICA": "Eng. El.",
-    "ENGENHARIA FLORESTAL": "Eng. Flr.",
-    "ENGENHARIA MECÂNICA": "Eng. Mec.",
-    "ENGENHARIA QUÍMICA": "Eng. Quím.",
-    "FARMÁCIA": "Farm.",
-    "FISIOTERAPIA": "Fis.",
-    "FONOAUDIOLOGIA": "Fono.",
-    "MEDICINA": "Med.",
-    "MEDICINA VETERINÁRIA": "Med. Vet.",
-    "NUTRIÇÃO": "Nutri.",
-    "ODONTOLOGIA": "Odont.",
-    "TECNOLOGIA EM AGRONEGÓCIOS": "Tec. Agron.",
-    "TECNOLOGIA EM ESTÉTICA E COSMÉTICA": "Tec. Estética",
-    "TECNOLOGIA EM GESTÃO AMBIENTAL": "Tec. Gest. Amb.",
-    "TECNOLOGIA EM GESTÃO HOSPITALAR": "Tec. Gest. Hosp.",
-    "TECNOLOGIA EM RADIOLOGIA": "Tec. Radiol.",
-    "TECNOLOGIA EM SEGURANÇA NO TRABALHO": "Tec. Seg. Trab.",
-    "ZOOTECNIA": "Zootec."
+    "AGRONOMIA": "AG",
+    "ARQUITETURA E URBANISMO": "AR",
+    "BIOMEDICINA": "BM",
+    "ENFERMAGEM": "EN",
+    "ENGENHARIA AMBIENTAL": "EA",
+    "ENGENHARIA CIVIL": "CV",
+    "ENGENHARIA DE ALIMENTOS": "AL",
+    "ENGENHARIA DE COMPUTAÇÃO I": "CI",
+    "ENGENHARIA DE CONTROLE E AUTOMAÇÃO": "CA",
+    "ENGENHARIA DE PRODUÇÃO": "PR",
+    "ENGENHARIA ELÉTRICA": "EL",
+    "ENGENHARIA FLORESTAL": "FL",
+    "ENGENHARIA MECÂNICA": "MC",
+    "ENGENHARIA QUÍMICA": "EQ",
+    "FARMÁCIA": "FA",
+    "FISIOTERAPIA": "FI",
+    "FONOAUDIOLOGIA": "FO",
+    "MEDICINA": "ME",
+    "MEDICINA VETERINÁRIA": "MV",
+    "NUTRIÇÃO": "NU",
+    "ODONTOLOGIA": "OD",
+    "TECNOLOGIA EM AGRONEGÓCIOS": "AN",
+    "TECNOLOGIA EM ESTÉTICA E COSMÉTICA": "EC",
+    "TECNOLOGIA EM GESTÃO AMBIENTAL": "GA",
+    "TECNOLOGIA EM GESTÃO HOSPITALAR": "GH",
+    "TECNOLOGIA EM RADIOLOGIA": "RA",
+    "TECNOLOGIA EM SEGURANÇA NO TRABALHO": "ST",
+    "ZOOTECNIA": "ZO"
 }
 
 # adicionar coluna abreviada para facilitar o uso nos gráficos
@@ -58,7 +58,7 @@ opcoes_graficos = [
     "Média de Conceitos por Área de Avaliação",
     "Média por Estado",
     "Média por Modalidade de Ensino",
-    "Quantidade de Alunos por Curso e Estado",
+    "Quantidade de Alunos por Curso ou Estado",
     "Densidade de Cursos no Brasil",
     "Densidade Relativa de Percentual de Cursos"
 ]
@@ -133,7 +133,7 @@ if grafico_selecionado == "Média de Conceitos por Área de Avaliação":
         custom_data=['Área de Avaliação']
     )
     fig1.update_layout(
-        xaxis_tickangle=-45, 
+        xaxis_tickangle=0, 
         xaxis_title='Curso',
         height=500,
         coloraxis=dict(
@@ -310,8 +310,8 @@ elif grafico_selecionado == "Média por Modalidade de Ensino":
     st.subheader("Dados da Análise")
     st.dataframe(avg_mod, width='stretch')
 
-# Análise de Quantidade de Alunos por Curso e Estado
-elif grafico_selecionado == "Quantidade de Alunos por Curso e Estado":
+# Análise de Quantidade de Alunos por Curso ou Estado
+elif grafico_selecionado == "Quantidade de Alunos por Curso ou Estado":
     col1, col2 = st.columns(2)
 
     with col1:
@@ -419,7 +419,7 @@ elif grafico_selecionado == "Quantidade de Alunos por Curso e Estado":
             custom_data=['Quantidade']
         )
         fig4.update_layout(
-            xaxis_tickangle=-45,
+            xaxis_tickangle=0,
             height=500,
             coloraxis=dict(
                 colorbar=dict(
@@ -460,7 +460,7 @@ elif grafico_selecionado == "Quantidade de Alunos por Curso e Estado":
             custom_data=['Quantidade']
         )
         fig5.update_layout(
-            xaxis_tickangle=-45,
+            xaxis_tickangle=0,
             xaxis_title='Curso',
             height=500,
             coloraxis=dict(
@@ -487,19 +487,9 @@ elif grafico_selecionado == "Densidade de Cursos no Brasil":
     import plotly.graph_objects as go
     import requests
     
-    col1, col2 = st.columns(2)
+    col1 = st.columns(1)
 
-    with col1:
-        # Filtro por UF
-        ufs_disponiveis = sorted(df['Sigla da UF** '].unique())
-        ufs_selecionadas = st.multiselect(
-            "Selecione as UFs:",
-            options=ufs_disponiveis,
-            default=[],
-            help="Selecione uma ou mais UFs para filtrar os dados."
-        )
-
-    with col2:
+    with col1[0]:
         # Filtro por Área de Avaliação
         areas_disponiveis = sorted(df['Área de Avaliação'].unique())
         areas_selecionadas = st.multiselect(
@@ -509,9 +499,9 @@ elif grafico_selecionado == "Densidade de Cursos no Brasil":
             help="Selecione uma ou mais áreas para filtrar os dados."
         )
 
-    col3, col4, col5 = st.columns(3)
+    col2, col3, col4 = st.columns(3)
 
-    with col3:
+    with col2:
         # Filtro por Modalidade de Ensino
         modalidades_disponiveis = sorted(df['Modalidade de Ensino'].unique())
         modalidades_selecionadas = st.multiselect(
@@ -521,7 +511,7 @@ elif grafico_selecionado == "Densidade de Cursos no Brasil":
             help="Selecione uma ou mais modalidades para filtrar os dados."
         )
 
-    with col4:
+    with col3:
         # Filtro por Categoria Administrativa
         categorias_disponiveis = sorted(df['Categoria Administrativa'].unique())
         categorias_selecionadas = st.multiselect(
@@ -531,7 +521,7 @@ elif grafico_selecionado == "Densidade de Cursos no Brasil":
             help="Selecione uma ou mais categorias para filtrar os dados."
         )
 
-    with col5:
+    with col4:
         # Filtro por Grau Acadêmico
         graus_disponiveis = sorted(df['Grau Acadêmico'].unique())
         graus_selecionados = st.multiselect(
@@ -543,8 +533,6 @@ elif grafico_selecionado == "Densidade de Cursos no Brasil":
 
     # Aplicar filtros
     df_filtrado = df
-    if ufs_selecionadas:
-        df_filtrado = df_filtrado[df_filtrado['Sigla da UF** '].isin(ufs_selecionadas)]
     if areas_selecionadas:
         df_filtrado = df_filtrado[df_filtrado['Área de Avaliação'].isin(areas_selecionadas)]
     if modalidades_selecionadas:
@@ -650,19 +638,9 @@ elif grafico_selecionado == "Densidade Relativa de Percentual de Cursos":
     import requests
 
     # criar layout com colunas para filtros
-    col1, col2 = st.columns(2)
+    col1 = st.columns(1)
 
-    with col1:
-        # Filtro por UF
-        ufs_disponiveis = sorted(df['Sigla da UF** '].unique())
-        ufs_selecionadas = st.multiselect(
-            "Selecione as UFs:",
-            options=ufs_disponiveis,
-            default=[],
-            help="Selecione uma ou mais UFs para filtrar os dados."
-        )
-
-    with col2:
+    with col1[0]:
         # Filtro por Área de Avaliação
         areas_disponiveis = sorted(df['Área de Avaliação'].unique())
         areas_selecionadas = st.multiselect(
@@ -672,8 +650,8 @@ elif grafico_selecionado == "Densidade Relativa de Percentual de Cursos":
             help="Selecione uma ou mais áreas para filtrar os dados."
         )
 
-    col3, col4, col5 = st.columns(3)
-    with col3:
+    col2, col3, col4 = st.columns(3)
+    with col2:
         modalidades_disponiveis = sorted(df['Modalidade de Ensino'].unique())
         modalidades_selecionadas = st.multiselect(
             "Selecione as Modalidades:",
@@ -681,7 +659,7 @@ elif grafico_selecionado == "Densidade Relativa de Percentual de Cursos":
             default=[],
             help="Selecione uma ou mais modalidades para filtrar os dados."
         )
-    with col4:
+    with col3:
         categorias_disponiveis = sorted(df['Categoria Administrativa'].unique())
         categorias_selecionadas = st.multiselect(
             "Selecione as Categorias:",
@@ -689,7 +667,7 @@ elif grafico_selecionado == "Densidade Relativa de Percentual de Cursos":
             default=[],
             help="Selecione uma ou mais categorias para filtrar os dados."
         )
-    with col5:
+    with col4:
         graus_disponiveis = sorted(df['Grau Acadêmico'].unique())
         graus_selecionados = st.multiselect(
             "Selecione os Graus:",
@@ -700,8 +678,6 @@ elif grafico_selecionado == "Densidade Relativa de Percentual de Cursos":
 
     # Aplicar filtros conforme outros mapas
     df_filtrado = df
-    if ufs_selecionadas:
-        df_filtrado = df_filtrado[df_filtrado['Sigla da UF** '].isin(ufs_selecionadas)]
     if areas_selecionadas:
         df_filtrado = df_filtrado[df_filtrado['Área de Avaliação'].isin(areas_selecionadas)]
     if modalidades_selecionadas:

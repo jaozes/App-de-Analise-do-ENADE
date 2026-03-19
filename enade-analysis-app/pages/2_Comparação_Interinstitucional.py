@@ -20,34 +20,34 @@ df = load_data()
 
 # abreviações dos cursos para exibição nos eixos X
 ABBR = {
-    "AGRONOMIA": "Agron.",
-    "ARQUITETURA E URBANISMO": "Arq. Urb.",
-    "BIOMEDICINA": "Biom.",
-    "ENFERMAGEM": "Enf.",
-    "ENGENHARIA AMBIENTAL": "Eng. Amb.",
-    "ENGENHARIA CIVIL": "Eng. Civ.",
-    "ENGENHARIA DE ALIMENTOS": "Eng. Alim.",
-    "ENGENHARIA DE COMPUTAÇÃO I": "Eng. Comp. I",
-    "ENGENHARIA DE CONTROLE E AUTOMAÇÃO": "Eng. Ctrl/Aut.",
-    "ENGENHARIA DE PRODUÇÃO": "Eng. Prod.",
-    "ENGENHARIA ELÉTRICA": "Eng. El.",
-    "ENGENHARIA FLORESTAL": "Eng. Flr.",
-    "ENGENHARIA MECÂNICA": "Eng. Mec.",
-    "ENGENHARIA QUÍMICA": "Eng. Quím.",
-    "FARMÁCIA": "Farm.",
-    "FISIOTERAPIA": "Fis.",
-    "FONOAUDIOLOGIA": "Fono.",
-    "MEDICINA": "Med.",
-    "MEDICINA VETERINÁRIA": "Med. Vet.",
-    "NUTRIÇÃO": "Nutri.",
-    "ODONTOLOGIA": "Odont.",
-    "TECNOLOGIA EM AGRONEGÓCIOS": "Tec. Agron.",
-    "TECNOLOGIA EM ESTÉTICA E COSMÉTICA": "Tec. Estética",
-    "TECNOLOGIA EM GESTÃO AMBIENTAL": "Tec. Gest. Amb.",
-    "TECNOLOGIA EM GESTÃO HOSPITALAR": "Tec. Gest. Hosp.",
-    "TECNOLOGIA EM RADIOLOGIA": "Tec. Radiol.",
-    "TECNOLOGIA EM SEGURANÇA NO TRABALHO": "Tec. Seg. Trab.",
-    "ZOOTECNIA": "Zootec."
+    "AGRONOMIA": "AG",
+    "ARQUITETURA E URBANISMO": "AR",
+    "BIOMEDICINA": "BM",
+    "ENFERMAGEM": "EN",
+    "ENGENHARIA AMBIENTAL": "EA",
+    "ENGENHARIA CIVIL": "CV",
+    "ENGENHARIA DE ALIMENTOS": "AL",
+    "ENGENHARIA DE COMPUTAÇÃO I": "CI",
+    "ENGENHARIA DE CONTROLE E AUTOMAÇÃO": "CA",
+    "ENGENHARIA DE PRODUÇÃO": "PR",
+    "ENGENHARIA ELÉTRICA": "EL",
+    "ENGENHARIA FLORESTAL": "FL",
+    "ENGENHARIA MECÂNICA": "MC",
+    "ENGENHARIA QUÍMICA": "EQ",
+    "FARMÁCIA": "FA",
+    "FISIOTERAPIA": "FI",
+    "FONOAUDIOLOGIA": "FO",
+    "MEDICINA": "ME",
+    "MEDICINA VETERINÁRIA": "MV",
+    "NUTRIÇÃO": "NU",
+    "ODONTOLOGIA": "OD",
+    "TECNOLOGIA EM AGRONEGÓCIOS": "AN",
+    "TECNOLOGIA EM ESTÉTICA E COSMÉTICA": "EC",
+    "TECNOLOGIA EM GESTÃO AMBIENTAL": "GA",
+    "TECNOLOGIA EM GESTÃO HOSPITALAR": "GH",
+    "TECNOLOGIA EM RADIOLOGIA": "RA",
+    "TECNOLOGIA EM SEGURANÇA NO TRABALHO": "ST",
+    "ZOOTECNIA": "ZO"
 }
 
 # coluna abreviada (mantém o nome original para outros usos)
@@ -252,13 +252,13 @@ if not filtered_df.empty and not filtered_df2.empty:
         custom_data=['Área de Avaliação','Instituicao']
     )
     fig_comparativo.update_layout(
-        xaxis_tickangle=-45,
+        xaxis_tickangle=0,
         template="plotly_white",
         xaxis_title='Curso',
         yaxis_title='Média do Conceito ENADE',
         height=600
     )
-    fig_comparativo.update_traces(hovertemplate='<b>%{customdata[0]}</b><br>Instituição: %{customdata[1]}<br>Média: %{y:.2f}<extra></extra>', hoverlabel=dict(font=dict(size=14)))
+    fig_comparativo.update_traces(hovertemplate='<b>%{customdata[0]}</b><br>Instituição: %{customdata[1]}<br>Média: %{y:.2f}<extra></extra>', hoverlabel=dict(font=dict(size=14)), line=dict(width=4), marker=dict(size=8))
     # Forçar a ordem dos cursos no eixo X (já são abreviados)
     fig_comparativo.update_xaxes(categoryorder='array', categoryarray=cursos_ordenados)
     st.plotly_chart(fig_comparativo, width='stretch')

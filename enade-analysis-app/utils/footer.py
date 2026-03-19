@@ -30,7 +30,7 @@ def show_footer(
         display: flex;
         align-items: center;
         justify-content: space-between;
-        font-size: 14px;
+        font-size: 16px;
         margin-top: 40px;
         margin-left: -16px;
         margin-right: -16px;

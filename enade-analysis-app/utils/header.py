@@ -28,3 +28,27 @@ def show_logo(path='logoUniso.webp', max_pct_width=60, top_margin_px=4, bottom_m
     </div>
     '''
     st.markdown(html, unsafe_allow_html=True)
+
+    # Injetar CSS global para aumentar o tamanho da fonte
+    st.markdown("""
+    <style>
+    body, p, div, span, label, .stMarkdown, .stText {
+        font-size: 16px !important;
+    }
+    .stCaption {
+        font-size: 14px !important;
+    }
+    h1 {
+        font-size: 2.5em !important;
+    }
+    h2 {
+        font-size: 2em !important;
+    }
+    h3 {
+        font-size: 1.75em !important;
+    }
+    h4, h5, h6 {
+        font-size: 1.5em !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
