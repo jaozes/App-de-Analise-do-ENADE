@@ -50,5 +50,11 @@ def show_logo(path='logoUniso.webp', max_pct_width=60, top_margin_px=4, bottom_m
     h4, h5, h6 {
         font-size: 1.5em !important;
     }
+    .stMetric {
+        font-size: 40px !important;
+    }
+    .stMetric div, .stMetric span {
+        font-size: 40px !important;
+    }
     </style>
     """, unsafe_allow_html=True)
