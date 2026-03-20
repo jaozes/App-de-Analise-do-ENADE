@@ -496,7 +496,7 @@ with col3:
         default=st.session_state.selected_modalidades
     )
 
-col4, col5, col6 = st.columns(3)
+col4, col5, col6, col7 = st.columns(4)
 
 with col4:
     categorias_options = get_filtered_options(conceito_df, col_categoria, filters_dict=filters_dict)
@@ -515,20 +515,13 @@ with col5:
     )
 
 with col6:
-    st.empty()
-
-st.markdown("### Filtros adicionais")
-col7, col8 = st.columns(2)
-
-with col7:
     municipios_options = get_filtered_options(conceito_df, col_municipio, filters_dict=filters_dict)
     st.session_state.selected_municipios = st.multiselect(
         "Município do Curso", 
         options=municipios_options, 
         default=st.session_state.selected_municipios
     )
-
-with col8:
+with col7:
     ies_options = get_filtered_options(conceito_df, col_ies_nome, filters_dict=filters_dict)
     st.session_state.selected_ies = st.multiselect(
         "Nome da Universidade", 
