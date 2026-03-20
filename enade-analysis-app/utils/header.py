@@ -74,7 +74,7 @@ def show_logo(path='logoUniso.webp', max_pct_width=60, top_margin_px=4, bottom_m
     .plotly .gtitle,
     svg g.title text,
     .plotlyjs .gtitle {
-        font-size: 28px !important;
+        font-size: 24px !important;
         font-weight: 700 !important;
         font-family: "Arial Black", Arial, sans-serif !important;
         fill: #1f1f1f !important;
@@ -84,14 +84,14 @@ def show_logo(path='logoUniso.webp', max_pct_width=60, top_margin_px=4, bottom_m
     .js-plotly-plot .xtitle text,
     .js-plotly-plot .ytitle text,
     g[class*="title"] text {
-        font-size: 20px !important;
-        font-weight: 600 !important;
+        font-size: 18px !important;
+        font-weight: 500 !important;
     }
     
     /* Legend melhorada */
     .js-plotly-plot .legendtext,
     .legend .text {
-        font-size: 15px !important;
+        font-size: 14px !important;
     }
     
     /* Responsive for mobile/cloud */
