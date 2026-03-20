@@ -395,7 +395,7 @@ def summarize_question(df_q: pd.DataFrame, col: str) -> pd.DataFrame:
 
 # --- Interface ---
 
-st.title("📋 Perfil Socioeconômico dos Participantes (microdados)")
+st.title("📋 Perfil Socioeconômico dos Participantes")
 st.markdown(
     """Esta página explora as respostas do questionário socioeconômico (microdados do ENADE 2023) e
     permite relacioná-las com o desempenho médio (Conceito Enade) por curso."""
@@ -412,7 +412,7 @@ available_labels = {
 }
 
 selected_var = st.selectbox(
-    "Selecione a variável (QE / meta) a ser analisada:",
+    "Selecione a questão a ser veríficada:",
     options=available_vars,
     format_func=lambda v: available_labels.get(v, v),
 )

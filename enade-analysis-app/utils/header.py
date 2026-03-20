@@ -32,29 +32,67 @@ def show_logo(path='logoUniso.webp', max_pct_width=60, top_margin_px=4, bottom_m
     # Injetar CSS global para aumentar o tamanho da fonte
     st.markdown("""
     <style>
+    /* Base fonts */
     body, p, div, span, label, .stMarkdown, .stText {
         font-size: 16px !important;
     }
     .stCaption {
         font-size: 14px !important;
     }
+    
+    /* Page/Section titles - Aumentados 20% */
     h1 {
-        font-size: 2.5em !important;
+        font-size: 3em !important;
+        font-weight: bold !important;
+        line-height: 1.2 !important;
     }
     h2 {
-        font-size: 2em !important;
+        font-size: 2.4em !important;
+        font-weight: bold !important;
+        line-height: 1.3 !important;
     }
     h3 {
-        font-size: 1.75em !important;
+        font-size: 2.2em !important;
+        font-weight: 600 !important;
+        line-height: 1.3 !important;
     }
     h4, h5, h6 {
-        font-size: 1.5em !important;
+        font-size: 1.8em !important;
     }
+    
+    /* Metrics */
     .stMetric {
-        font-size: 40px !important;
+        font-size: 48px !important;
     }
     .stMetric div, .stMetric span {
-        font-size: 40px !important;
+        font-size: 48px !important;
+    }
+    
+    /* Plotly Graph Titles - FIX PRINCIPAL (era pequeno no cloud) */
+    .js-plotly-plot .gtitle text,
+    .js-plotly-plot .plotly .gtitle {
+        font-size: 24px !important;
+        font-weight: bold !important;
+    }
+    
+    /* Plotly axis titles/labels */
+    .js-plotly-plot .xtitle text,
+    .js-plotly-plot .ytitle text {
+        font-size: 18px !important;
+        font-weight: 500 !important;
+    }
+    
+    /* Plotly legend */
+    .js-plotly-plot .legendtext {
+        font-size: 14px !important;
+    }
+    
+    /* Responsive for mobile/cloud */
+    @media (max-width: 768px) {
+        h1 { font-size: 2.2em !important; }
+        h2 { font-size: 1.8em !important; }
+        h3 { font-size: 1.6em !important; }
+        .js-plotly-plot .gtitle text { font-size: 20px !important; }
     }
     </style>
     """, unsafe_allow_html=True)
