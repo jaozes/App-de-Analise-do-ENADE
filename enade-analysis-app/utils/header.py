@@ -68,23 +68,30 @@ def show_logo(path='logoUniso.webp', max_pct_width=60, top_margin_px=4, bottom_m
         font-size: 48px !important;
     }
     
-    /* Plotly Graph Titles - FIX PRINCIPAL (era pequeno no cloud) */
+    /* Plotly Graph Titles - ULTRA FIX CLOUD (28px múltiplos selectors) */
     .js-plotly-plot .gtitle text,
-    .js-plotly-plot .plotly .gtitle {
-        font-size: 24px !important;
-        font-weight: bold !important;
+    .js-plotly-plot .plotly .gtitle,
+    .plotly .gtitle,
+    svg g.title text,
+    .plotlyjs .gtitle {
+        font-size: 28px !important;
+        font-weight: 700 !important;
+        font-family: "Arial Black", Arial, sans-serif !important;
+        fill: #1f1f1f !important;
     }
     
-    /* Plotly axis titles/labels */
+    /* Plotly axis titles/labels reforçados */
     .js-plotly-plot .xtitle text,
-    .js-plotly-plot .ytitle text {
-        font-size: 18px !important;
-        font-weight: 500 !important;
+    .js-plotly-plot .ytitle text,
+    g[class*="title"] text {
+        font-size: 20px !important;
+        font-weight: 600 !important;
     }
     
-    /* Plotly legend */
-    .js-plotly-plot .legendtext {
-        font-size: 14px !important;
+    /* Legend melhorada */
+    .js-plotly-plot .legendtext,
+    .legend .text {
+        font-size: 15px !important;
     }
     
     /* Responsive for mobile/cloud */

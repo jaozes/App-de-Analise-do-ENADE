@@ -252,6 +252,7 @@ if not filtered_df.empty and not filtered_df2.empty:
         custom_data=['Área de Avaliação','Instituicao']
     )
     fig_comparativo.update_layout(
+        title_font=dict(size=26, family="Arial Black", color="#1f1f1f"),
         xaxis_tickangle=0,
         template="plotly_white",
         xaxis_title='Curso',

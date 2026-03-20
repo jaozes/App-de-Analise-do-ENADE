@@ -635,7 +635,10 @@ else:
         text=freq["count_fmt"],
         title=f"Contagem de respostas para {available_labels[selected_var]}",
     )
-    fig.update_layout(xaxis_tickangle=0, yaxis_title="Contagem")
+    fig.update_layout(
+        title_font=dict(size=26, family="Arial Black", color="#1f1f1f"),
+        xaxis_tickangle=0, yaxis_title="Contagem"
+    )
     fig.update_traces(textposition="outside")
     st.plotly_chart(fig, use_container_width=True)
 

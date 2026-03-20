@@ -133,6 +133,7 @@ if grafico_selecionado == "Média de Conceitos por Área de Avaliação":
         custom_data=['Área de Avaliação']
     )
     fig1.update_layout(
+        title_font=dict(size=26, family="Arial Black", color="#1f1f1f"),
         xaxis_tickangle=0, 
         xaxis_title='Curso',
         height=500,
@@ -227,6 +228,7 @@ elif grafico_selecionado == "Média por Estado":
 
     fig2 = px.bar(avg_uf, x='Estado', y='Média', color='Média', color_continuous_scale='Blues')
     fig2.update_layout(
+        title_font=dict(size=26, family="Arial Black", color="#1f1f1f"),
         coloraxis=dict(
             colorbar=dict(
                 len=1,
@@ -419,6 +421,7 @@ elif grafico_selecionado == "Quantidade de Alunos por Curso ou Estado":
             custom_data=['Quantidade']
         )
         fig4.update_layout(
+            title_font=dict(size=26, family="Arial Black", color="#1f1f1f"),
             xaxis_tickangle=0,
             height=500,
             coloraxis=dict(
@@ -460,6 +463,7 @@ elif grafico_selecionado == "Quantidade de Alunos por Curso ou Estado":
             custom_data=['Quantidade']
         )
         fig5.update_layout(
+            title_font=dict(size=26, family="Arial Black", color="#1f1f1f"),
             xaxis_tickangle=0,
             xaxis_title='Curso',
             height=500,
@@ -615,6 +619,7 @@ elif grafico_selecionado == "Densidade de Cursos no Brasil":
     )
     
     fig_densidade.update_layout(
+        title_font=dict(size=26, family="Arial Black", color="#1f1f1f"),
         margin=dict(r=0, t=30, l=0, b=0),
         height=600,
         title="Densidade de Cursos Avaliados no ENADE por Estado"
@@ -755,6 +760,7 @@ elif grafico_selecionado == "Densidade Relativa de Percentual de Cursos":
     )
 
     fig_ratio.update_layout(
+        title_font=dict(size=26, family="Arial Black", color="#1f1f1f"),
         margin=dict(r=0, t=30, l=0, b=0),
         height=600,
         title="Densidade Relativa de Percentual de Cursos"
