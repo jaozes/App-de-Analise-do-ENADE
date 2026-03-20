@@ -68,16 +68,19 @@ def show_logo(path='logoUniso.webp', max_pct_width=60, top_margin_px=4, bottom_m
         font-size: 48px !important;
     }
     
-    /* Plotly Graph Titles - ULTRA FIX CLOUD (28px múltiplos selectors) */
+    /* PLOTLY TITLES - ULTIMATE CLOUD FIX (32px + anti-flicker) */
     .js-plotly-plot .gtitle text,
     .js-plotly-plot .plotly .gtitle,
     .plotly .gtitle,
     svg g.title text,
-    .plotlyjs .gtitle {
-        font-size: 24px !important;
-        font-weight: 700 !important;
-        font-family: "Arial Black", Arial, sans-serif !important;
-        fill: #1f1f1f !important;
+    .plotlyjs .gtitle,
+    g.title text,
+    .js-plotly-plot svg g.title text {
+        font-size: 32px !important;
+        font-weight: 900 !important;
+        font-family: "Arial Black", "Helvetica Bold", Arial, sans-serif !important;
+        fill: #000000 !important;
+        stroke: none !important;
     }
     
     /* Plotly axis titles/labels reforçados */
@@ -94,12 +97,18 @@ def show_logo(path='logoUniso.webp', max_pct_width=60, top_margin_px=4, bottom_m
         font-size: 14px !important;
     }
     
-    /* Responsive for mobile/cloud */
+    /* Cloud anti-flicker - disable animations */
+    * {
+        -webkit-animation: none !important;
+        animation: none !important;
+        transition: none !important;
+    }
+    
+    /* Responsive */
     @media (max-width: 768px) {
-        h1 { font-size: 2.2em !important; }
-        h2 { font-size: 1.8em !important; }
-        h3 { font-size: 1.6em !important; }
-        .js-plotly-plot .gtitle text { font-size: 20px !important; }
+        h1 { font-size: 2.4em !important; }
+        h2 { font-size: 2em !important; }
+        .js-plotly-plot .gtitle text { font-size: 24px !important; }
     }
     </style>
     """, unsafe_allow_html=True)
