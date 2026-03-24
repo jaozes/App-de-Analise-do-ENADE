@@ -3,7 +3,7 @@ import unicodedata
 from pathlib import Path
 
 # load conceito
-c = pd.read_excel('enade-analysis-app/data/conceito_enade_2023.xlsx', engine='openpyxl')
+pd.read_excel('data/conceito_enade_2023.xlsx', engine='openpyxl')
 c.columns = [unicodedata.normalize('NFKD', str(x)).encode('ascii','ignore').decode('ascii').strip() for x in c.columns]
 
 # find microdados files for TP_SEXO and NU_IDADE

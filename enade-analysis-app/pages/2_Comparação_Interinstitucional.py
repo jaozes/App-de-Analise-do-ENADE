@@ -11,7 +11,7 @@ st.set_page_config(layout="wide", page_title="Comparação Interinstitucional - 
 # Carregar os dados
 @st.cache_data
 def load_data():
-    df = pd.read_excel('enade-analysis-app/data/conceito_enade_2023.xlsx', engine='openpyxl')
+    df = pd.read_excel('data/conceito_enade_2023.xlsx', engine='openpyxl')
     # Remover linhas onde 'Conceito Enade (Contínuo)' é NaN
     df = df.dropna(subset=['Conceito Enade (Contínuo)'])
     return df

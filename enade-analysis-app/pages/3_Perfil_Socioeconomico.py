@@ -319,7 +319,7 @@ def format_br_percentage(value: float) -> str:
 @st.cache_data
 def load_conceito() -> pd.DataFrame:
     """Carrega a planilha de conceitos."""
-    df = pd.read_excel("enade-analysis-app/data/conceito_enade_2023.xlsx", engine="openpyxl")
+    df = pd.read_excel("data/conceito_enade_2023.xlsx", engine="openpyxl")
     # garantir que temos apenas cursos com conceito computado
     if "Conceito Enade (Contínuo)" in df.columns:
         df = df.dropna(subset=["Conceito Enade (Contínuo)"])
