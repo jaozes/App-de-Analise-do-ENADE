@@ -32,83 +32,63 @@ def show_logo(path='logoUniso.webp', max_pct_width=60, top_margin_px=4, bottom_m
     # Injetar CSS global para aumentar o tamanho da fonte
     st.markdown("""
     <style>
-    /* Base fonts */
-    body, p, div, span, label, .stMarkdown, .stText {
+
+    /* ESCOPAR TUDO DENTRO DO APP */
+    .stApp {
+    font-size: 16px;
+    }
+
+    /* Texto base */
+    .stApp p, 
+    .stApp div, 
+    .stApp span, 
+    .stApp label {
         font-size: 16px !important;
     }
-    .stCaption {
-        font-size: 14px !important;
-    }
-    
-    /* Page/Section titles - Aumentados 20% */
-    h1 {
+
+    /* TITULOS - FIX CLOUD */
+    .stApp h1 {
         font-size: 3em !important;
-        font-weight: bold !important;
-        line-height: 1.2 !important;
+        font-weight: 700 !important;
     }
-    h2 {
+
+    .stApp h2 {
         font-size: 2.4em !important;
-        font-weight: bold !important;
-        line-height: 1.3 !important;
+        font-weight: 700 !important;
     }
-    h3 {
-        font-size: 2.2em !important;
+
+    .stApp h3 {
+        font-size: 2em !important;
         font-weight: 600 !important;
-        line-height: 1.3 !important;
     }
-    h4, h5, h6 {
-        font-size: 1.8em !important;
+
+    .stApp h4, 
+    .stApp h5, 
+    .stApp h6 {
+        font-size: 1.6em !important;
     }
-    
-    /* Metrics */
-    .stMetric {
+
+    /* FORÇA markdown (ESSENCIAL NA NUVEM) */
+    .stMarkdown h1 { font-size: 3em !important; }
+    .stMarkdown h2 { font-size: 2.4em !important; }
+    .stMarkdown h3 { font-size: 2em !important; }
+
+    /* METRICS */
+    [data-testid="stMetricValue"] {
         font-size: 48px !important;
     }
-    .stMetric div, .stMetric span {
-        font-size: 48px !important;
+
+    /* PLOTLY (mantém seu fix) */
+    .js-plotly-plot .gtitle text {
+       font-size: 32px !important;
+       font-weight: 900 !important;
     }
-    
-    /* PLOTLY TITLES - ULTIMATE CLOUD FIX (32px + anti-flicker) */
-    .js-plotly-plot .gtitle text,
-    .js-plotly-plot .plotly .gtitle,
-    .plotly .gtitle,
-    svg g.title text,
-    .plotlyjs .gtitle,
-    g.title text,
-    .js-plotly-plot svg g.title text {
-        font-size: 32px !important;
-        font-weight: 900 !important;
-        font-family: "Arial Black", "Helvetica Bold", Arial, sans-serif !important;
-        fill: #000000 !important;
-        stroke: none !important;
-    }
-    
-    /* Plotly axis titles/labels reforçados */
-    .js-plotly-plot .xtitle text,
-    .js-plotly-plot .ytitle text,
-    g[class*="title"] text {
-        font-size: 18px !important;
-        font-weight: 500 !important;
-    }
-    
-    /* Legend melhorada */
-    .js-plotly-plot .legendtext,
-    .legend .text {
-        font-size: 14px !important;
-    }
-    
-    /* Cloud anti-flicker - disable animations */
-    * {
-        -webkit-animation: none !important;
-        animation: none !important;
-        transition: none !important;
-    }
-    
-    /* Responsive */
+
+    /* RESPONSIVO */
     @media (max-width: 768px) {
-        h1 { font-size: 2.4em !important; }
-        h2 { font-size: 2em !important; }
-        .js-plotly-plot .gtitle text { font-size: 24px !important; }
+       .stApp h1 { font-size: 2.2em !important; }
+       .stApp h2 { font-size: 1.8em !important; }
     }
+
     </style>
     """, unsafe_allow_html=True)
