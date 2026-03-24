@@ -130,6 +130,7 @@ if grafico_selecionado == "Média de Conceitos por Área de Avaliação":
         custom_data=['Área de Avaliação']
     )
     fig1.update_layout(
+        title="",
         title_font=dict(size=26, family="Arial Black", color="#1f1f1f"),
         xaxis_tickangle=0, 
         xaxis_title='Curso',
@@ -144,9 +145,9 @@ if grafico_selecionado == "Média de Conceitos por Área de Avaliação":
         )
     )
     fig1.update_traces(hovertemplate='<b>%{customdata[0]}</b><br>Média: %{y:.2f}<extra></extra>', hoverlabel=dict(font=dict(size=14)))
-    st.plotly_chart(fig1, width='stretch')
+    st.plotly_chart(fig1, use_container_width=True)
 
-    st.subheader("Dados da Análise")
+    st.subheader("📋 Dados da Análise")
     st.dataframe(avg_area, width='stretch')
 
 # Análise por UF
@@ -223,8 +224,10 @@ elif grafico_selecionado == "Média por Estado":
     avg_uf.columns = ['Estado', 'Média']
     avg_uf = avg_uf.sort_values('Média', ascending=False)
 
+    st.subheader("🗺️ Média por Estado")
     fig2 = px.bar(avg_uf, x='Estado', y='Média', color='Média', color_continuous_scale='Blues')
     fig2.update_layout(
+        title="",  # Remove title from inside chart
         title_font=dict(size=26, family="Arial Black", color="#1f1f1f"),
         coloraxis=dict(
             colorbar=dict(
@@ -302,7 +305,8 @@ elif grafico_selecionado == "Média por Modalidade de Ensino":
     avg_mod = df_filtrado.groupby('Modalidade de Ensino')['Conceito Enade (Contínuo)'].mean().reset_index().round(2)
     avg_mod.columns = ['Modalidade', 'Média']
 
-    fig3 = px.pie(avg_mod, names='Modalidade', values='Média', title="Distribuição por Modalidade")
+    st.subheader("📋 Média por Modalidade de Ensino")
+    fig3 = px.pie(avg_mod, names='Modalidade', values='Média', title="")
     fig3.update_traces(hoverlabel=dict(font=dict(size=14)))
     st.plotly_chart(fig3, width='stretch')
 
@@ -408,13 +412,14 @@ elif grafico_selecionado == "Quantidade de Alunos por Curso ou Estado":
         # Criar coluna formatada para texto
         qtd_por_estado['Quantidade'] = qtd_por_estado['Valor'].apply(lambda x: f"{x:,.0f}".replace(",", "."))
 
+        st.subheader("👥 Quantidade de Alunos por Estado")
         fig4 = px.bar(
             qtd_por_estado, 
             x='Estado', 
             y='Valor', 
             color='Valor', 
             color_continuous_scale='Greens',
-            title="Quantidade de Alunos por Estado",
+            title="",
             custom_data=['Quantidade']
         )
         fig4.update_layout(
@@ -450,13 +455,14 @@ elif grafico_selecionado == "Quantidade de Alunos por Curso ou Estado":
         # Criar coluna formatada para texto
         qtd_por_curso['Quantidade'] = qtd_por_curso['Valor'].apply(lambda x: f"{x:,.0f}".replace(",", "."))
 
+        st.subheader("📚 Quantidade de Alunos por Curso")
         fig5 = px.bar(
             qtd_por_curso, 
             x='Área_abrev', 
             y='Valor', 
             color='Valor', 
             color_continuous_scale='Oranges',
-            title="Quantidade de Alunos por Curso (Área de Avaliação)",
+            title="",
             custom_data=['Quantidade']
         )
         fig5.update_layout(
@@ -593,6 +599,7 @@ elif grafico_selecionado == "Densidade de Cursos no Brasil":
     max_densidade = cursos_por_estado['Densidade Relativa (%)'].max()
     
     # Criar mapa choropleth usando plotly.graph_objects (mesmo método da Home.py)
+    st.subheader("🗺️ Densidade de Cursos no Brasil")
     fig_densidade = go.Figure(go.Choropleth(
         geojson=brazil_states,
         locations=cursos_por_estado['Estado'],
@@ -616,10 +623,10 @@ elif grafico_selecionado == "Densidade de Cursos no Brasil":
     )
     
     fig_densidade.update_layout(
+        title="",  # Remove title from inside chart
         title_font=dict(size=26, family="Arial Black", color="#1f1f1f"),
         margin=dict(r=0, t=30, l=0, b=0),
-        height=600,
-        title="Densidade de Cursos Avaliados no ENADE por Estado"
+        height=600
     )
     fig_densidade.update_traces(hoverlabel=dict(font=dict(size=14)))
     st.plotly_chart(fig_densidade, width='stretch')
@@ -756,11 +763,12 @@ elif grafico_selecionado == "Densidade Relativa de Percentual de Cursos":
         visible=False
     )
 
+    st.subheader("📊 Densidade Relativa de Alunos por IES")
     fig_ratio.update_layout(
+        title="",  # Remove title from inside chart
         title_font=dict(size=26, family="Arial Black", color="#1f1f1f"),
         margin=dict(r=0, t=30, l=0, b=0),
-        height=600,
-        title="Densidade Relativa de Percentual de Cursos"
+        height=600
     )
     fig_ratio.update_traces(hoverlabel=dict(font=dict(size=14)))
     st.plotly_chart(fig_ratio, width='stretch')

@@ -616,16 +616,16 @@ else:
     # Set index to Resposta for proper plotting
     freq = freq.set_index("Resposta")
 
-    st.subheader(f"Distribuição de respostas para: {available_labels[selected_var]}")
     st.markdown(
         """O gráfico abaixo mostra o número de respostas por alternativa (eixo X)."""
     )
 
+    st.subheader(f"📊 Contagem de respostas: {available_labels[selected_var]}")
     fig = px.bar(
         x=freq.index,
         y=freq["count"],
         text=freq["count_fmt"],
-        title=f"Contagem de respostas para {available_labels[selected_var]}",
+        title="",
     )
     fig.update_layout(
         title_font=dict(size=26, family="Arial Black", color="#1f1f1f"),

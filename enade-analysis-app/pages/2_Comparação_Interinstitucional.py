@@ -236,6 +236,7 @@ if not filtered_df.empty and not filtered_df2.empty:
     df_comparacao = df_comparacao.sort_values(['Sigla Área', 'Instituicao'])
     
     # Criar gráfico de linha comparativo
+    st.subheader("📊 Comparação Interinstitucional")
     fig_comparativo = px.line(
         df_comparacao, 
         x='Sigla Área', 
@@ -243,7 +244,7 @@ if not filtered_df.empty and not filtered_df2.empty:
         color='Instituicao',
         markers=True,
         line_shape='linear',
-        title="Comparação Interinstitucional - Média do Conceito ENADE por Curso",
+        title="",
         custom_data=['Área de Avaliação','Instituicao']
     )
     fig_comparativo.update_layout(
