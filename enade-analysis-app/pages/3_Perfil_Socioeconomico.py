@@ -316,14 +316,7 @@ def format_br_percentage(value: float) -> str:
     return f"{value:.2f}%".replace(".", ",")
 
 
-@st.cache_data
-def load_conceito() -> pd.DataFrame:
-    """Carrega a planilha de conceitos."""
-    df = pd.read_excel("data/conceito_enade_2023.xlsx", engine="openpyxl")
-    # garantir que temos apenas cursos com conceito computado
-    if "Conceito Enade (Contínuo)" in df.columns:
-        df = df.dropna(subset=["Conceito Enade (Contínuo)"])
-    return df
+from utils.data_loader import load_conceito
 
 
 @st.cache_data(ttl=300)
@@ -405,11 +398,17 @@ st.markdown(
 conceito_df = load_conceito()
 
 # Selecionar pergunta / variável
-available_vars = list(QUESTION_METADATA.keys()) + list(EXTRA_VARS.keys())
+index = build_question_file_index()
+available_vars = [var for var in list(QUESTION_METADATA.keys()) + list(EXTRA_VARS.keys()) if var in index]
+if not available_vars:
+    st.warning("Nenhuma coluna de perfil socioeconômico encontrada nos arquivos de microdados. Adicione os arquivos corretos ou verifique os nomes das colunas.")
+    st.stop()
 available_labels = {
     **{k: f"{k} — {QUESTION_METADATA[k]}" for k in QUESTION_METADATA},
     **{k: f"{k} — {EXTRA_VARS[k]}" for k in EXTRA_VARS},
 }
+
+st.info(f"**Variáveis socioeconômicas encontradas nos microdados:** {', '.join(sorted(available_vars))}")
 
 selected_var = st.selectbox(
     "Selecione a questão a ser veríficada:",

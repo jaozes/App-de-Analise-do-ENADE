@@ -9,14 +9,9 @@ show_logo()
 st.set_page_config(layout="wide", page_title="Comparação Interinstitucional - ENADE 2023")
 
 # Carregar os dados
-@st.cache_data
-def load_data():
-    df = pd.read_excel('data/conceito_enade_2023.xlsx', engine='openpyxl')
-    # Remover linhas onde 'Conceito Enade (Contínuo)' é NaN
-    df = df.dropna(subset=['Conceito Enade (Contínuo)'])
-    return df
+from utils.data_loader import load_conceito
 
-df = load_data()
+df = load_conceito()
 
 # abreviações dos cursos para exibição nos eixos X
 ABBR = {

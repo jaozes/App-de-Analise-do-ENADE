@@ -12,13 +12,9 @@ st.set_page_config(layout="wide")
 st.title("🎓 Mapeando o Desempenho do Estudante no ENADE: Uma Plataforma Interativa Para Comparações Interinstitucionais")
 st.title("Análise do ENADE 2023")
 
-@st.cache_data
-def load_data():
-    df = pd.read_excel('data/conceito_enade_2023.xlsx', engine='openpyxl')
-    df = df.dropna(subset=['Conceito Enade (Contínuo)'])
-    return df
+from utils.data_loader import load_conceito
 
-df = load_data()
+df = load_conceito()
 
 # Calculate average concept per IES per UF
 ies_avg = df.groupby(['Sigla da UF** ', 'Sigla da IES*']).agg(

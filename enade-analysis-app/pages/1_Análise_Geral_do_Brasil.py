@@ -3,18 +3,15 @@ import pandas as pd
 import plotly.express as px
 from utils.header import show_logo
 from utils.footer import show_footer
+from utils.data_loader import load_conceito
 
 show_logo()
 
 st.set_page_config(layout="centered", page_title="Análise Geral do Brasil - ENADE 2023")
 
-@st.cache_data
-def load_data():
-    df = pd.read_excel('data/conceito_enade_2023.xlsx', engine='openpyxl')
-    df = df.dropna(subset=['Conceito Enade (Contínuo)'])
-    return df
+df = load_conceito()
 
-df = load_data()
+# ABBR dict and df['Área_abrev'] = ... remain unchanged below
 
 # abreviações dos cursos utilizados nos gráficos de eixo X
 ABBR = {
