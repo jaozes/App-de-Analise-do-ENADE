@@ -75,7 +75,7 @@ for key in ['uf1', 'mun1', 'ies1', 'curso1', 'mod1', 'cat1', 'grau1', 'uf2', 'mu
         st.session_state[key] = []
 
 # Título
-st.title('Médias do Conceito Enade por Curso')
+st.markdown("# Médias do Conceito Enade por Curso")
 
 st.markdown("""- Por padrão os gráficos exibem os dados de todo o país.""")
 

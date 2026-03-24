@@ -50,7 +50,7 @@ ABBR = {
 # adicionar coluna abreviada para facilitar o uso nos gráficos
 df['Área_abrev'] = df['Área de Avaliação'].map(ABBR).fillna(df['Área de Avaliação'])
 
-st.title("📊 Análise Geral do Brasil")
+st.markdown("# 📊 Análise Geral do Brasil")
 
 # Seleção de gráfico
 opcoes_graficos = [

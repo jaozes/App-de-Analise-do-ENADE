@@ -16,8 +16,8 @@ st.set_page_config(layout="wide")
 
 
 
-st.title("🎓 Mapeando o Desempenho do Estudante no ENADE: Uma Plataforma Interativa Para Comparações Interinstitucionais")
-st.title("Análise do ENADE 2023")
+st.markdown("# 🎓 Mapeando o Desempenho do Estudante no ENADE: Uma Plataforma Interativa Para Comparações Interinstitucionais")
+st.markdown("# Análise do ENADE 2023")
 
 from utils.data_loader import load_conceito
 
