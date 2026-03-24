@@ -3,7 +3,9 @@ import pandas as pd
 import plotly.express as px
 from utils.header import show_logo
 from utils.footer import show_footer
+from utils.header import inject_css
 
+inject_css()
 show_logo()
 
 st.set_page_config(layout="wide", page_title="Comparação Interinstitucional - ENADE 2023")

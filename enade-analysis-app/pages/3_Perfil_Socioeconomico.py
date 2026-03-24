@@ -3,10 +3,11 @@ import pandas as pd
 import plotly.express as px
 import unicodedata
 from pathlib import Path
-
 from utils.header import show_logo
 from utils.footer import show_footer
+from utils.header import inject_css
 
+inject_css()
 show_logo()
 
 st.set_page_config(layout="wide", page_title="Perfil Socioeconômico - ENADE 2023")

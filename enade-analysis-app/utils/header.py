@@ -29,65 +29,70 @@ def show_logo(path='logoUniso.webp', max_pct_width=60, top_margin_px=4, bottom_m
     '''
     st.markdown(html, unsafe_allow_html=True)
 
-    # Injetar CSS global para aumentar o tamanho da fonte
+def inject_css():
     st.markdown("""
     <style>
 
-    /* ESCOPAR TUDO DENTRO DO APP */
-    .stApp {
-    font-size: 16px;
+    /* PRIORIDADE MÁXIMA (evita override do tema) */
+    html body .stApp {
+        font-size: 16px;
     }
 
-    /* Texto base */
-    .stApp p, 
-    .stApp div, 
-    .stApp span, 
-    .stApp label {
+    html body .stApp p, 
+    html body .stApp div, 
+    html body .stApp span, 
+    html body .stApp label {
         font-size: 16px !important;
     }
 
-    /* TITULOS - FIX CLOUD */
-    .stApp h1 {
+    /* TITULOS */
+    html body .stApp h1 {
         font-size: 3em !important;
         font-weight: 700 !important;
     }
 
-    .stApp h2 {
+    html body .stApp h2 {
         font-size: 2.4em !important;
         font-weight: 700 !important;
     }
 
-    .stApp h3 {
+    html body .stApp h3 {
         font-size: 2em !important;
         font-weight: 600 !important;
     }
 
-    .stApp h4, 
-    .stApp h5, 
-    .stApp h6 {
+    html body .stApp h4, 
+    html body .stApp h5, 
+    html body .stApp h6 {
         font-size: 1.6em !important;
     }
 
-    /* FORÇA markdown (ESSENCIAL NA NUVEM) */
-    .stMarkdown h1 { font-size: 3em !important; }
-    .stMarkdown h2 { font-size: 2.4em !important; }
-    .stMarkdown h3 { font-size: 2em !important; }
+    /* STREAMLIT MARKDOWN (CRUCIAL) */
+    html body .stMarkdown h1 { font-size: 3em !important; }
+    html body .stMarkdown h2 { font-size: 2.4em !important; }
+    html body .stMarkdown h3 { font-size: 2em !important; }
 
-    /* METRICS */
-    [data-testid="stMetricValue"] {
+    /* METRICS (forma estável no cloud) */
+    html body [data-testid="stMetricValue"] {
         font-size: 48px !important;
     }
 
-    /* PLOTLY (mantém seu fix) */
-    .js-plotly-plot .gtitle text {
-       font-size: 32px !important;
-       font-weight: 900 !important;
+    /* PLOTLY */
+    html body .js-plotly-plot .gtitle text {
+        font-size: 32px !important;
+        font-weight: 900 !important;
+    }
+
+    /* ANTI-FLICKER REAL */
+    * {
+        animation: none !important;
+        transition: none !important;
     }
 
     /* RESPONSIVO */
     @media (max-width: 768px) {
-       .stApp h1 { font-size: 2.2em !important; }
-       .stApp h2 { font-size: 1.8em !important; }
+        html body .stApp h1 { font-size: 2.2em !important; }
+        html body .stApp h2 { font-size: 1.8em !important; }
     }
 
     </style>

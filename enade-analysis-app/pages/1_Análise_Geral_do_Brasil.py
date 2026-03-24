@@ -4,7 +4,9 @@ import plotly.express as px
 from utils.header import show_logo
 from utils.footer import show_footer
 from utils.data_loader import load_conceito
+from utils.header import inject_css
 
+inject_css()
 show_logo()
 
 st.set_page_config(layout="centered", page_title="Análise Geral do Brasil - ENADE 2023")
