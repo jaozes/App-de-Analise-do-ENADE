@@ -179,7 +179,7 @@ with col2:
 
 # Seção do gráfico comparativo
 st.markdown("---")
-st.header('Comparação Interinstitucional')
+st.header('📊 Comparação Interinstitucional')
 
 # Checkbox para mostrar apenas cursos em comum
 apenas_comum = st.checkbox("Mostrar apenas cursos em comum", value=False)
@@ -236,7 +236,6 @@ if not filtered_df.empty and not filtered_df2.empty:
     df_comparacao = df_comparacao.sort_values(['Sigla Área', 'Instituicao'])
     
     # Criar gráfico de linha comparativo
-    st.subheader("📊 Comparação Interinstitucional")
     fig_comparativo = px.line(
         df_comparacao, 
         x='Sigla Área', 
@@ -248,7 +247,7 @@ if not filtered_df.empty and not filtered_df2.empty:
         custom_data=['Área de Avaliação','Instituicao']
     )
     fig_comparativo.update_layout(
-        title_font=dict(size=26, family="Arial Black", color="#1f1f1f"),
+        title="",
         xaxis_tickangle=0,
         template="plotly_white",
         xaxis_title='Curso',

@@ -115,7 +115,7 @@ if grafico_selecionado == "Média de Conceitos por Área de Avaliação":
     if graus_selecionados:
         df_filtrado = df_filtrado[df_filtrado['Grau Acadêmico'].isin(graus_selecionados)]
 
-    st.subheader("Média de Conceitos por Área de Avaliação")
+    st.subheader("📊 Média de Conceitos por Área de Avaliação")
     avg_area = df_filtrado.groupby('Área de Avaliação')['Conceito Enade (Contínuo)'].mean().reset_index().round(2)
     avg_area['Área_abrev'] = avg_area['Área de Avaliação'].map(ABBR).fillna(avg_area['Área de Avaliação'])
     avg_area.columns = ['Área de Avaliação', 'Média', 'Sigla Área']
@@ -219,7 +219,7 @@ elif grafico_selecionado == "Média por Estado":
     if graus_selecionados:
         df_filtrado = df_filtrado[df_filtrado['Grau Acadêmico'].isin(graus_selecionados)]
 
-    st.subheader("Média por Estado")
+
     avg_uf = df_filtrado.groupby('Sigla da UF** ')['Conceito Enade (Contínuo)'].mean().reset_index().round(2)
     avg_uf.columns = ['Estado', 'Média']
     avg_uf = avg_uf.sort_values('Média', ascending=False)
@@ -301,7 +301,7 @@ elif grafico_selecionado == "Média por Modalidade de Ensino":
     if graus_selecionados:
         df_filtrado = df_filtrado[df_filtrado['Grau Acadêmico'].isin(graus_selecionados)]
 
-    st.subheader("Média por Modalidade de Ensino")
+
     avg_mod = df_filtrado.groupby('Modalidade de Ensino')['Conceito Enade (Contínuo)'].mean().reset_index().round(2)
     avg_mod.columns = ['Modalidade', 'Média']
 
@@ -401,7 +401,7 @@ elif grafico_selecionado == "Quantidade de Alunos por Curso ou Estado":
     if graus_selecionados:
         df_filtrado = df_filtrado[df_filtrado['Grau Acadêmico'].isin(graus_selecionados)]
 
-    st.subheader(f"Quantidade de Alunos - {tipo_quantidade}")
+
 
     if tipo_visualizacao == "Por Estado":
         # Agrupar por Estado
@@ -419,11 +419,10 @@ elif grafico_selecionado == "Quantidade de Alunos por Curso ou Estado":
             y='Valor', 
             color='Valor', 
             color_continuous_scale='Greens',
-            title="",
             custom_data=['Quantidade']
         )
         fig4.update_layout(
-            title_font=dict(size=26, family="Arial Black", color="#1f1f1f"),
+            title="",
             xaxis_tickangle=0,
             height=500,
             coloraxis=dict(
@@ -462,10 +461,10 @@ elif grafico_selecionado == "Quantidade de Alunos por Curso ou Estado":
             y='Valor', 
             color='Valor', 
             color_continuous_scale='Oranges',
-            title="",
             custom_data=['Quantidade']
         )
         fig5.update_layout(
+            title="",
             title_font=dict(size=26, family="Arial Black", color="#1f1f1f"),
             xaxis_tickangle=0,
             xaxis_title='Curso',
@@ -483,8 +482,10 @@ elif grafico_selecionado == "Quantidade de Alunos por Curso ou Estado":
         st.plotly_chart(fig5, width='stretch')
         
         st.subheader("Dados da Análise")
+        display_df = qtd_por_curso[['Área de Avaliação', 'Área_abrev', 'Quantidade']].copy()
+        display_df.columns = ['Nome do Curso', 'Sigla', 'Quantidade']
         st.dataframe(
-            qtd_por_curso[['Curso', 'Quantidade']], 
+            display_df, 
             width='stretch',
             hide_index=True
         )
@@ -576,7 +577,7 @@ elif grafico_selecionado == "Densidade de Cursos no Brasil":
     # Ordenar por quantidade de cursos
     cursos_por_estado = cursos_por_estado.sort_values('Quantidade de Cursos', ascending=False)
     
-    st.subheader("Densidade de Cursos Avaliados no ENADE por Estado")
+
     
     # Carregar GeoJSON do Brasil
     geojson_url = "https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/brazil-states.geojson"

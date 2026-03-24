@@ -628,7 +628,7 @@ else:
         title="",
     )
     fig.update_layout(
-        title_font=dict(size=26, family="Arial Black", color="#1f1f1f"),
+        title="",
         xaxis_tickangle=0, yaxis_title="Contagem"
     )
     fig.update_traces(textposition="outside")
