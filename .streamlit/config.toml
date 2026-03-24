@@ -1,0 +1,12 @@
+[server]
+fileWatcherType = "none"
+
+[theme]
+primaryColor = "#FF6B35"
+
+[global]
+developmentMode = false
+
+[browser]
+gatherUsageStats = false
+
