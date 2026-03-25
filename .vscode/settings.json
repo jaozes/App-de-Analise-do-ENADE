@@ -1,3 +1,4 @@
 {
-    "python.defaultInterpreterPath": "venv_new/Scripts/python.exe"
+  "python.defaultInterpreterPath": "./enade-analysis-app/.venv/Scripts/python.exe",
+  "python.terminal.activateEnvironment": true
 }

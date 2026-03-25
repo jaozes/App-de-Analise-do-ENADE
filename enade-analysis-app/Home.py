@@ -6,7 +6,7 @@ from utils.header import show_logo
 from utils.header import inject_css
 from utils.footer import show_footer
 
-inject_css()
+#inject_css()
 show_logo()
 
 
