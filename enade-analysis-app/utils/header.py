@@ -28,6 +28,20 @@ def show_logo(path='logoUniso.webp', max_pct_width=60, top_margin_px=4, bottom_m
     </div>
     '''
     st.markdown(html, unsafe_allow_html=True)
+    
+    st.markdown("""
+<style>
+/* 110% ZOOM BY DEFAULT */
+html, body {
+    transform: scale(1.1) !important;
+    transform-origin: 0 0 !important;
+}
+.stApp {
+    transform: scale(1.1) !important;
+    transform-origin: 0 0 !important;
+}
+</style>
+""", unsafe_allow_html=True)
 
 def inject_css():
     st.markdown("""
