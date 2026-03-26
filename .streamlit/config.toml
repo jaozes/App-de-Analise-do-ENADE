@@ -2,6 +2,7 @@
 fileWatcherType = "none"
 
 [theme]
+baseFontSize=20
 primaryColor = "#FF6B35"
 
 [global]
