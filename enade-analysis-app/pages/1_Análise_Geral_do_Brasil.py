@@ -59,7 +59,7 @@ opcoes_graficos = [
     "Média por Modalidade de Ensino",
     "Quantidade de Alunos por Curso ou Estado",
     "Densidade de Cursos no Brasil",
-    "Densidade Relativa de Percentual de Cursos"
+    "Densidade de Alunos por Curso"
 ]
 grafico_selecionado = st.selectbox("Selecione o gráfico a exibir:", opcoes_graficos)
 
@@ -645,7 +645,7 @@ elif grafico_selecionado == "Densidade de Cursos no Brasil":
     )
 
 # Novo mapa: Densidade Relativa de Percentual de Cursos
-elif grafico_selecionado == "Densidade Relativa de Percentual de Cursos":
+elif grafico_selecionado == "Densidade de Alunos por Curso":
     import plotly.graph_objects as go
     import requests
 
@@ -766,7 +766,7 @@ elif grafico_selecionado == "Densidade Relativa de Percentual de Cursos":
         visible=False
     )
 
-    st.subheader("📊 Densidade Relativa de Alunos por IES")
+    st.subheader("📊 Densidade Relativa de Alunos por Curso")
     fig_ratio.update_layout(
         title="",  # Remove title from inside chart
         title_font=dict(size=26, family="Arial Black", color="#1f1f1f"),

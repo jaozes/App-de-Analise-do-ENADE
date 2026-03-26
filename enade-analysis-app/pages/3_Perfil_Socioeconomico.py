@@ -622,17 +622,59 @@ else:
     )
 
     st.subheader(f"📊 Contagem de respostas: {available_labels[selected_var]}")
-    fig = px.bar(
-        x=freq.index,
-        y=freq["count"],
-        text=freq["count_fmt"],
+# Prepare data for line chart matching Comparação Interinstitucional style
+    freq_line = freq.reset_index()
+    freq_line['percent'] = freq_line['count'] / freq_line['count'].sum() * 100
+    if selected_var == "NU_IDADE":
+        # Keep age order (already sorted ascending earlier)
+        pass
+    else:
+        freq_line = freq_line.sort_values('count', ascending=False)
+    
+    if selected_var == "NU_IDADE":
+        # For age: use string representation directly (no abbreviations needed)
+        freq_line['Sigla Resposta'] = freq_line['Resposta'].astype(str)
+    else:
+        # Create unique abbreviations for x-axis (for categorical responses)
+        unique_respostas = freq_line['Resposta'].tolist()
+        sigla_mapping = {resp: resp[:3].upper() for resp in unique_respostas}
+        # Handle duplicates by appending number
+        sigla_used = {}
+        final_siglas = []
+        for resp in unique_respostas:
+            sigla = sigla_mapping[resp]
+            count = sigla_used.get(sigla, 0)
+            final_sigla = sigla if count == 0 else f"{sigla}{count}"
+            sigla_used[sigla] = count + 1
+            final_siglas.append(final_sigla)
+        freq_line['Sigla Resposta'] = final_siglas
+    
+    freq_line['Sigla Resposta'] = pd.Categorical(freq_line['Sigla Resposta'], categories=freq_line['Sigla Resposta'], ordered=True)
+    
+    fig = px.line(
+        freq_line,
+        x='Sigla Resposta',
+        y='count',
+        markers=True,
+        line_shape='linear',
         title="",
+        custom_data=['Resposta', 'percent']
     )
     fig.update_layout(
         title="",
-        xaxis_tickangle=0, yaxis_title="Contagem"
+        template="plotly_white",
+        xaxis_title='Resposta',
+        yaxis_title='Contagem',
+        xaxis_tickangle=0,
+        height=600
     )
-    fig.update_traces(textposition="outside")
+    fig.update_traces(
+        hovertemplate='<b>%{customdata[0]}</b><br>Contagem: %{y}<br>Percentual: %{customdata[1]:.1f}%<extra></extra>',
+        hoverlabel=dict(font=dict(size=14)),
+        line=dict(width=4),
+        marker=dict(size=8)
+    )
+    fig.update_xaxes(categoryorder='array', categoryarray=freq_line['Sigla Resposta'].cat.categories.tolist())
     st.plotly_chart(fig, use_container_width=True)
 
     st.subheader("Tabela de distribuição")
