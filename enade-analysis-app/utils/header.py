@@ -32,13 +32,14 @@ def show_logo(path='logoUniso.webp', max_pct_width=60, top_margin_px=4, bottom_m
     st.markdown("""
     <style>
     /* 110% ZOOM BY DEFAULT */
-    html = f'''
-    <div style="width:100%; display:flex; justify-content:center; align-items:center;
-               margin-top:{top_margin_px}px; margin-bottom:{bottom_margin_px}px;">
-    <img src="data:image/webp;base64,{b64}" 
-           style="width:100%; max-width:400px; height:auto;" />
-    </div>
-    '''
+     html, body {
+     transform: scale(1.1) !important;
+     transform-origin: 0 0 !important;
+    }
+    .stApp {
+     transform: scale(1.1) !important;
+     transform-origin: 0 0 !important;
+    }
     </style>
     """, unsafe_allow_html=True)
 
