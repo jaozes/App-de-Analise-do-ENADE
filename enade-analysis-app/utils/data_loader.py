@@ -29,7 +29,7 @@ def load_conceito():
             raise ValueError("Missing required column 'Conceito Enade (Contínuo)'")
         
         df = df.dropna(subset=['Conceito Enade (Contínuo)'])
-        st.success(f"✅ Loaded {len(df):,} valid records from {CONCEITO_PATH.name}")
+        pass
         return df
         
     except Exception as e:

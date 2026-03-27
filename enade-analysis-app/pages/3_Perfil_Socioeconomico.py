@@ -409,7 +409,7 @@ available_labels = {
     **{k: f"{k} — {EXTRA_VARS[k]}" for k in EXTRA_VARS},
 }
 
-st.info(f"**Variáveis socioeconômicas encontradas nos microdados:** {', '.join(sorted(available_vars))}")
+pass
 
 selected_var = st.selectbox(
     "Selecione a questão a ser veríficada:",
@@ -647,6 +647,10 @@ if st.session_state.selected_municipios2:
 if st.session_state.selected_ies2:
     conceito_filtrado2 = conceito_filtrado2[conceito_filtrado2[col_ies_nome].isin(st.session_state.selected_ies2)]
 
+# Define institution names for both modes
+nome_inst1 = st.session_state.selected_ies[0] if st.session_state.selected_ies and len(st.session_state.selected_ies) == 1 else "Instituição 1"
+nome_inst2 = st.session_state.selected_ies2[0] if st.session_state.selected_ies2 and len(st.session_state.selected_ies2) == 1 else "Instituição 2"
+
 st.markdown("---")
 
 merge_cols = ["NU_ANO", "CO_CURSO"]
@@ -727,7 +731,7 @@ else:
 
 
     if enable_comparison and not merged2.empty:
-        st.header('📊 Comparação Interinstitucional - Respostas')
+        st.subheader(f"📊 Comparação Interinstitucional: {available_labels[selected_var]}")
 
 
         
@@ -753,8 +757,7 @@ else:
             freq2["Resposta"] = freq2["Resposta"].astype(str)
 
         # Determine institution names
-        nome_inst1 = st.session_state.selected_ies[0] if st.session_state.selected_ies and len(st.session_state.selected_ies) == 1 else "Instituição 1"
-        nome_inst2 = st.session_state.selected_ies2[0] if st.session_state.selected_ies2 and len(st.session_state.selected_ies2) == 1 else "Instituição 2"
+# Removed duplicate definitions - now defined at top-level
 
         # Prepare freq1 like page2
         freq1_prep = freq.reset_index()
@@ -835,7 +838,7 @@ else:
             display_df2.columns = ['Resposta', 'Contagem', '%']
             st.dataframe(display_df2, width="stretch", hide_index=True)
     else:
-        st.subheader(f"📊 Contagem de respostas: {available_labels[selected_var]} ({nome_inst1 if 'nome_inst1' in locals() else 'Inst 1'})")
+        st.subheader(f"📊 Contagem de respostas: {available_labels[selected_var]}")
         # Single institution line chart (existing)
         freq_line = freq.reset_index()
         freq_line['percent'] = (freq_line['count'] / freq_line['count'].sum()) * 100
