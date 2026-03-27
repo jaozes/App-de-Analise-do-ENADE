@@ -405,8 +405,8 @@ if not available_vars:
     st.warning("Nenhuma coluna de perfil socioeconômico encontrada nos arquivos de microdados. Adicione os arquivos corretos ou verifique os nomes das colunas.")
     st.stop()
 available_labels = {
-    **{k: f"{k} — {QUESTION_METADATA[k]}" for k in QUESTION_METADATA},
-    **{k: f"{k} — {EXTRA_VARS[k]}" for k in EXTRA_VARS},
+    **{k: f"{QUESTION_METADATA[k]}" for k in QUESTION_METADATA},
+    **{k: f"{EXTRA_VARS[k]}" for k in EXTRA_VARS},
 }
 
 pass
