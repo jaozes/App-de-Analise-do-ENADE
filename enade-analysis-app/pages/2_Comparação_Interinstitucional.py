@@ -266,10 +266,10 @@ if not filtered_df.empty and not filtered_df2.empty:
     with col_tab1:
         st.subheader(f'{nome_inst1} - Médias por Curso')
         # mostramos também a abreviatura para facilitar visualização
-        st.dataframe(avg_df[['Sigla Área','Área de Avaliação', 'Média']], height=400, width='stretch')
+        st.dataframe(avg_df[['Sigla Área','Área de Avaliação', 'Média']], height=400, width='stretch', hide_index=True)
     with col_tab2:
         st.subheader(f'{nome_inst2} - Médias por Curso')
-        st.dataframe(avg_df2[['Sigla Área','Área de Avaliação', 'Média']], height=400, width='stretch')
+        st.dataframe(avg_df2[['Sigla Área','Área de Avaliação', 'Média']], height=400, width='stretch', hide_index=True)
     
 elif filtered_df.empty and filtered_df2.empty:
     st.write('Nenhum dado encontrado com os filtros selecionados para ambas as instituições.')
