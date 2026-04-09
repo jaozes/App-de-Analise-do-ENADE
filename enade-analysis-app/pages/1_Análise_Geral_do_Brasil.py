@@ -150,7 +150,7 @@ if grafico_selecionado == "Média de Conceitos por Área de Avaliação":
     st.plotly_chart(fig1, use_container_width=True)
 
     st.subheader("📋 Dados da Análise")
-    st.dataframe(avg_area, width='stretch')
+    st.dataframe(avg_area, width='stretch', hide_index=True)
 
 # Análise por UF
 elif grafico_selecionado == "Média por Estado":
@@ -244,7 +244,7 @@ elif grafico_selecionado == "Média por Estado":
     st.plotly_chart(fig2, width='stretch')
 
     st.subheader("Dados da Análise")
-    st.dataframe(avg_uf, width='stretch')
+    st.dataframe(avg_uf, width='stretch', hide_index=True)
 
 # Análise por Modalidade
 elif grafico_selecionado == "Média por Modalidade de Ensino":
@@ -313,7 +313,7 @@ elif grafico_selecionado == "Média por Modalidade de Ensino":
     st.plotly_chart(fig3, width='stretch')
 
     st.subheader("Dados da Análise")
-    st.dataframe(avg_mod, width='stretch')
+    st.dataframe(avg_mod, width='stretch', hide_index=True)
 
 # Análise de Quantidade de Alunos por Curso ou Estado
 elif grafico_selecionado == "Quantidade de Alunos por Curso ou Estado":
