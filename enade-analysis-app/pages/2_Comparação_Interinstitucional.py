@@ -189,16 +189,22 @@ apenas_comum = st.checkbox("Mostrar apenas cursos em comum", value=False)
 # Verificar se ambos os dataframes têm dados
 if not filtered_df.empty and not filtered_df2.empty:
     # Determinar nome da instituição 1
+    has_filters1 = bool(selected_uf or selected_municipio or selected_curso or selected_modalidade or selected_categoria or selected_grau or selected_ies)
     if selected_ies and len(selected_ies) == 1:
         nome_inst1 = selected_ies[0]
-    else:
+    elif has_filters1:
         nome_inst1 = "Instituição 1"
+    else:
+        nome_inst1 = "Média Nacional"
     
     # Determinar nome da instituição 2
+    has_filters2 = bool(selected_uf2 or selected_municipio2 or selected_curso2 or selected_modalidade2 or selected_categoria2 or selected_grau2 or selected_ies2)
     if selected_ies2 and len(selected_ies2) == 1:
         nome_inst2 = selected_ies2[0]
-    else:
+    elif has_filters2:
         nome_inst2 = "Instituição 2"
+    else:
+        nome_inst2 = "Média Nacional"
     
     # Recalcular os dataframes sem o sort para manter a ordem original
     # agrupa pelo nome original para manter coluna completa, depois adiciona abreviatura
