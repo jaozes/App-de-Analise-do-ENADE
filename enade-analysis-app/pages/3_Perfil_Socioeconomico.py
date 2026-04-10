@@ -317,6 +317,33 @@ def format_br_percentage(value: float) -> str:
     return f"{value:.2f}%".replace(".", ",")
 
 
+def sort_responses(df: pd.DataFrame, column: str, var_name: str = None) -> pd.DataFrame:
+    """Ordena respostas pela sequência de alternativas (A,B,C...) ou por contagem."""
+    try:
+        # Se temos um var_name e ele existe em QE_VALUE_LABELS, usar a ordem das alternativas
+        if var_name and var_name in QE_VALUE_LABELS:
+            labels_dict = QE_VALUE_LABELS[var_name]
+            # Criar mapeamento reverso: texto -> letra (ordem das alternativas)
+            text_to_letter = {v: k for k, v in labels_dict.items()}
+            
+            # Adicionar coluna com a letra da alternativa
+            df['_letter_order'] = df[column].map(text_to_letter)
+            
+            # Filtrar apenas respostas que têm mapeamento
+            df = df.dropna(subset=['_letter_order'])
+            
+            if not df.empty:
+                # Ordenar por letra (que preserva a ordem A, B, C, D...)
+                df = df.sort_values('_letter_order').reset_index(drop=True)
+                df = df.drop('_letter_order', axis=1)
+                return df
+    except Exception:
+        pass
+    
+    # Se não conseguir ordenar por letras, ordena por contagem
+    return df.sort_values("count", ascending=False).reset_index(drop=True)
+
+
 from utils.data_loader import load_conceito
 
 
@@ -420,58 +447,25 @@ selected_var = st.selectbox(
 # Carregar dados de microdados para a variável
 micro_q = load_question_df(selected_var)
 
-# Filtros baseados na planilha de conceito
-col_uf = "Sigla da UF** "
-col_area = "Área de Avaliação"
-col_modalidade = "Modalidade de Ensino"
-col_categoria = "Categoria Administrativa"
-col_grau = "Grau Acadêmico"
-col_municipio = "Município do Curso**"
-col_ies_nome = "Nome da IES*"
-
-# Função auxiliar para atualizar opções de filtro dinamicamente
-def get_filtered_options(df, column, filters_dict=None):
-    """Retorna opções disponíveis para um filtro baseado em outros filtros aplicados (exclui coluna atual)."""
-    filtered_df = df.copy()
-    
-    if filters_dict:
-        for filter_col, filter_values in filters_dict.items():
-            if filter_col != column and filter_values:
-                filtered_df = filtered_df[filtered_df[filter_col].isin(filter_values)]
-    
-    return sorted(filtered_df[column].dropna().unique())
-
-# Inicializar estado dos filtros na sessão
-if 'selected_ufs' not in st.session_state:
-    st.session_state.selected_ufs = []
-if 'selected_areas' not in st.session_state:
-    st.session_state.selected_areas = []
-if 'selected_modalidades' not in st.session_state:
-    st.session_state.selected_modalidades = []
-if 'selected_categorias' not in st.session_state:
-    st.session_state.selected_categorias = []
-if 'selected_graus' not in st.session_state:
-    st.session_state.selected_graus = []
-if 'selected_municipios' not in st.session_state:
-    st.session_state.selected_municipios = []
-if 'selected_ies' not in st.session_state:
-    st.session_state.selected_ies = []
-
-# Second institution session state
-if 'selected_ufs2' not in st.session_state:
-    st.session_state.selected_ufs2 = []
-if 'selected_areas2' not in st.session_state:
-    st.session_state.selected_areas2 = []
-if 'selected_modalidades2' not in st.session_state:
-    st.session_state.selected_modalidades2 = []
-if 'selected_categorias2' not in st.session_state:
-    st.session_state.selected_categorias2 = []
-if 'selected_graus2' not in st.session_state:
-    st.session_state.selected_graus2 = []
-if 'selected_municipios2' not in st.session_state:
-    st.session_state.selected_municipios2 = []
-if 'selected_ies2' not in st.session_state:
-    st.session_state.selected_ies2 = []
+# Função auxiliar para atualizar opções de filtro dinamicamente (igual à página 2)
+def get_filtered_df(uf, municipio, ies, curso, modalidade, categoria, grau):
+    """Filtra dataframe com base nas seleções (baseado na página 2)."""
+    filtered = conceito_df.copy()
+    if uf:
+        filtered = filtered[filtered['Sigla da UF** '].isin(uf)]
+    if municipio:
+        filtered = filtered[filtered['Município do Curso**'].isin(municipio)]
+    if ies:
+        filtered = filtered[filtered['Nome da IES*'].isin(ies)]
+    if curso:
+        filtered = filtered[filtered['Área de Avaliação'].isin(curso)]
+    if modalidade:
+        filtered = filtered[filtered['Modalidade de Ensino'].isin(modalidade)]
+    if categoria:
+        filtered = filtered[filtered['Categoria Administrativa'].isin(categoria)]
+    if grau:
+        filtered = filtered[filtered['Grau Acadêmico'].isin(grau)]
+    return filtered
 
 # Filtros em colunas com lógica em cascata
 col_insts, _ = st.columns([1, 3])
@@ -482,176 +476,170 @@ col1, col2 = st.columns(2)
 
 with col1:
     st.markdown("### **1ª Instituição**")
-    # Filters dict for inst1 cascade
-    filters_dict1 = {
-        col_uf: st.session_state.selected_ufs,
-        col_area: st.session_state.selected_areas,
-        col_modalidade: st.session_state.selected_modalidades,
-        col_categoria: st.session_state.selected_categorias,
-        col_grau: st.session_state.selected_graus,
-        col_municipio: st.session_state.selected_municipios,
-        col_ies_nome: st.session_state.selected_ies,
-    }
 
     col1a, col1b, col1c = st.columns(3)
     with col1a:
-        ufs_options1 = get_filtered_options(conceito_df, col_uf, filters_dict1)
-        st.session_state.selected_ufs = st.multiselect(
+        ufs_options1 = sorted(get_filtered_df(None, st.session_state.get('selected_municipios', []), st.session_state.get('selected_ies', []), st.session_state.get('selected_areas', []), st.session_state.get('selected_modalidades', []), st.session_state.get('selected_categorias', []), st.session_state.get('selected_graus', []))['Sigla da UF** '].dropna().unique())
+        selected_uf = st.multiselect(
             "UF", 
             options=ufs_options1, 
-            default=st.session_state.selected_ufs
+            key='uf1'
         )
     with col1b:
-        areas_options1 = get_filtered_options(conceito_df, col_area, filters_dict1)
-        st.session_state.selected_areas = st.multiselect(
+        areas_options1 = sorted(get_filtered_df(selected_uf, st.session_state.get('selected_municipios', []), st.session_state.get('selected_ies', []), None, st.session_state.get('selected_modalidades', []), st.session_state.get('selected_categorias', []), st.session_state.get('selected_graus', []))['Área de Avaliação'].dropna().unique())
+        selected_curso = st.multiselect(
             "Área", 
             options=areas_options1, 
-            default=st.session_state.selected_areas
+            key='area1'
         )
     with col1c:
-        modalidades_options1 = get_filtered_options(conceito_df, col_modalidade, filters_dict1)
-        st.session_state.selected_modalidades = st.multiselect(
+        modalidades_options1 = sorted(get_filtered_df(selected_uf, st.session_state.get('selected_municipios', []), st.session_state.get('selected_ies', []), selected_curso, None, st.session_state.get('selected_categorias', []), st.session_state.get('selected_graus', []))['Modalidade de Ensino'].dropna().unique())
+        selected_modalidade = st.multiselect(
             "Modalidade", 
             options=modalidades_options1, 
-            default=st.session_state.selected_modalidades
+            key='mod1'
         )
 
     col1d, col1e, col1f, col1g = st.columns([1,1,1,1.5])
     with col1d:
-        categorias_options1 = get_filtered_options(conceito_df, col_categoria, filters_dict1)
-        st.session_state.selected_categorias = st.multiselect(
+        categorias_options1 = sorted(get_filtered_df(selected_uf, st.session_state.get('selected_municipios', []), st.session_state.get('selected_ies', []), selected_curso, selected_modalidade, None, st.session_state.get('selected_graus', []))['Categoria Administrativa'].dropna().unique())
+        selected_categoria = st.multiselect(
             "Categoria Adm.", 
             options=categorias_options1, 
-            default=st.session_state.selected_categorias
+            key='cat1'
         )
     with col1e:
-        graus_options1 = get_filtered_options(conceito_df, col_grau, filters_dict1)
-        st.session_state.selected_graus = st.multiselect(
+        graus_options1 = sorted(get_filtered_df(selected_uf, st.session_state.get('selected_municipios', []), st.session_state.get('selected_ies', []), selected_curso, selected_modalidade, selected_categoria, None)['Grau Acadêmico'].dropna().unique())
+        selected_grau = st.multiselect(
             "Grau", 
             options=graus_options1, 
-            default=st.session_state.selected_graus
+            key='grau1'
         )
     with col1f:
-        municipios_options1 = get_filtered_options(conceito_df, col_municipio, filters_dict1)
-        st.session_state.selected_municipios = st.multiselect(
+        municipios_options1 = sorted(get_filtered_df(selected_uf, None, st.session_state.get('selected_ies', []), selected_curso, selected_modalidade, selected_categoria, selected_grau)['Município do Curso**'].dropna().unique())
+        selected_municipio = st.multiselect(
             "Município", 
             options=municipios_options1, 
-            default=st.session_state.selected_municipios
+            key='mun1'
         )
     with col1g:
-        ies_options1 = get_filtered_options(conceito_df, col_ies_nome, filters_dict1)
-        st.session_state.selected_ies = st.multiselect(
+        ies_options1 = sorted(get_filtered_df(selected_uf, selected_municipio, None, selected_curso, selected_modalidade, selected_categoria, selected_grau)['Nome da IES*'].dropna().unique())
+        selected_ies = st.multiselect(
             "IES", 
             options=ies_options1, 
-            default=st.session_state.selected_ies
+            key='ies1'
         )
 
 if enable_comparison:
     with col2:
         st.markdown("### **2ª Instituição**")
-        # Filters dict for inst2 cascade
-        filters_dict2 = {
-            col_uf: st.session_state.selected_ufs2,
-            col_area: st.session_state.selected_areas2,
-            col_modalidade: st.session_state.selected_modalidades2,
-            col_categoria: st.session_state.selected_categorias2,
-            col_grau: st.session_state.selected_graus2,
-            col_municipio: st.session_state.selected_municipios2,
-            col_ies_nome: st.session_state.selected_ies2,
-        }
         
         col2a, col2b, col2c = st.columns(3)
         with col2a:
-            ufs_options2 = get_filtered_options(conceito_df, col_uf, filters_dict2)
-            st.session_state.selected_ufs2 = st.multiselect(
+            ufs_options2 = sorted(get_filtered_df(None, st.session_state.get('selected_municipios2', []), st.session_state.get('selected_ies2', []), st.session_state.get('selected_areas2', []), st.session_state.get('selected_modalidades2', []), st.session_state.get('selected_categorias2', []), st.session_state.get('selected_graus2', []))['Sigla da UF** '].dropna().unique())
+            selected_uf2 = st.multiselect(
                 "UF", key="uf2",
-                options=ufs_options2, 
-                default=st.session_state.selected_ufs2
+                options=ufs_options2
             )
         with col2b:
-            areas_options2 = get_filtered_options(conceito_df, col_area, filters_dict2)
-            st.session_state.selected_areas2 = st.multiselect(
+            areas_options2 = sorted(get_filtered_df(selected_uf2, st.session_state.get('selected_municipios2', []), st.session_state.get('selected_ies2', []), None, st.session_state.get('selected_modalidades2', []), st.session_state.get('selected_categorias2', []), st.session_state.get('selected_graus2', []))['Área de Avaliação'].dropna().unique())
+            selected_curso2 = st.multiselect(
                 "Área", key="area2",
-                options=areas_options2, 
-                default=st.session_state.selected_areas2
+                options=areas_options2
             )
         with col2c:
-            modalidades_options2 = get_filtered_options(conceito_df, col_modalidade, filters_dict2)
-            st.session_state.selected_modalidades2 = st.multiselect(
-                "Modalidade", key="modal2",
-                options=modalidades_options2, 
-                default=st.session_state.selected_modalidades2
+            modalidades_options2 = sorted(get_filtered_df(selected_uf2, st.session_state.get('selected_municipios2', []), st.session_state.get('selected_ies2', []), selected_curso2, None, st.session_state.get('selected_categorias2', []), st.session_state.get('selected_graus2', []))['Modalidade de Ensino'].dropna().unique())
+            selected_modalidade2 = st.multiselect(
+                "Modalidade", key="mod2",
+                options=modalidades_options2
             )
         
         col2d, col2e, col2f, col2g = st.columns([1,1,1,1.5])
         with col2d:
-            categorias_options2 = get_filtered_options(conceito_df, col_categoria, filters_dict2)
-            st.session_state.selected_categorias2 = st.multiselect(
+            categorias_options2 = sorted(get_filtered_df(selected_uf2, st.session_state.get('selected_municipios2', []), st.session_state.get('selected_ies2', []), selected_curso2, selected_modalidade2, None, st.session_state.get('selected_graus2', []))['Categoria Administrativa'].dropna().unique())
+            selected_categoria2 = st.multiselect(
                 "Categoria Adm.", key="cat2",
-                options=categorias_options2, 
-                default=st.session_state.selected_categorias2
+                options=categorias_options2
             )
         with col2e:
-            graus_options2 = get_filtered_options(conceito_df, col_grau, filters_dict2)
-            st.session_state.selected_graus2 = st.multiselect(
+            graus_options2 = sorted(get_filtered_df(selected_uf2, st.session_state.get('selected_municipios2', []), st.session_state.get('selected_ies2', []), selected_curso2, selected_modalidade2, selected_categoria2, None)['Grau Acadêmico'].dropna().unique())
+            selected_grau2 = st.multiselect(
                 "Grau", key="grau2",
-                options=graus_options2, 
-                default=st.session_state.selected_graus2
+                options=graus_options2
             )
         with col2f:
-            municipios_options2 = get_filtered_options(conceito_df, col_municipio, filters_dict2)
-            st.session_state.selected_municipios2 = st.multiselect(
+            municipios_options2 = sorted(get_filtered_df(selected_uf2, None, st.session_state.get('selected_ies2', []), selected_curso2, selected_modalidade2, selected_categoria2, selected_grau2)['Município do Curso**'].dropna().unique())
+            selected_municipio2 = st.multiselect(
                 "Município", key="mun2",
-                options=municipios_options2, 
-                default=st.session_state.selected_municipios2
+                options=municipios_options2
             )
         with col2g:
-            ies_options2 = get_filtered_options(conceito_df, col_ies_nome, filters_dict2)
-            st.session_state.selected_ies2 = st.multiselect(
+            ies_options2 = sorted(get_filtered_df(selected_uf2, selected_municipio2, None, selected_curso2, selected_modalidade2, selected_categoria2, selected_grau2)['Nome da IES*'].dropna().unique())
+            selected_ies2 = st.multiselect(
                 "IES", key="ies2",
-                options=ies_options2, 
-                default=st.session_state.selected_ies2
+                options=ies_options2
             )
 
 # Apply filters to both institutions
 conceito_filtrado1 = conceito_df.copy()
-if st.session_state.selected_ufs:
-    conceito_filtrado1 = conceito_filtrado1[conceito_filtrado1[col_uf].isin(st.session_state.selected_ufs)]
-if st.session_state.selected_areas:
-    conceito_filtrado1 = conceito_filtrado1[conceito_filtrado1[col_area].isin(st.session_state.selected_areas)]
-if st.session_state.selected_modalidades:
-    conceito_filtrado1 = conceito_filtrado1[conceito_filtrado1[col_modalidade].isin(st.session_state.selected_modalidades)]
-if st.session_state.selected_categorias:
-    conceito_filtrado1 = conceito_filtrado1[conceito_filtrado1[col_categoria].isin(st.session_state.selected_categorias)]
-if st.session_state.selected_graus:
-    conceito_filtrado1 = conceito_filtrado1[conceito_filtrado1[col_grau].isin(st.session_state.selected_graus)]
-if st.session_state.selected_municipios:
-    conceito_filtrado1 = conceito_filtrado1[conceito_filtrado1[col_municipio].isin(st.session_state.selected_municipios)]
-if st.session_state.selected_ies:
-    conceito_filtrado1 = conceito_filtrado1[conceito_filtrado1[col_ies_nome].isin(st.session_state.selected_ies)]
+if selected_uf:
+    conceito_filtrado1 = conceito_filtrado1[conceito_filtrado1['Sigla da UF** '].isin(selected_uf)]
+if selected_curso:
+    conceito_filtrado1 = conceito_filtrado1[conceito_filtrado1['Área de Avaliação'].isin(selected_curso)]
+if selected_modalidade:
+    conceito_filtrado1 = conceito_filtrado1[conceito_filtrado1['Modalidade de Ensino'].isin(selected_modalidade)]
+if selected_categoria:
+    conceito_filtrado1 = conceito_filtrado1[conceito_filtrado1['Categoria Administrativa'].isin(selected_categoria)]
+if selected_grau:
+    conceito_filtrado1 = conceito_filtrado1[conceito_filtrado1['Grau Acadêmico'].isin(selected_grau)]
+if selected_municipio:
+    conceito_filtrado1 = conceito_filtrado1[conceito_filtrado1['Município do Curso**'].isin(selected_municipio)]
+if selected_ies:
+    conceito_filtrado1 = conceito_filtrado1[conceito_filtrado1['Nome da IES*'].isin(selected_ies)]
 
 # Second institution filters
 conceito_filtrado2 = conceito_df.copy()
-if st.session_state.selected_ufs2:
-    conceito_filtrado2 = conceito_filtrado2[conceito_filtrado2[col_uf].isin(st.session_state.selected_ufs2)]
-if st.session_state.selected_areas2:
-    conceito_filtrado2 = conceito_filtrado2[conceito_filtrado2[col_area].isin(st.session_state.selected_areas2)]
-if st.session_state.selected_modalidades2:
-    conceito_filtrado2 = conceito_filtrado2[conceito_filtrado2[col_modalidade].isin(st.session_state.selected_modalidades2)]
-if st.session_state.selected_categorias2:
-    conceito_filtrado2 = conceito_filtrado2[conceito_filtrado2[col_categoria].isin(st.session_state.selected_categorias2)]
-if st.session_state.selected_graus2:
-    conceito_filtrado2 = conceito_filtrado2[conceito_filtrado2[col_grau].isin(st.session_state.selected_graus2)]
-if st.session_state.selected_municipios2:
-    conceito_filtrado2 = conceito_filtrado2[conceito_filtrado2[col_municipio].isin(st.session_state.selected_municipios2)]
-if st.session_state.selected_ies2:
-    conceito_filtrado2 = conceito_filtrado2[conceito_filtrado2[col_ies_nome].isin(st.session_state.selected_ies2)]
+if enable_comparison:
+    if selected_uf2:
+        conceito_filtrado2 = conceito_filtrado2[conceito_filtrado2['Sigla da UF** '].isin(selected_uf2)]
+    if selected_curso2:
+        conceito_filtrado2 = conceito_filtrado2[conceito_filtrado2['Área de Avaliação'].isin(selected_curso2)]
+    if selected_modalidade2:
+        conceito_filtrado2 = conceito_filtrado2[conceito_filtrado2['Modalidade de Ensino'].isin(selected_modalidade2)]
+    if selected_categoria2:
+        conceito_filtrado2 = conceito_filtrado2[conceito_filtrado2['Categoria Administrativa'].isin(selected_categoria2)]
+    if selected_grau2:
+        conceito_filtrado2 = conceito_filtrado2[conceito_filtrado2['Grau Acadêmico'].isin(selected_grau2)]
+    if selected_municipio2:
+        conceito_filtrado2 = conceito_filtrado2[conceito_filtrado2['Município do Curso**'].isin(selected_municipio2)]
+    if selected_ies2:
+        conceito_filtrado2 = conceito_filtrado2[conceito_filtrado2['Nome da IES*'].isin(selected_ies2)]
 
 # Define institution names for both modes
-nome_inst1 = st.session_state.selected_ies[0] if st.session_state.selected_ies and len(st.session_state.selected_ies) == 1 else "Instituição 1"
-nome_inst2 = st.session_state.selected_ies2[0] if st.session_state.selected_ies2 and len(st.session_state.selected_ies2) == 1 else "Instituição 2"
+has_filters1 = bool(selected_uf or selected_curso or selected_modalidade or selected_categoria or selected_grau or selected_ies or selected_municipio)
+if selected_ies and len(selected_ies) == 1:
+    nome_inst1 = selected_ies[0]
+elif has_filters1:
+    nome_inst1 = "Instituição 1"
+else:
+    nome_inst1 = "Média Nacional"
+
+nome_inst2 = "Instituição 2"
+if enable_comparison:
+    has_filters2 = bool(selected_uf2 or selected_curso2 or selected_modalidade2 or selected_categoria2 or selected_grau2 or selected_ies2 or selected_municipio2)
+    if selected_ies2 and len(selected_ies2) == 1:
+        nome_inst2 = selected_ies2[0]
+    elif has_filters2:
+        nome_inst2 = "Instituição 2"
+    else:
+        nome_inst2 = "Média Nacional"
 
 st.markdown("---")
+
+# Validar se há dados antes de fazer merge (como na página 2)
+if conceito_filtrado1.empty:
+    st.warning("Não há dados para os filtros selecionados na 1ª instituição.")
+    st.stop()
 
 merge_cols = ["NU_ANO", "CO_CURSO"]
 left1 = conceito_filtrado1.rename(columns={"Ano": "NU_ANO", "Código do Curso": "CO_CURSO"})
@@ -659,13 +647,17 @@ merged1 = pd.merge(micro_q, left1, on=merge_cols, how="inner")
 
 left2 = None
 merged2 = pd.DataFrame()
-if enable_comparison and st.session_state.selected_ies2:
-    left2 = conceito_filtrado2.rename(columns={"Ano": "NU_ANO", "Código do Curso": "CO_CURSO"})
-    merged2 = pd.merge(micro_q, left2, on=merge_cols, how="inner")
+if enable_comparison:
+    if conceito_filtrado2.empty:
+        st.warning("Não há dados para os filtros selecionados na 2ª instituição.")
+        enable_comparison = False
+    else:
+        left2 = conceito_filtrado2.rename(columns={"Ano": "NU_ANO", "Código do Curso": "CO_CURSO"})
+        merged2 = pd.merge(micro_q, left2, on=merge_cols, how="inner")
 
 # Montar tabela de frequência (e gráfico de barras) -----------------------------------
 if merged1.empty:
-    st.warning("Não há dados para os filtros selecionados na 1ª instituição.")
+    st.warning("Não há dados microeconômicos para os filtros selecionados na 1ª instituição.")
     st.stop()
 else:
     # Calcular contagem por resposta
@@ -711,7 +703,7 @@ else:
 
     freq["percent"] = (freq["count"] / freq["count"].sum()) * 100
 
-    # Ordenação: para NU_IDADE, ordena por idade; caso contrário, ordena por contagem.
+    # Ordenação: para NU_IDADE, ordena por idade; para respostas com QE_VALUE_LABELS, ordena por alternativa (A,B,C...); caso contrário, ordena por contagem.
     if selected_var == "NU_IDADE":
         # manter tipo numérico se possível
         try:
@@ -720,7 +712,7 @@ else:
             pass
         freq = freq.sort_values("Resposta", ascending=True).reset_index(drop=True)
     else:
-        freq = freq.sort_values("count", ascending=False).reset_index(drop=True)
+        freq = sort_responses(freq, "Resposta", selected_var)
 
     freq["percent_fmt"] = freq["percent"].map(format_br_percentage)
     freq["count_fmt"] = freq["count"].map(format_br_number)
@@ -755,6 +747,16 @@ else:
             resposta_col2 = [c for c in freq2.columns if c != "count"][0]
             freq2 = freq2.rename(columns={resposta_col2: "Resposta"})
             freq2["Resposta"] = freq2["Resposta"].astype(str)
+        
+        # Aplicar mesma ordenação de freq
+        if selected_var == "NU_IDADE":
+            try:
+                freq2["Resposta"] = pd.to_numeric(freq2["Resposta"], errors="coerce")
+            except Exception:
+                pass
+            freq2 = freq2.sort_values("Resposta", ascending=True).reset_index(drop=True)
+        else:
+            freq2 = sort_responses(freq2, "Resposta", selected_var)
 
         # Determine institution names
 # Removed duplicate definitions - now defined at top-level
@@ -793,12 +795,31 @@ else:
             freq2_prep[['Sigla Resposta', 'Contagem', 'Instituicao', 'Resposta_Completa']]
         ], ignore_index=True)
 
-
-
-        # Order by combined average count
-        cursos_ordenados = df_comparacao.groupby('Sigla Resposta')['Contagem'].mean().sort_values(ascending=False).index.tolist()
+        # Ordenar por ordem das alternativas (A, B, C, D...) usando QE_VALUE_LABELS
+        respostas_unicas = df_comparacao['Resposta_Completa'].drop_duplicates().tolist()
+        
+        # Se a variável está em QE_VALUE_LABELS, usar a ordem das alternativas
+        if selected_var in QE_VALUE_LABELS:
+            labels_dict = QE_VALUE_LABELS[selected_var]
+            text_to_letter = {v: k for k, v in labels_dict.items()}
+            
+            # Filtrar respostas que têm mapeamento e criar lista ordenada por letra
+            respostas_com_letra = [(resp, text_to_letter.get(resp, 'Z')) for resp in respostas_unicas if resp in text_to_letter]
+            respostas_com_letra.sort(key=lambda x: x[1])  # Ordena por letra (A < B < C < D...)
+            respostas_unicas_sorted = [resp for resp, _ in respostas_com_letra]
+        else:
+            # Se não estiver em QE_VALUE_LABELS, ordenar alfabeticamente
+            respostas_unicas_sorted = sorted(respostas_unicas)
+        
+        # Criar mapeamento de Sigla Resposta mantendo a ordem correta
+        sigla_resposta_map = df_comparacao[['Sigla Resposta', 'Resposta_Completa']].drop_duplicates().set_index('Resposta_Completa')['Sigla Resposta'].to_dict()
+        cursos_ordenados = [sigla_resposta_map[resp] for resp in respostas_unicas_sorted if resp in sigla_resposta_map]
+        
         df_comparacao['Sigla Resposta'] = pd.Categorical(df_comparacao['Sigla Resposta'], categories=cursos_ordenados, ordered=True)
         df_comparacao = df_comparacao.sort_values(['Sigla Resposta', 'Instituicao'])
+        
+        # Adicionar coluna formatada para hover
+        df_comparacao['Contagem_fmt'] = df_comparacao['Contagem'].apply(lambda x: format_br_number(x, 0))
 
         fig_comparativo = px.line(
             df_comparacao, 
@@ -808,7 +829,7 @@ else:
             markers=True,
             line_shape='linear',
             title="",
-            custom_data=['Resposta_Completa','Instituicao']
+            custom_data=['Resposta_Completa','Instituicao', 'Contagem_fmt']
         )
         fig_comparativo.update_layout(
             title="",
@@ -818,7 +839,7 @@ else:
             yaxis_title='Contagem',
             height=600
         )
-        fig_comparativo.update_traces(hovertemplate='<b>%{customdata[0]}</b><br>Instituição: %{customdata[1]}<br>Contagem: %{y:.0f}<extra></extra>', hoverlabel=dict(font=dict(size=14)), line=dict(width=4), marker=dict(size=8))
+        fig_comparativo.update_traces(hovertemplate='<b>%{customdata[0]}</b><br>Instituição: %{customdata[1]}<br>Contagem: %{customdata[2]}<extra></extra>', hoverlabel=dict(font=dict(size=14)), line=dict(width=4), marker=dict(size=8))
         fig_comparativo.update_xaxes(categoryorder='array', categoryarray=cursos_ordenados)
         st.plotly_chart(fig_comparativo, width="stretch")
 
@@ -827,14 +848,16 @@ else:
             st.markdown(f"**{nome_inst1}**")
             display_df1 = freq1_prep[['Resposta_Completa', 'Contagem']].copy()
             perc1 = (display_df1['Contagem'] / display_df1['Contagem'].sum() * 100).round(1)
-            display_df1['%'] = [f"{p:.1f}%" for p in perc1]
+            display_df1['Contagem'] = display_df1['Contagem'].apply(lambda x: format_br_number(x, 0))
+            display_df1['%'] = [format_br_percentage(p) for p in perc1]
             display_df1.columns = ['Resposta', 'Contagem', '%']
             st.dataframe(display_df1, width="stretch", hide_index=True)
         with col_tab2:
             st.markdown(f"**{nome_inst2}**")
             display_df2 = freq2_prep[['Resposta_Completa', 'Contagem']].copy()
             perc2 = (display_df2['Contagem'] / display_df2['Contagem'].sum() * 100).round(1)
-            display_df2['%'] = [f"{p:.1f}%" for p in perc2]
+            display_df2['Contagem'] = display_df2['Contagem'].apply(lambda x: format_br_number(x, 0))
+            display_df2['%'] = [format_br_percentage(p) for p in perc2]
             display_df2.columns = ['Resposta', 'Contagem', '%']
             st.dataframe(display_df2, width="stretch", hide_index=True)
     else:
@@ -860,6 +883,10 @@ else:
         
         freq_line['Sigla Resposta'] = pd.Categorical(freq_line['Sigla Resposta'], categories=freq_line['Sigla Resposta'], ordered=True)
         
+        # Adicionar colunas formatadas para hover
+        freq_line['count_fmt'] = freq_line['count'].apply(lambda x: format_br_number(x, 0))
+        freq_line['percent_fmt'] = freq_line['percent'].apply(lambda x: format_br_percentage(x))
+        
         fig = px.line(
             freq_line,
             x='Sigla Resposta',
@@ -867,7 +894,7 @@ else:
             markers=True,
             line_shape='linear',
             title="",
-            custom_data=['Resposta', 'percent']
+            custom_data=['Resposta', 'count_fmt', 'percent_fmt']
         )
         fig.update_layout(
             title="",
@@ -878,7 +905,7 @@ else:
             height=600
         )
         fig.update_traces(
-            hovertemplate='<b>%{customdata[0]}</b><br>Contagem: %{y}<br>Percentual: %{customdata[1]:.1f}%<extra></extra>',
+            hovertemplate='<b>%{customdata[0]}</b><br>Contagem: %{customdata[1]}<br>Percentual: %{customdata[2]}<extra></extra>',
             hoverlabel=dict(font=dict(size=14)),
             line=dict(width=4),
             marker=dict(size=8)
