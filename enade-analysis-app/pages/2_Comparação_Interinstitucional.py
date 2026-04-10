@@ -183,8 +183,26 @@ with col2:
 st.markdown("---")
 st.header('📊 Comparação Interinstitucional')
 
+# Seletor para escolher qual nota exibir
+col_selector, col_checkbox = st.columns([1, 2])
+with col_selector:
+    nota_selecionada = st.selectbox(
+        "Selecionar nota",
+        ["Média Conceito", "Formação Geral", "Componente Específico"],
+        index=0
+    )
+
+# Mapear seleção para nome da coluna
+mapa_notas = {
+    "Média Conceito": "Média",
+    "Formação Geral": "Formação Geral",
+    "Componente Específico": "Componente Específico"
+}
+coluna_nota = mapa_notas[nota_selecionada]
+
 # Checkbox para mostrar apenas cursos em comum
-apenas_comum = st.checkbox("Mostrar apenas cursos em comum", value=False)
+with col_checkbox:
+    apenas_comum = st.checkbox("Mostrar apenas cursos em comum", value=False)
 
 # Verificar se ambos os dataframes têm dados
 if not filtered_df.empty and not filtered_df2.empty:
@@ -239,9 +257,9 @@ if not filtered_df.empty and not filtered_df2.empty:
         avg_df = avg_df[avg_df['Área de Avaliação'].isin(cursos_comum)]
         avg_df2 = avg_df2[avg_df2['Área de Avaliação'].isin(cursos_comum)]
     
-    # Obter lista de cursos ordenada (ordem decrescente pela média combinada)
+    # Obter lista de cursos ordenada (ordem alfabética)
     # ordenar com base na abreviatura para manter eixo X curto
-    cursos_ordenados = df_comparacao.groupby('Sigla Área')['Média'].mean().sort_values(ascending=False).index.tolist()
+    cursos_ordenados = sorted(df_comparacao['Sigla Área'].unique())
     
     # Converter colunas para categoria ordenada usando abreviação
     df_comparacao['Sigla Área'] = pd.Categorical(df_comparacao['Sigla Área'], categories=cursos_ordenados, ordered=True)
@@ -251,22 +269,30 @@ if not filtered_df.empty and not filtered_df2.empty:
     fig_comparativo = px.line(
         df_comparacao, 
         x='Sigla Área', 
-        y='Média', 
+        y=coluna_nota, 
         color='Instituicao',
         markers=True,
         line_shape='linear',
         title="",
-        custom_data=['Área de Avaliação','Instituicao','Formação Geral','Componente Específico']
+        custom_data=['Área de Avaliação','Instituicao','Média','Formação Geral','Componente Específico']
     )
+    
+    # Definir rótulo do eixo Y conforme a nota selecionada
+    labels_y = {
+        "Média": "Média do Conceito ENADE",
+        "Formação Geral": "Nota Padronizada - Formação Geral",
+        "Componente Específico": "Nota Padronizada - Componente Específico"
+    }
+    
     fig_comparativo.update_layout(
         title="",
         xaxis_tickangle=0,
         template="plotly_white",
         xaxis_title='Curso',
-        yaxis_title='Média do Conceito ENADE',
+        yaxis_title=labels_y[coluna_nota],
         height=600
     )
-    fig_comparativo.update_traces(hovertemplate='<b>%{customdata[0]}</b><br>Instituição: %{customdata[1]}<br>Média Conceito: %{y:.2f}<br>Formação Geral: %{customdata[2]:.2f}<br>Componente Específico: %{customdata[3]:.2f}<extra></extra>', hoverlabel=dict(font=dict(size=14)), line=dict(width=4), marker=dict(size=8))
+    fig_comparativo.update_traces(hovertemplate='<b>%{customdata[0]}</b><br>Instituição: %{customdata[1]}<br>Média Conceito: %{customdata[2]:.2f}<br>Formação Geral: %{customdata[3]:.2f}<br>Componente Específico: %{customdata[4]:.2f}<extra></extra>', hoverlabel=dict(font=dict(size=14)), line=dict(width=4), marker=dict(size=8))
     # Forçar a ordem dos cursos no eixo X (já são abreviados)
     fig_comparativo.update_xaxes(categoryorder='array', categoryarray=cursos_ordenados)
     st.plotly_chart(fig_comparativo, width='stretch')
