@@ -622,7 +622,7 @@ if selected_ies and len(selected_ies) == 1:
 elif has_filters1:
     nome_inst1 = "Instituição 1"
 else:
-    nome_inst1 = "Média Nacional"
+    nome_inst1 = "Contagem Nacional"
 
 nome_inst2 = "Instituição 2"
 if enable_comparison:
@@ -632,7 +632,7 @@ if enable_comparison:
     elif has_filters2:
         nome_inst2 = "Instituição 2"
     else:
-        nome_inst2 = "Média Nacional"
+        nome_inst2 = "Contagem Nacional"
 
 st.markdown("---")
 
