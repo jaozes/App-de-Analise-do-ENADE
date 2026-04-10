@@ -211,12 +211,16 @@ if not filtered_df.empty and not filtered_df2.empty:
     avg_df = filtered_df.groupby('Área de Avaliação')['Conceito Enade (Contínuo)'].mean().reset_index()
     avg_df['Área_abrev'] = avg_df['Área de Avaliação'].map(ABBR).fillna(avg_df['Área de Avaliação'])
     avg_df['Média'] = avg_df['Conceito Enade (Contínuo)'].round(2)
+    avg_df['Formação Geral'] = filtered_df.groupby('Área de Avaliação')['Nota Padronizada - FG'].mean().round(2).reindex(avg_df['Área de Avaliação']).values
+    avg_df['Componente Específico'] = filtered_df.groupby('Área de Avaliação')['Nota Padronizada - CE'].mean().round(2).reindex(avg_df['Área de Avaliação']).values
     avg_df["Instituicao"] = nome_inst1
     avg_df = avg_df.rename(columns={'Área_abrev': 'Sigla Área'})
     
     avg_df2 = filtered_df2.groupby('Área de Avaliação')['Conceito Enade (Contínuo)'].mean().reset_index()
     avg_df2['Área_abrev'] = avg_df2['Área de Avaliação'].map(ABBR).fillna(avg_df2['Área de Avaliação'])
     avg_df2['Média'] = avg_df2['Conceito Enade (Contínuo)'].round(2)
+    avg_df2['Formação Geral'] = filtered_df2.groupby('Área de Avaliação')['Nota Padronizada - FG'].mean().round(2).reindex(avg_df2['Área de Avaliação']).values
+    avg_df2['Componente Específico'] = filtered_df2.groupby('Área de Avaliação')['Nota Padronizada - CE'].mean().round(2).reindex(avg_df2['Área de Avaliação']).values
     avg_df2["Instituicao"] = nome_inst2
     avg_df2 = avg_df2.rename(columns={'Área_abrev': 'Sigla Área'})
     
@@ -252,7 +256,7 @@ if not filtered_df.empty and not filtered_df2.empty:
         markers=True,
         line_shape='linear',
         title="",
-        custom_data=['Área de Avaliação','Instituicao']
+        custom_data=['Área de Avaliação','Instituicao','Formação Geral','Componente Específico']
     )
     fig_comparativo.update_layout(
         title="",
@@ -262,7 +266,7 @@ if not filtered_df.empty and not filtered_df2.empty:
         yaxis_title='Média do Conceito ENADE',
         height=600
     )
-    fig_comparativo.update_traces(hovertemplate='<b>%{customdata[0]}</b><br>Instituição: %{customdata[1]}<br>Média: %{y:.2f}<extra></extra>', hoverlabel=dict(font=dict(size=14)), line=dict(width=4), marker=dict(size=8))
+    fig_comparativo.update_traces(hovertemplate='<b>%{customdata[0]}</b><br>Instituição: %{customdata[1]}<br>Média Conceito: %{y:.2f}<br>Formação Geral: %{customdata[2]:.2f}<br>Componente Específico: %{customdata[3]:.2f}<extra></extra>', hoverlabel=dict(font=dict(size=14)), line=dict(width=4), marker=dict(size=8))
     # Forçar a ordem dos cursos no eixo X (já são abreviados)
     fig_comparativo.update_xaxes(categoryorder='array', categoryarray=cursos_ordenados)
     st.plotly_chart(fig_comparativo, width='stretch')
@@ -272,10 +276,10 @@ if not filtered_df.empty and not filtered_df2.empty:
     with col_tab1:
         st.subheader(f'{nome_inst1} - Médias por Curso')
         # mostramos também a abreviatura para facilitar visualização
-        st.dataframe(avg_df[['Sigla Área','Área de Avaliação', 'Média']], height=400, width='stretch', hide_index=True)
+        st.dataframe(avg_df[['Sigla Área','Área de Avaliação', 'Média', 'Formação Geral', 'Componente Específico']], height=400, width='stretch', hide_index=True)
     with col_tab2:
         st.subheader(f'{nome_inst2} - Médias por Curso')
-        st.dataframe(avg_df2[['Sigla Área','Área de Avaliação', 'Média']], height=400, width='stretch', hide_index=True)
+        st.dataframe(avg_df2[['Sigla Área','Área de Avaliação', 'Média', 'Formação Geral', 'Componente Específico']], height=400, width='stretch', hide_index=True)
     
 elif filtered_df.empty and filtered_df2.empty:
     st.write('Nenhum dado encontrado com os filtros selecionados para ambas as instituições.')
