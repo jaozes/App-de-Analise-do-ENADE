@@ -295,6 +295,229 @@ QE_VALUE_LABELS = {
     },
 }
 
+# Dicionário de abreviações para exibição nas tabelas
+QE_ABBREVIATIONS = {
+    "TP_SEXO": {
+        "M": "Masc.",
+        "F": "Fem.",
+        "9": "Indef.",
+    },
+    "QE_I01": {
+        "A": "Solteiro",
+        "B": "Casado",
+        "C": "Divorc.",
+        "D": "Viúvo",
+        "E": "Outro",
+    },
+    "QE_I02": {
+        "A": "Branca",
+        "B": "Preta",
+        "C": "Amarela",
+        "D": "Parda",
+        "E": "Indígena",
+        "F": "N/ decl.",
+    },
+    "QE_I03": {
+        "A": "Bras.",
+        "B": "Bras. nat.",
+        "C": "Estrang.",
+    },
+    "QE_I04": {
+        "A": "Nenhuma",
+        "B": "Fund. I",
+        "C": "Fund. II",
+        "D": "Ens. Médio",
+        "E": "Graduação",
+        "F": "Pós-grad.",
+    },
+    "QE_I05": {
+        "A": "Nenhuma",
+        "B": "Fund. I",
+        "C": "Fund. II",
+        "D": "Ens. Médio",
+        "E": "Graduação",
+        "F": "Pós-grad.",
+    },
+    "QE_I06": {
+        "A": "Sozinho",
+        "B": "C/ pais",
+        "C": "C/ cônjuge",
+        "D": "C/ outros",
+        "E": "Aloj. univ.",
+        "F": "Outros",
+    },
+    "QE_I07": {
+        "A": "0",
+        "B": "1",
+        "C": "2",
+        "D": "3",
+        "E": "4",
+        "F": "5",
+        "G": "6",
+        "H": "7+",
+    },
+    "QE_I08": {
+        "A": "Até 1.5 SM",
+        "B": "1.5–3 SM",
+        "C": "3.5–5 SM",
+        "D": "5.5–6 SM",
+        "E": "6–10 SM",
+        "F": "10–30 SM",
+        "G": "30+ SM",
+    },
+    "QE_I09": {
+        "A": "Sem renda (Gov.)",
+        "B": "Sem renda (Fam.)",
+        "C": "Renda + ajuda",
+        "D": "Renda própria",
+        "E": "Ajuda família",
+        "F": "Resp. família",
+    },
+    "QE_I10": {
+        "A": "Desemp.",
+        "B": "Trab. event.",
+        "C": "Até 20h",
+        "D": "21–39h",
+        "E": "40h+",
+    },
+    "QE_I11": {
+        "A": "Nenhuma",
+        "B": "ProUni int.",
+        "C": "ProUni parc.",
+        "D": "FIES",
+        "E": "ProUni+FIES",
+        "F": "FIES parc.",
+        "G": "Bolsa gov.",
+        "H": "Bolsa inst.",
+        "I": "Bolsa outro",
+        "J": "Financ. inst.",
+        "K": "Financ. banc.",
+    },
+    "QE_I12": {
+        "A": "Nenhum",
+        "B": "Aux. moradia",
+        "C": "Aux. alim.",
+        "D": "Moradia+alim.",
+        "E": "Perm. geral",
+        "F": "Outro",
+    },
+    "QE_I13": {
+        "A": "Nenhum",
+        "B": "IC",
+        "C": "Monitoria",
+        "D": "PET",
+        "E": "Outro",
+    },
+    "QE_I14": {
+        "A": "Não",
+        "B": "CsF",
+        "C": "Interc. Fed.",
+        "D": "Interc. Est.",
+        "E": "Interc. IES",
+        "F": "Outro",
+    },
+    "QE_I15": {
+        "A": "Não",
+        "B": "Étnico",
+        "C": "Renda",
+        "D": "Esc. púb.",
+        "E": "Misto",
+        "F": "Outro",
+    },
+    "QE_I16": {
+        "11": "RO", "12": "AC", "13": "AM", "14": "RR", "15": "PA",
+        "16": "AP", "17": "TO", "21": "MA", "22": "PI", "23": "CE",
+        "24": "RN", "25": "PB", "26": "PE", "27": "AL", "28": "SE",
+        "29": "BA", "31": "MG", "32": "ES", "33": "RJ", "35": "SP",
+        "41": "PR", "42": "SC", "43": "RS", "50": "MS", "51": "MT",
+        "52": "GO", "53": "DF", "99": "N/A",
+    },
+    "QE_I17": {
+        "A": "Pública",
+        "B": "Privada",
+        "C": "Exterior",
+        "D": "Maior pub.",
+        "E": "Maior priv.",
+        "F": "Misto/ext.",
+    },
+    "QE_I18": {
+        "A": "Tradicional",
+        "B": "Técnico",
+        "C": "Magistério",
+        "D": "EJA",
+        "E": "Outro",
+    },
+    "QE_I19": {
+        "A": "Ninguém",
+        "B": "Pais",
+        "C": "Família",
+        "D": "Prof.",
+        "E": "Relig.",
+        "F": "Amigos",
+        "G": "Outro",
+    },
+    "QE_I20": {
+        "A": "Sem dif.",
+        "B": "Sem apoio",
+        "C": "Pais",
+        "D": "Avós",
+        "E": "Família",
+        "F": "Relig.",
+        "G": "Amigos",
+        "H": "Prof.",
+        "I": "Apoio IES",
+        "J": "Trabalho",
+        "K": "Outro",
+    },
+    "QE_I21": {
+        "A": "Sim",
+        "B": "Não",
+        "C": "Nenhum",
+    },
+    "QE_I22": {
+        "A": "0",
+        "B": "1–2",
+        "C": "3–5",
+        "D": "6–8",
+        "E": "8+",
+    },
+    "QE_I23": {
+        "A": "0h",
+        "B": "1–3h",
+        "C": "4–7h",
+        "D": "8–12h",
+        "E": "8–12h",
+    },
+    "QE_I24": {
+        "A": "Pres.",
+        "B": "Semi",
+        "C": "Misto",
+        "D": "EAD",
+        "E": "Não",
+    },
+    "QE_I25": {
+        "A": "Mercado",
+        "B": "Família",
+        "C": "Valoriz.",
+        "D": "Prestígio",
+        "E": "Vocação",
+        "F": "EAD",
+        "G": "Conc. baixa",
+        "H": "Outro",
+    },
+    "QE_I26": {
+        "A": "Gratuito",
+        "B": "Preço",
+        "C": "Próx. casa",
+        "D": "Próx. trab.",
+        "E": "Acesso",
+        "F": "Qualidade",
+        "G": "Única op.",
+        "H": "Bolsa",
+        "I": "Outro",
+    },
+}
+
 
 def normalize_col(name: str) -> str:
     """Normaliza nomes de colunas para facilitar uso (remove acentos e espaços extras)."""
@@ -343,6 +566,24 @@ def sort_responses(df: pd.DataFrame, column: str, var_name: str = None) -> pd.Da
     
     # Se não conseguir ordenar por letras, ordena por contagem
     return df.sort_values("count", ascending=False).reset_index(drop=True)
+
+
+def abbreviate_response(var_name: str, full_text: str) -> str:
+    """Converte resposta completa para abreviação usando QE_ABBREVIATIONS."""
+    if var_name not in QE_ABBREVIATIONS:
+        return full_text
+    
+    abbr_dict = QE_ABBREVIATIONS[var_name]
+    
+    # Tentar encontrar a abreviação pelo mapeamento reverso (texto -> letra)
+    if var_name in QE_VALUE_LABELS:
+        labels_dict = QE_VALUE_LABELS[var_name]
+        text_to_letter = {v: k for k, v in labels_dict.items()}
+        letter = text_to_letter.get(full_text)
+        if letter and letter in abbr_dict:
+            return abbr_dict[letter]
+    
+    return full_text
 
 
 from utils.data_loader import load_conceito
@@ -861,6 +1102,7 @@ else:
             else:
                 display_df1 = freq1_prep[['Resposta_Completa', 'Sigla Resposta', 'Contagem']].copy()
                 perc1 = (display_df1['Contagem'] / display_df1['Contagem'].sum() * 100).round(1)
+                display_df1['Resposta_Completa'] = display_df1['Resposta_Completa'].apply(lambda x: abbreviate_response(selected_var, x))
                 display_df1['Contagem'] = display_df1['Contagem'].apply(lambda x: format_br_number(x, 0))
                 display_df1['%'] = [format_br_percentage(p) for p in perc1]
                 display_df1.columns = ['Resposta', 'Sigla', 'Contagem', '%']
@@ -877,6 +1119,7 @@ else:
             else:
                 display_df2 = freq2_prep[['Resposta_Completa', 'Sigla Resposta', 'Contagem']].copy()
                 perc2 = (display_df2['Contagem'] / display_df2['Contagem'].sum() * 100).round(1)
+                display_df2['Resposta_Completa'] = display_df2['Resposta_Completa'].apply(lambda x: abbreviate_response(selected_var, x))
                 display_df2['Contagem'] = display_df2['Contagem'].apply(lambda x: format_br_number(x, 0))
                 display_df2['%'] = [format_br_percentage(p) for p in perc2]
                 display_df2.columns = ['Resposta', 'Sigla', 'Contagem', '%']
@@ -943,6 +1186,7 @@ else:
             freq_display.columns = ["Idade", "Contagem", "%"]
         else:
             freq_display = freq_line[["Resposta", "Sigla Resposta", "count_fmt", "percent_fmt"]].copy()
+            freq_display['Resposta'] = freq_display['Resposta'].apply(lambda x: abbreviate_response(selected_var, x))
             freq_display.columns = ["Resposta", "Sigla", "Contagem", "%"]
         st.dataframe(freq_display, width='stretch', hide_index=True)
 
