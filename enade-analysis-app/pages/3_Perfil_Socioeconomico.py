@@ -719,7 +719,7 @@ col1, col2 = st.columns(2)
 with col1:
     st.markdown("### **1ª Instituição**")
 
-    col1a, col1b, col1c = st.columns(3)
+    col1a, col1b, col1c, col1d = st.columns(4)
     with col1a:
         ufs_options1 = sorted(get_filtered_df(None, st.session_state.get('selected_municipios', []), st.session_state.get('selected_ies', []), st.session_state.get('selected_areas', []), st.session_state.get('selected_modalidades', []), st.session_state.get('selected_categorias', []), st.session_state.get('selected_graus', []))['Sigla da UF** '].dropna().unique())
         selected_uf = st.multiselect(
@@ -728,55 +728,55 @@ with col1:
             key='uf1'
         )
     with col1b:
-        areas_options1 = sorted(get_filtered_df(selected_uf, st.session_state.get('selected_municipios', []), st.session_state.get('selected_ies', []), None, st.session_state.get('selected_modalidades', []), st.session_state.get('selected_categorias', []), st.session_state.get('selected_graus', []))['Área de Avaliação'].dropna().unique())
-        selected_curso = st.multiselect(
-            "Área", 
-            options=areas_options1, 
-            key='area1'
-        )
-    with col1c:
-        modalidades_options1 = sorted(get_filtered_df(selected_uf, st.session_state.get('selected_municipios', []), st.session_state.get('selected_ies', []), selected_curso, None, st.session_state.get('selected_categorias', []), st.session_state.get('selected_graus', []))['Modalidade de Ensino'].dropna().unique())
-        selected_modalidade = st.multiselect(
-            "Modalidade", 
-            options=modalidades_options1, 
-            key='mod1'
-        )
-
-    col1d, col1e, col1f, col1g = st.columns([1,1,1,1.5])
-    with col1d:
-        categorias_options1 = sorted(get_filtered_df(selected_uf, st.session_state.get('selected_municipios', []), st.session_state.get('selected_ies', []), selected_curso, selected_modalidade, None, st.session_state.get('selected_graus', []))['Categoria Administrativa'].dropna().unique())
-        selected_categoria = st.multiselect(
-            "Categoria Adm.", 
-            options=categorias_options1, 
-            key='cat1'
-        )
-    with col1e:
-        graus_options1 = sorted(get_filtered_df(selected_uf, st.session_state.get('selected_municipios', []), st.session_state.get('selected_ies', []), selected_curso, selected_modalidade, selected_categoria, None)['Grau Acadêmico'].dropna().unique())
-        selected_grau = st.multiselect(
-            "Grau", 
-            options=graus_options1, 
-            key='grau1'
-        )
-    with col1f:
-        municipios_options1 = sorted(get_filtered_df(selected_uf, None, st.session_state.get('selected_ies', []), selected_curso, selected_modalidade, selected_categoria, selected_grau)['Município do Curso**'].dropna().unique())
+        municipios_options1 = sorted(get_filtered_df(selected_uf, None, st.session_state.get('selected_ies', []), st.session_state.get('selected_areas', []), st.session_state.get('selected_modalidades', []), st.session_state.get('selected_categorias', []), st.session_state.get('selected_graus', []))['Município do Curso**'].dropna().unique())
         selected_municipio = st.multiselect(
             "Município", 
             options=municipios_options1, 
             key='mun1'
         )
-    with col1g:
-        ies_options1 = sorted(get_filtered_df(selected_uf, selected_municipio, None, selected_curso, selected_modalidade, selected_categoria, selected_grau)['Nome da IES*'].dropna().unique())
+    with col1c:
+        ies_options1 = sorted(get_filtered_df(selected_uf, selected_municipio, None, st.session_state.get('selected_areas', []), st.session_state.get('selected_modalidades', []), st.session_state.get('selected_categorias', []), st.session_state.get('selected_graus', []))['Nome da IES*'].dropna().unique())
         selected_ies = st.multiselect(
             "IES", 
             options=ies_options1, 
             key='ies1'
+        )
+    with col1d:
+        areas_options1 = sorted(get_filtered_df(selected_uf, selected_municipio, selected_ies, None, st.session_state.get('selected_modalidades', []), st.session_state.get('selected_categorias', []), st.session_state.get('selected_graus', []))['Área de Avaliação'].dropna().unique())
+        selected_curso = st.multiselect(
+            "Curso", 
+            options=areas_options1, 
+            key='area1'
+        )
+
+    col1e, col1f, col1g = st.columns(3)
+    with col1e:
+        modalidades_options1 = sorted(get_filtered_df(selected_uf, selected_municipio, selected_ies, selected_curso, None, st.session_state.get('selected_categorias', []), st.session_state.get('selected_graus', []))['Modalidade de Ensino'].dropna().unique())
+        selected_modalidade = st.multiselect(
+            "Modalidade", 
+            options=modalidades_options1, 
+            key='mod1'
+        )
+    with col1f:
+        categorias_options1 = sorted(get_filtered_df(selected_uf, selected_municipio, selected_ies, selected_curso, selected_modalidade, None, st.session_state.get('selected_graus', []))['Categoria Administrativa'].dropna().unique())
+        selected_categoria = st.multiselect(
+            "Categoria", 
+            options=categorias_options1, 
+            key='cat1'
+        )
+    with col1g:
+        graus_options1 = sorted(get_filtered_df(selected_uf, selected_municipio, selected_ies, selected_curso, selected_modalidade, selected_categoria, None)['Grau Acadêmico'].dropna().unique())
+        selected_grau = st.multiselect(
+            "Grau", 
+            options=graus_options1, 
+            key='grau1'
         )
 
 if enable_comparison:
     with col2:
         st.markdown("### **2ª Instituição**")
         
-        col2a, col2b, col2c = st.columns(3)
+        col2a, col2b, col2c, col2d = st.columns(4)
         with col2a:
             ufs_options2 = sorted(get_filtered_df(None, st.session_state.get('selected_municipios2', []), st.session_state.get('selected_ies2', []), st.session_state.get('selected_areas2', []), st.session_state.get('selected_modalidades2', []), st.session_state.get('selected_categorias2', []), st.session_state.get('selected_graus2', []))['Sigla da UF** '].dropna().unique())
             selected_uf2 = st.multiselect(
@@ -784,27 +784,39 @@ if enable_comparison:
                 options=ufs_options2
             )
         with col2b:
-            areas_options2 = sorted(get_filtered_df(selected_uf2, st.session_state.get('selected_municipios2', []), st.session_state.get('selected_ies2', []), None, st.session_state.get('selected_modalidades2', []), st.session_state.get('selected_categorias2', []), st.session_state.get('selected_graus2', []))['Área de Avaliação'].dropna().unique())
-            selected_curso2 = st.multiselect(
-                "Área", key="area2",
-                options=areas_options2
+            municipios_options2 = sorted(get_filtered_df(selected_uf2, None, st.session_state.get('selected_ies2', []), st.session_state.get('selected_areas2', []), st.session_state.get('selected_modalidades2', []), st.session_state.get('selected_categorias2', []), st.session_state.get('selected_graus2', []))['Município do Curso**'].dropna().unique())
+            selected_municipio2 = st.multiselect(
+                "Município", key="mun2",
+                options=municipios_options2
             )
         with col2c:
-            modalidades_options2 = sorted(get_filtered_df(selected_uf2, st.session_state.get('selected_municipios2', []), st.session_state.get('selected_ies2', []), selected_curso2, None, st.session_state.get('selected_categorias2', []), st.session_state.get('selected_graus2', []))['Modalidade de Ensino'].dropna().unique())
+            ies_options2 = sorted(get_filtered_df(selected_uf2, selected_municipio2, None, st.session_state.get('selected_areas2', []), st.session_state.get('selected_modalidades2', []), st.session_state.get('selected_categorias2', []), st.session_state.get('selected_graus2', []))['Nome da IES*'].dropna().unique())
+            selected_ies2 = st.multiselect(
+                "IES", key="ies2",
+                options=ies_options2
+            )
+        with col2d:
+            areas_options2 = sorted(get_filtered_df(selected_uf2, selected_municipio2, selected_ies2, None, st.session_state.get('selected_modalidades2', []), st.session_state.get('selected_categorias2', []), st.session_state.get('selected_graus2', []))['Área de Avaliação'].dropna().unique())
+            selected_curso2 = st.multiselect(
+                "Curso", key="area2",
+                options=areas_options2
+            )
+        
+        col2e, col2f, col2g = st.columns(3)
+        with col2e:
+            modalidades_options2 = sorted(get_filtered_df(selected_uf2, selected_municipio2, selected_ies2, selected_curso2, None, st.session_state.get('selected_categorias2', []), st.session_state.get('selected_graus2', []))['Modalidade de Ensino'].dropna().unique())
             selected_modalidade2 = st.multiselect(
                 "Modalidade", key="mod2",
                 options=modalidades_options2
             )
-        
-        col2d, col2e, col2f, col2g = st.columns([1,1,1,1.5])
-        with col2d:
-            categorias_options2 = sorted(get_filtered_df(selected_uf2, st.session_state.get('selected_municipios2', []), st.session_state.get('selected_ies2', []), selected_curso2, selected_modalidade2, None, st.session_state.get('selected_graus2', []))['Categoria Administrativa'].dropna().unique())
+        with col2f:
+            categorias_options2 = sorted(get_filtered_df(selected_uf2, selected_municipio2, selected_ies2, selected_curso2, selected_modalidade2, None, st.session_state.get('selected_graus2', []))['Categoria Administrativa'].dropna().unique())
             selected_categoria2 = st.multiselect(
-                "Categoria Adm.", key="cat2",
+                "Categoria", key="cat2",
                 options=categorias_options2
             )
-        with col2e:
-            graus_options2 = sorted(get_filtered_df(selected_uf2, st.session_state.get('selected_municipios2', []), st.session_state.get('selected_ies2', []), selected_curso2, selected_modalidade2, selected_categoria2, None)['Grau Acadêmico'].dropna().unique())
+        with col2g:
+            graus_options2 = sorted(get_filtered_df(selected_uf2, selected_municipio2, selected_ies2, selected_curso2, selected_modalidade2, selected_categoria2, None)['Grau Acadêmico'].dropna().unique())
             selected_grau2 = st.multiselect(
                 "Grau", key="grau2",
                 options=graus_options2
