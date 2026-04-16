@@ -1016,27 +1016,17 @@ else:
         freq2_prep["Instituicao"] = nome_inst2
         freq2_prep = freq2_prep.rename(columns={'Resposta': 'Resposta_Completa', 'count': 'Sigla Resposta'})
 
-        # Create sigla for x-axis (reuse logic)
-        def create_siglas(df_prep):
-            unique_respostas = df_prep['Resposta_Completa'].tolist()
-            sigla_mapping = {resp: str(resp)[:3].upper() for resp in unique_respostas}
-            sigla_used = {}
-            final_siglas = []
-            for resp in unique_respostas:
-                sigla = sigla_mapping[resp]
-                count = sigla_used.get(sigla, 0)
-                final_sigla = sigla if count == 0 else f"{sigla}{count}"
-                sigla_used[sigla] = count + 1
-                final_siglas.append(final_sigla)
-            df_prep['Sigla Resposta'] = final_siglas
+        # Create abbreviations for display
+        def create_abbreviations(df_prep):
+            df_prep['Abreviacao'] = df_prep['Resposta_Completa'].apply(lambda x: abbreviate_response(selected_var, x))
             return df_prep
 
-        freq1_prep = create_siglas(freq1_prep)
-        freq2_prep = create_siglas(freq2_prep)
+        freq1_prep = create_abbreviations(freq1_prep)
+        freq2_prep = create_abbreviations(freq2_prep)
 
         df_comparacao = pd.concat([
-            freq1_prep[['Sigla Resposta', 'Contagem', 'Percentual', 'Instituicao', 'Resposta_Completa']], 
-            freq2_prep[['Sigla Resposta', 'Contagem', 'Percentual', 'Instituicao', 'Resposta_Completa']]
+            freq1_prep[['Abreviacao', 'Contagem', 'Percentual', 'Instituicao', 'Resposta_Completa']], 
+            freq2_prep[['Abreviacao', 'Contagem', 'Percentual', 'Instituicao', 'Resposta_Completa']]
         ], ignore_index=True)
 
         # Ordenar por ordem das alternativas (A, B, C, D...) usando QE_VALUE_LABELS
@@ -1055,12 +1045,12 @@ else:
             # Se não estiver em QE_VALUE_LABELS, ordenar alfabeticamente
             respostas_unicas_sorted = sorted(respostas_unicas)
         
-        # Criar mapeamento de Sigla Resposta mantendo a ordem correta
-        sigla_resposta_map = df_comparacao[['Sigla Resposta', 'Resposta_Completa']].drop_duplicates().set_index('Resposta_Completa')['Sigla Resposta'].to_dict()
-        cursos_ordenados = [sigla_resposta_map[resp] for resp in respostas_unicas_sorted if resp in sigla_resposta_map]
+        # Criar mapeamento de Abreviacao mantendo a ordem correta
+        abrev_resposta_map = df_comparacao[['Abreviacao', 'Resposta_Completa']].drop_duplicates().set_index('Resposta_Completa')['Abreviacao'].to_dict()
+        abrev_ordenadas = [abrev_resposta_map[resp] for resp in respostas_unicas_sorted if resp in abrev_resposta_map]
         
-        df_comparacao['Sigla Resposta'] = pd.Categorical(df_comparacao['Sigla Resposta'], categories=cursos_ordenados, ordered=True)
-        df_comparacao = df_comparacao.sort_values(['Sigla Resposta', 'Instituicao'])
+        df_comparacao['Abreviacao'] = pd.Categorical(df_comparacao['Abreviacao'], categories=abrev_ordenadas, ordered=True)
+        df_comparacao = df_comparacao.sort_values(['Abreviacao', 'Instituicao'])
         
         # Adicionar coluna formatada para hover
         df_comparacao['Contagem_fmt'] = df_comparacao['Contagem'].apply(lambda x: format_br_number(x, 0))
@@ -1068,7 +1058,7 @@ else:
 
         fig_comparativo = px.line(
             df_comparacao, 
-            x='Sigla Resposta', 
+            x='Abreviacao', 
             y='Percentual', 
             color='Instituicao',
             markers=True,
@@ -1086,7 +1076,7 @@ else:
         )
         fig_comparativo.update_yaxes(ticksuffix='%')
         fig_comparativo.update_traces(hovertemplate='<b>%{customdata[0]}</b><br>Instituição: %{customdata[1]}<br>Percentual: %{customdata[2]}<br>Contagem: %{customdata[3]}<extra></extra>', hoverlabel=dict(font=dict(size=14)), line=dict(width=4), marker=dict(size=8))
-        fig_comparativo.update_xaxes(categoryorder='array', categoryarray=cursos_ordenados)
+        fig_comparativo.update_xaxes(categoryorder='array', categoryarray=abrev_ordenadas)
         st.plotly_chart(fig_comparativo, width="stretch")
 
         col_tab1, col_tab2 = st.columns(2)
@@ -1100,12 +1090,11 @@ else:
                 display_df1['%'] = [format_br_percentage(p) for p in perc1]
                 display_df1.columns = ['Idade', 'Contagem', '%']
             else:
-                display_df1 = freq1_prep[['Resposta_Completa', 'Sigla Resposta', 'Contagem']].copy()
+                display_df1 = freq1_prep[['Resposta_Completa', 'Abreviacao', 'Contagem']].copy()
                 perc1 = (display_df1['Contagem'] / display_df1['Contagem'].sum() * 100).round(1)
-                display_df1['Resposta_Completa'] = display_df1['Resposta_Completa'].apply(lambda x: abbreviate_response(selected_var, x))
                 display_df1['Contagem'] = display_df1['Contagem'].apply(lambda x: format_br_number(x, 0))
                 display_df1['%'] = [format_br_percentage(p) for p in perc1]
-                display_df1.columns = ['Resposta', 'Sigla', 'Contagem', '%']
+                display_df1.columns = ['Resposta', 'Abreviação', 'Contagem', '%']
             st.dataframe(display_df1, width='stretch', hide_index=True)
         with col_tab2:
             st.markdown(f"**{nome_inst2}**")
@@ -1117,12 +1106,11 @@ else:
                 display_df2['%'] = [format_br_percentage(p) for p in perc2]
                 display_df2.columns = ['Idade', 'Contagem', '%']
             else:
-                display_df2 = freq2_prep[['Resposta_Completa', 'Sigla Resposta', 'Contagem']].copy()
+                display_df2 = freq2_prep[['Resposta_Completa', 'Abreviacao', 'Contagem']].copy()
                 perc2 = (display_df2['Contagem'] / display_df2['Contagem'].sum() * 100).round(1)
-                display_df2['Resposta_Completa'] = display_df2['Resposta_Completa'].apply(lambda x: abbreviate_response(selected_var, x))
                 display_df2['Contagem'] = display_df2['Contagem'].apply(lambda x: format_br_number(x, 0))
                 display_df2['%'] = [format_br_percentage(p) for p in perc2]
-                display_df2.columns = ['Resposta', 'Sigla', 'Contagem', '%']
+                display_df2.columns = ['Resposta', 'Abreviação', 'Contagem', '%']
             st.dataframe(display_df2, width='stretch', hide_index=True)
     else:
         st.subheader(f"📊 Contagem de respostas: {available_labels[selected_var]}")
@@ -1130,22 +1118,13 @@ else:
         freq_line = freq.reset_index()
         freq_line['percent'] = (freq_line['count'] / freq_line['count'].sum()) * 100
         
-        if selected_var == "NU_IDADE":
-            freq_line['Sigla Resposta'] = freq_line['Resposta'].astype(str)
-        else:
-            unique_respostas = freq_line['Resposta'].tolist()
-            sigla_mapping = {resp: str(resp)[:3].upper() for resp in unique_respostas}
-            sigla_used = {}
-            final_siglas = []
-            for resp in unique_respostas:
-                sigla = sigla_mapping[resp]
-                count = sigla_used.get(sigla, 0)
-                final_sigla = sigla if count == 0 else f"{sigla}{count}"
-                sigla_used[sigla] = count + 1
-                final_siglas.append(final_sigla)
-            freq_line['Sigla Resposta'] = final_siglas
+        # Adicionar coluna de abreviações
+        freq_line['Abreviacao'] = freq_line['Resposta'].apply(lambda x: abbreviate_response(selected_var, x))
         
-        freq_line['Sigla Resposta'] = pd.Categorical(freq_line['Sigla Resposta'], categories=freq_line['Sigla Resposta'], ordered=True)
+        if selected_var == "NU_IDADE":
+            freq_line['Abreviacao'] = freq_line['Resposta'].astype(str)
+        
+        freq_line['Abreviacao'] = pd.Categorical(freq_line['Abreviacao'], categories=freq_line['Abreviacao'], ordered=True)
         
         # Adicionar colunas formatadas para hover
         freq_line['count_fmt'] = freq_line['count'].apply(lambda x: format_br_number(x, 0))
@@ -1153,7 +1132,7 @@ else:
         
         fig = px.line(
             freq_line,
-            x='Sigla Resposta',
+            x='Abreviacao',
             y='percent',
             markers=True,
             line_shape='linear',
@@ -1176,7 +1155,7 @@ else:
             marker=dict(size=8)
         )
 
-        fig.update_xaxes(categoryorder='array', categoryarray=freq_line['Sigla Resposta'].cat.categories.tolist())
+        fig.update_xaxes(categoryorder='array', categoryarray=freq_line['Abreviacao'].cat.categories.tolist())
         st.plotly_chart(fig, width="stretch")
 
         st.subheader("**Distribuição**")
@@ -1185,9 +1164,8 @@ else:
             freq_display['Resposta'] = freq_display['Resposta'].apply(lambda x: format_br_number(int(x), 0) if pd.notna(x) else x)
             freq_display.columns = ["Idade", "Contagem", "%"]
         else:
-            freq_display = freq_line[["Resposta", "Sigla Resposta", "count_fmt", "percent_fmt"]].copy()
-            freq_display['Resposta'] = freq_display['Resposta'].apply(lambda x: abbreviate_response(selected_var, x))
-            freq_display.columns = ["Resposta", "Sigla", "Contagem", "%"]
+            freq_display = freq_line[["Resposta", "Abreviacao", "count_fmt", "percent_fmt"]].copy()
+            freq_display.columns = ["Resposta", "Abreviação", "Contagem", "%"]
         st.dataframe(freq_display, width='stretch', hide_index=True)
 
 show_footer(
