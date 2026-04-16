@@ -7,6 +7,7 @@ from utils.header import show_logo
 from utils.footer import show_footer
 from utils.header import inject_css
 
+#streamlit run enade-analysis-app/Home.py
 #inject_css()
 show_logo()
 
@@ -764,18 +765,20 @@ else:
         # Prepare freq1 like page2
         freq1_prep = freq.reset_index()
         freq1_prep["Contagem"] = freq1_prep["count"].round(0)
+        freq1_prep["Percentual"] = (freq1_prep["count"] / freq1_prep["count"].sum() * 100).round(2)
         freq1_prep["Instituicao"] = nome_inst1
         freq1_prep = freq1_prep.rename(columns={'Resposta': 'Resposta_Completa', 'count': 'Sigla Resposta'})
         
         freq2_prep = freq2.reset_index()
         freq2_prep["Contagem"] = freq2_prep["count"].round(0)
+        freq2_prep["Percentual"] = (freq2_prep["count"] / freq2_prep["count"].sum() * 100).round(2)
         freq2_prep["Instituicao"] = nome_inst2
         freq2_prep = freq2_prep.rename(columns={'Resposta': 'Resposta_Completa', 'count': 'Sigla Resposta'})
 
         # Create sigla for x-axis (reuse logic)
         def create_siglas(df_prep):
             unique_respostas = df_prep['Resposta_Completa'].tolist()
-            sigla_mapping = {resp: resp[:3].upper() for resp in unique_respostas}
+            sigla_mapping = {resp: str(resp)[:3].upper() for resp in unique_respostas}
             sigla_used = {}
             final_siglas = []
             for resp in unique_respostas:
@@ -791,8 +794,8 @@ else:
         freq2_prep = create_siglas(freq2_prep)
 
         df_comparacao = pd.concat([
-            freq1_prep[['Sigla Resposta', 'Contagem', 'Instituicao', 'Resposta_Completa']], 
-            freq2_prep[['Sigla Resposta', 'Contagem', 'Instituicao', 'Resposta_Completa']]
+            freq1_prep[['Sigla Resposta', 'Contagem', 'Percentual', 'Instituicao', 'Resposta_Completa']], 
+            freq2_prep[['Sigla Resposta', 'Contagem', 'Percentual', 'Instituicao', 'Resposta_Completa']]
         ], ignore_index=True)
 
         # Ordenar por ordem das alternativas (A, B, C, D...) usando QE_VALUE_LABELS
@@ -820,46 +823,64 @@ else:
         
         # Adicionar coluna formatada para hover
         df_comparacao['Contagem_fmt'] = df_comparacao['Contagem'].apply(lambda x: format_br_number(x, 0))
+        df_comparacao['Percentual_fmt'] = df_comparacao['Percentual'].apply(lambda x: format_br_percentage(x))
 
         fig_comparativo = px.line(
             df_comparacao, 
             x='Sigla Resposta', 
-            y='Contagem', 
+            y='Percentual', 
             color='Instituicao',
             markers=True,
             line_shape='linear',
             title="",
-            custom_data=['Resposta_Completa','Instituicao', 'Contagem_fmt']
+            custom_data=['Resposta_Completa','Instituicao', 'Percentual_fmt', 'Contagem_fmt']
         )
         fig_comparativo.update_layout(
             title="",
             xaxis_tickangle=0,
             template="plotly_white",
             xaxis_title='Resposta',
-            yaxis_title='Contagem',
+            yaxis_title='Percentual (%)',
             height=600
         )
-        fig_comparativo.update_traces(hovertemplate='<b>%{customdata[0]}</b><br>Instituição: %{customdata[1]}<br>Contagem: %{customdata[2]}<extra></extra>', hoverlabel=dict(font=dict(size=14)), line=dict(width=4), marker=dict(size=8))
+        fig_comparativo.update_yaxes(ticksuffix='%')
+        fig_comparativo.update_traces(hovertemplate='<b>%{customdata[0]}</b><br>Instituição: %{customdata[1]}<br>Percentual: %{customdata[2]}<br>Contagem: %{customdata[3]}<extra></extra>', hoverlabel=dict(font=dict(size=14)), line=dict(width=4), marker=dict(size=8))
         fig_comparativo.update_xaxes(categoryorder='array', categoryarray=cursos_ordenados)
         st.plotly_chart(fig_comparativo, width="stretch")
 
         col_tab1, col_tab2 = st.columns(2)
         with col_tab1:
             st.markdown(f"**{nome_inst1}**")
-            display_df1 = freq1_prep[['Resposta_Completa', 'Contagem']].copy()
-            perc1 = (display_df1['Contagem'] / display_df1['Contagem'].sum() * 100).round(1)
-            display_df1['Contagem'] = display_df1['Contagem'].apply(lambda x: format_br_number(x, 0))
-            display_df1['%'] = [format_br_percentage(p) for p in perc1]
-            display_df1.columns = ['Resposta', 'Contagem', '%']
-            st.dataframe(display_df1, width="stretch", hide_index=True)
+            if selected_var == "NU_IDADE":
+                display_df1 = freq1_prep[['Resposta_Completa', 'Contagem']].copy()
+                perc1 = (display_df1['Contagem'] / display_df1['Contagem'].sum() * 100).round(1)
+                display_df1['Resposta_Completa'] = display_df1['Resposta_Completa'].apply(lambda x: format_br_number(int(x), 0))
+                display_df1['Contagem'] = display_df1['Contagem'].apply(lambda x: format_br_number(x, 0))
+                display_df1['%'] = [format_br_percentage(p) for p in perc1]
+                display_df1.columns = ['Idade', 'Contagem', '%']
+            else:
+                display_df1 = freq1_prep[['Resposta_Completa', 'Sigla Resposta', 'Contagem']].copy()
+                perc1 = (display_df1['Contagem'] / display_df1['Contagem'].sum() * 100).round(1)
+                display_df1['Contagem'] = display_df1['Contagem'].apply(lambda x: format_br_number(x, 0))
+                display_df1['%'] = [format_br_percentage(p) for p in perc1]
+                display_df1.columns = ['Resposta', 'Sigla', 'Contagem', '%']
+            st.dataframe(display_df1, width='stretch', hide_index=True)
         with col_tab2:
             st.markdown(f"**{nome_inst2}**")
-            display_df2 = freq2_prep[['Resposta_Completa', 'Contagem']].copy()
-            perc2 = (display_df2['Contagem'] / display_df2['Contagem'].sum() * 100).round(1)
-            display_df2['Contagem'] = display_df2['Contagem'].apply(lambda x: format_br_number(x, 0))
-            display_df2['%'] = [format_br_percentage(p) for p in perc2]
-            display_df2.columns = ['Resposta', 'Contagem', '%']
-            st.dataframe(display_df2, width="stretch", hide_index=True)
+            if selected_var == "NU_IDADE":
+                display_df2 = freq2_prep[['Resposta_Completa', 'Contagem']].copy()
+                perc2 = (display_df2['Contagem'] / display_df2['Contagem'].sum() * 100).round(1)
+                display_df2['Resposta_Completa'] = display_df2['Resposta_Completa'].apply(lambda x: format_br_number(int(x), 0))
+                display_df2['Contagem'] = display_df2['Contagem'].apply(lambda x: format_br_number(x, 0))
+                display_df2['%'] = [format_br_percentage(p) for p in perc2]
+                display_df2.columns = ['Idade', 'Contagem', '%']
+            else:
+                display_df2 = freq2_prep[['Resposta_Completa', 'Sigla Resposta', 'Contagem']].copy()
+                perc2 = (display_df2['Contagem'] / display_df2['Contagem'].sum() * 100).round(1)
+                display_df2['Contagem'] = display_df2['Contagem'].apply(lambda x: format_br_number(x, 0))
+                display_df2['%'] = [format_br_percentage(p) for p in perc2]
+                display_df2.columns = ['Resposta', 'Sigla', 'Contagem', '%']
+            st.dataframe(display_df2, width='stretch', hide_index=True)
     else:
         st.subheader(f"📊 Contagem de respostas: {available_labels[selected_var]}")
         # Single institution line chart (existing)
@@ -870,7 +891,7 @@ else:
             freq_line['Sigla Resposta'] = freq_line['Resposta'].astype(str)
         else:
             unique_respostas = freq_line['Resposta'].tolist()
-            sigla_mapping = {resp: resp[:3].upper() for resp in unique_respostas}
+            sigla_mapping = {resp: str(resp)[:3].upper() for resp in unique_respostas}
             sigla_used = {}
             final_siglas = []
             for resp in unique_respostas:
@@ -890,7 +911,7 @@ else:
         fig = px.line(
             freq_line,
             x='Sigla Resposta',
-            y='count',
+            y='percent',
             markers=True,
             line_shape='linear',
             title="",
@@ -900,10 +921,11 @@ else:
             title="",
             template="plotly_white",
             xaxis_title='Resposta',
-            yaxis_title='Contagem',
+            yaxis_title='Percentual (%)',
             xaxis_tickangle=0,
             height=600
         )
+        fig.update_yaxes(ticksuffix='%')
         fig.update_traces(
             hovertemplate='<b>%{customdata[0]}</b><br>Contagem: %{customdata[1]}<br>Percentual: %{customdata[2]}<extra></extra>',
             hoverlabel=dict(font=dict(size=14)),
@@ -915,9 +937,14 @@ else:
         st.plotly_chart(fig, width="stretch")
 
         st.subheader("**Distribuição**")
-        freq_display = freq.reset_index()[["Resposta", "count_fmt", "percent_fmt"]]
-        freq_display.columns = ["Resposta", "Contagem", "%"]
-        st.dataframe(freq_display, width="stretch", hide_index=True)
+        if selected_var == "NU_IDADE":
+            freq_display = freq_line[["Resposta", "count_fmt", "percent_fmt"]].copy()
+            freq_display['Resposta'] = freq_display['Resposta'].apply(lambda x: format_br_number(int(x), 0) if pd.notna(x) else x)
+            freq_display.columns = ["Idade", "Contagem", "%"]
+        else:
+            freq_display = freq_line[["Resposta", "Sigla Resposta", "count_fmt", "percent_fmt"]].copy()
+            freq_display.columns = ["Resposta", "Sigla", "Contagem", "%"]
+        st.dataframe(freq_display, width='stretch', hide_index=True)
 
 show_footer(
 
