@@ -821,18 +821,6 @@ if enable_comparison:
                 "Grau", key="grau2",
                 options=graus_options2
             )
-        with col2f:
-            municipios_options2 = sorted(get_filtered_df(selected_uf2, None, st.session_state.get('selected_ies2', []), selected_curso2, selected_modalidade2, selected_categoria2, selected_grau2)['Município do Curso**'].dropna().unique())
-            selected_municipio2 = st.multiselect(
-                "Município", key="mun2",
-                options=municipios_options2
-            )
-        with col2g:
-            ies_options2 = sorted(get_filtered_df(selected_uf2, selected_municipio2, None, selected_curso2, selected_modalidade2, selected_categoria2, selected_grau2)['Nome da IES*'].dropna().unique())
-            selected_ies2 = st.multiselect(
-                "IES", key="ies2",
-                options=ies_options2
-            )
 
 # Apply filters to both institutions
 conceito_filtrado1 = conceito_df.copy()
