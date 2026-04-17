@@ -279,6 +279,12 @@ if not filtered_df.empty and not filtered_df2.empty:
         ic_data1 = get_ic_by_area(filtered_df, ic_df)
         ic_data2 = get_ic_by_area(filtered_df2, ic_df)
         
+        # Debug para verificar colunas
+        if ic_data1 is not None:
+            st.write(f"Debug: ic_data1 columns = {list(ic_data1.columns)}")
+        if ic_data2 is not None:
+            st.write(f"Debug: ic_data2 columns = {list(ic_data2.columns)}")
+        
         # Mapear tipo de nota para coluna
         nota_tipo_map = {
             "Conceito": "Média",
@@ -305,13 +311,15 @@ if not filtered_df.empty and not filtered_df2.empty:
                         if len(idx) > 0:
                             idx_val = idx[0]
                             # Usar .at[] que é mais seguro para atribuições escalares
-                            avg_df.at[idx_val, f'{coluna_nota_tipo}_CI_Lower'] = float(row['CI_Lower']) if pd.notna(row['CI_Lower']) else np.nan
-                            avg_df.at[idx_val, f'{coluna_nota_tipo}_CI_Upper'] = float(row['CI_Upper']) if pd.notna(row['CI_Upper']) else np.nan
-                            if pd.notna(row['Min']):
+                            if 'CI_Lower' in row.index:
+                                avg_df.at[idx_val, f'{coluna_nota_tipo}_CI_Lower'] = float(row['CI_Lower']) if pd.notna(row['CI_Lower']) else np.nan
+                            if 'CI_Upper' in row.index:
+                                avg_df.at[idx_val, f'{coluna_nota_tipo}_CI_Upper'] = float(row['CI_Upper']) if pd.notna(row['CI_Upper']) else np.nan
+                            if 'Min' in row.index and pd.notna(row['Min']):
                                 avg_df.at[idx_val, f'{coluna_nota_tipo}_Min'] = round(float(row['Min']), 2)
-                            if pd.notna(row['Max']):
+                            if 'Max' in row.index and pd.notna(row['Max']):
                                 avg_df.at[idx_val, f'{coluna_nota_tipo}_Max'] = round(float(row['Max']), 2)
-                            if pd.notna(row['Std']):
+                            if 'Std' in row.index and pd.notna(row['Std']):
                                 avg_df.at[idx_val, f'{coluna_nota_tipo}_Std'] = round(float(row['Std']), 2)
         
         # Adicionar ICs, Min, Max, Std ao avg_df2 usando merge
@@ -333,13 +341,15 @@ if not filtered_df.empty and not filtered_df2.empty:
                         if len(idx) > 0:
                             idx_val = idx[0]
                             # Usar .at[] que é mais seguro para atribuições escalares
-                            avg_df2.at[idx_val, f'{coluna_nota_tipo}_CI_Lower'] = float(row['CI_Lower']) if pd.notna(row['CI_Lower']) else np.nan
-                            avg_df2.at[idx_val, f'{coluna_nota_tipo}_CI_Upper'] = float(row['CI_Upper']) if pd.notna(row['CI_Upper']) else np.nan
-                            if pd.notna(row['Min']):
+                            if 'CI_Lower' in row.index:
+                                avg_df2.at[idx_val, f'{coluna_nota_tipo}_CI_Lower'] = float(row['CI_Lower']) if pd.notna(row['CI_Lower']) else np.nan
+                            if 'CI_Upper' in row.index:
+                                avg_df2.at[idx_val, f'{coluna_nota_tipo}_CI_Upper'] = float(row['CI_Upper']) if pd.notna(row['CI_Upper']) else np.nan
+                            if 'Min' in row.index and pd.notna(row['Min']):
                                 avg_df2.at[idx_val, f'{coluna_nota_tipo}_Min'] = round(float(row['Min']), 2)
-                            if pd.notna(row['Max']):
+                            if 'Max' in row.index and pd.notna(row['Max']):
                                 avg_df2.at[idx_val, f'{coluna_nota_tipo}_Max'] = round(float(row['Max']), 2)
-                            if pd.notna(row['Std']):
+                            if 'Std' in row.index and pd.notna(row['Std']):
                                 avg_df2.at[idx_val, f'{coluna_nota_tipo}_Std'] = round(float(row['Std']), 2)
     
     # Unir os dois dataframes
