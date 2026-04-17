@@ -44,7 +44,8 @@ def load_conceito():
 def load_microdados_grades():
     """
     Load individual student grades from microdados arq3 file (NT_GER, NT_FG, NT_CE by CO_CURSO).
-    Returns DataFrame with columns: CO_CURSO, NT_GER, NT_FG, NT_CE
+    Converts grades from 0-100 scale to 0-5 scale.
+    Returns DataFrame with columns: CO_CURSO, NT_GER, NT_FG, NT_CE (all in 0-5 scale)
     """
     try:
         if not MICRODADOS_ARQ3.exists():
@@ -60,6 +61,10 @@ def load_microdados_grades():
         
         # Remove rows with missing values in any of the grade columns
         df = df.dropna(subset=['NT_GER', 'NT_FG', 'NT_CE'])
+        
+        # Convert grades from 0-100 scale to 0-5 scale
+        for col in ['NT_GER', 'NT_FG', 'NT_CE']:
+            df[col] = (df[col] / 100) * 5
         
         return df
         
@@ -87,7 +92,9 @@ def calculate_confidence_interval(values, confidence=0.95):
 def load_grades_with_ic():
     """
     Load individual grades and calculate 95% confidence intervals by CO_CURSO.
-    Returns DataFrame with: CO_CURSO, media, ci_lower, ci_upper, se, n_alunos
+    Grades are in 0-5 scale (converted from 0-100).
+    
+    Returns DataFrame with: CO_CURSO, Nota_Tipo, Media, CI_Lower, CI_Upper, SE, N_Alunos, Min, Max, Std
     (columns for both NT_GER, NT_FG, and NT_CE)
     """
     micro_df = load_microdados_grades()
@@ -98,12 +105,16 @@ def load_grades_with_ic():
     results = []
     
     # Group by course code
+    # Note: Values are already in 0-5 scale
     for co_curso, group in micro_df.groupby("CO_CURSO"):
         for nota_col, nota_nome in [("NT_GER", "Conceito"), ("NT_FG", "Formação Geral"), ("NT_CE", "Componente Específico")]:
             valores = group[nota_col].dropna()
             
             if len(valores) >= 2:
                 media, ci_lower, ci_upper, se = calculate_confidence_interval(valores)
+                nota_min = valores.min()
+                nota_max = valores.max()
+                nota_std = valores.std()
                 
                 results.append({
                     "CO_CURSO": co_curso,
@@ -112,7 +123,10 @@ def load_grades_with_ic():
                     "CI_Lower": ci_lower,
                     "CI_Upper": ci_upper,
                     "SE": se,
-                    "N_Alunos": len(valores)
+                    "N_Alunos": len(valores),
+                    "Min": nota_min,
+                    "Max": nota_max,
+                    "Std": nota_std
                 })
     
     return pd.DataFrame(results)
@@ -166,7 +180,10 @@ def get_ic_by_area(filtered_df, ic_data):
         "CI_Lower": "mean",
         "CI_Upper": "mean",
         "SE": "mean",
-        "N_Alunos": "sum"
+        "N_Alunos": "sum",
+        "Min": "min",  # Nota mínima entre todos os cursos
+        "Max": "max",  # Nota máxima entre todos os cursos
+        "Std": "mean"  # Média dos desvios padrão
     }).reset_index()
     
     return result

@@ -211,7 +211,11 @@ with col_checkbox:
 with col_ic:
     mostrar_ic = False
     if ic_df is not None and not ic_df.empty:
-        mostrar_ic = st.checkbox("📊 Mostrar IC 95%", value=False, help="Intervalo de confiança calculado a partir dos dados individuais dos alunos")
+        mostrar_ic = st.checkbox("📊 Mostrar IC 95%", value=False, help="Intervalo de confiança calculado a partir dos dados individuais dos alunos (notas convertidas de 0-100 para 0-5)")
+
+# Mostrar aviso sobre conversão de escala quando IC está ativo
+if mostrar_ic and ic_df is not None and not ic_df.empty:
+    st.info("📊 **Notas Convertidas**: As notas foram convertidas de 0-100 para 0-5 para melhor visualização do intervalo de confiança. O eixo Y do gráfico mostra a escala 0-5.")
 
 
 # Verificar se ambos os dataframes têm dados
@@ -265,7 +269,7 @@ if not filtered_df.empty and not filtered_df2.empty:
             "Componente Específico": "Componente Específico"
         }
         
-        # Adicionar ICs ao avg_df
+        # Adicionar ICs, Min, Max, Std ao avg_df
         if ic_data1 is not None:
             for _, row in ic_data1.iterrows():
                 coluna_nota_tipo = nota_tipo_map.get(row['Nota_Tipo'])
@@ -274,8 +278,11 @@ if not filtered_df.empty and not filtered_df2.empty:
                     if mask.any():
                         avg_df.loc[mask, f'{coluna_nota_tipo}_CI_Lower'] = row['CI_Lower']
                         avg_df.loc[mask, f'{coluna_nota_tipo}_CI_Upper'] = row['CI_Upper']
+                        avg_df.loc[mask, f'{coluna_nota_tipo}_Min'] = round(row['Min'], 2)
+                        avg_df.loc[mask, f'{coluna_nota_tipo}_Max'] = round(row['Max'], 2)
+                        avg_df.loc[mask, f'{coluna_nota_tipo}_Std'] = round(row['Std'], 2)
         
-        # Adicionar ICs ao avg_df2
+        # Adicionar ICs, Min, Max, Std ao avg_df2
         if ic_data2 is not None:
             for _, row in ic_data2.iterrows():
                 coluna_nota_tipo = nota_tipo_map.get(row['Nota_Tipo'])
@@ -284,6 +291,9 @@ if not filtered_df.empty and not filtered_df2.empty:
                     if mask.any():
                         avg_df2.loc[mask, f'{coluna_nota_tipo}_CI_Lower'] = row['CI_Lower']
                         avg_df2.loc[mask, f'{coluna_nota_tipo}_CI_Upper'] = row['CI_Upper']
+                        avg_df2.loc[mask, f'{coluna_nota_tipo}_Min'] = round(row['Min'], 2)
+                        avg_df2.loc[mask, f'{coluna_nota_tipo}_Max'] = round(row['Max'], 2)
+                        avg_df2.loc[mask, f'{coluna_nota_tipo}_Std'] = round(row['Std'], 2)
     
     # Unir os dois dataframes
     df_comparacao = pd.concat([avg_df, avg_df2], ignore_index=True)
@@ -337,6 +347,14 @@ if not filtered_df.empty and not filtered_df2.empty:
         'custom_data': ['Área de Avaliação','Instituicao','Média','Formação Geral','Componente Específico']
     }
     
+    # Adicionar colunas Min, Max, Std ao custom_data se mostrar_ic está ativo
+    if mostrar_ic:
+        fig_params['custom_data'].extend([
+            f'{coluna_nota}_Min',
+            f'{coluna_nota}_Max',
+            f'{coluna_nota}_Std'
+        ])
+    
     # Adicionar error_y se mostrar_ic está ativo e temos dados de erro
     if mostrar_ic and error_column:
         fig_params['error_y'] = error_column
@@ -356,9 +374,37 @@ if not filtered_df.empty and not filtered_df2.empty:
         template="plotly_white",
         xaxis_title='Curso',
         yaxis_title=labels_y[coluna_nota],
+        yaxis=dict(range=[0, 5]),  # Escala de 0 a 5 para as notas convertidas
         height=600
     )
-    fig_comparativo.update_traces(hovertemplate='<b>%{customdata[0]}</b><br>Instituição: %{customdata[1]}<br>Média Conceito: %{customdata[2]:.2f}<br>Formação Geral: %{customdata[3]:.2f}<br>Componente Específico: %{customdata[4]:.2f}<extra></extra>', hoverlabel=dict(font=dict(size=14)), line=dict(width=4), marker=dict(size=8))
+    
+    # Definir hovertemplate conforme o IC está ativo ou não
+    if mostrar_ic:
+        # Template com Min, Max, Std
+        hover_template = (
+            '<b>%{customdata[0]}</b><br>'
+            'Instituição: %{customdata[1]}<br>'
+            'Média: %{y:.2f}<br>'
+            'Mínima: %{customdata[5]:.2f}<br>'
+            'Máxima: %{customdata[6]:.2f}<br>'
+            'Desvio Padrão: %{customdata[7]:.2f}<extra></extra>'
+        )
+    else:
+        # Template padrão
+        hover_template = (
+            '<b>%{customdata[0]}</b><br>'
+            'Instituição: %{customdata[1]}<br>'
+            'Média Conceito: %{customdata[2]:.2f}<br>'
+            'Formação Geral: %{customdata[3]:.2f}<br>'
+            'Componente Específico: %{customdata[4]:.2f}<extra></extra>'
+        )
+    
+    fig_comparativo.update_traces(
+        hovertemplate=hover_template,
+        hoverlabel=dict(font=dict(size=14)),
+        line=dict(width=4),
+        marker=dict(size=8)
+    )
     # Forçar a ordem dos cursos no eixo X (já são abreviados)
     fig_comparativo.update_xaxes(categoryorder='array', categoryarray=cursos_ordenados)
     st.plotly_chart(fig_comparativo, width='stretch')
