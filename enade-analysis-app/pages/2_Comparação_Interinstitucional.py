@@ -11,9 +11,12 @@ show_logo()
 st.set_page_config(layout="wide", page_title="Comparação Interinstitucional - ENADE 2023")
 
 # Carregar os dados
-from utils.data_loader import load_conceito
+from utils.data_loader import load_conceito, load_grades_with_ic, get_ic_by_area
 
 df = load_conceito()
+
+# Carregar dados de ICs dos microdados (se disponível)
+ic_df = load_grades_with_ic()
 
 # abreviações dos cursos para exibição nos eixos X
 ABBR = {
@@ -184,7 +187,7 @@ st.markdown("---")
 st.header('📊 Comparação Interinstitucional')
 
 # Seletor para escolher qual nota exibir
-col_selector, col_checkbox = st.columns([1, 2])
+col_selector, col_checkbox, col_ic = st.columns([1, 2, 1.5])
 with col_selector:
     nota_selecionada = st.selectbox(
         "Selecionar nota",
@@ -203,6 +206,13 @@ coluna_nota = mapa_notas[nota_selecionada]
 # Checkbox para mostrar apenas cursos em comum
 with col_checkbox:
     apenas_comum = st.checkbox("Mostrar apenas cursos em comum", value=False)
+
+# Toggle para mostrar intervalos de confiança (se dados disponíveis)
+with col_ic:
+    mostrar_ic = False
+    if ic_df is not None and not ic_df.empty:
+        mostrar_ic = st.checkbox("📊 Mostrar IC 95%", value=False, help="Intervalo de confiança calculado a partir dos dados individuais dos alunos")
+
 
 # Verificar se ambos os dataframes têm dados
 if not filtered_df.empty and not filtered_df2.empty:
@@ -242,8 +252,58 @@ if not filtered_df.empty and not filtered_df2.empty:
     avg_df2["Instituicao"] = nome_inst2
     avg_df2 = avg_df2.rename(columns={'Área_abrev': 'Sigla Área'})
     
+    # Adicionar dados de intervalo de confiança, se selecionado
+    if mostrar_ic and ic_df is not None and not ic_df.empty:
+        # Calcular ICs para as instituições filtradas
+        ic_data1 = get_ic_by_area(filtered_df, ic_df)
+        ic_data2 = get_ic_by_area(filtered_df2, ic_df)
+        
+        # Mapear tipo de nota para coluna
+        nota_tipo_map = {
+            "Conceito": "Média",
+            "Formação Geral": "Formação Geral",
+            "Componente Específico": "Componente Específico"
+        }
+        
+        # Adicionar ICs ao avg_df
+        if ic_data1 is not None:
+            for _, row in ic_data1.iterrows():
+                coluna_nota_tipo = nota_tipo_map.get(row['Nota_Tipo'])
+                if coluna_nota_tipo:
+                    mask = avg_df['Área de Avaliação'] == row['Área de Avaliação']
+                    if mask.any():
+                        avg_df.loc[mask, f'{coluna_nota_tipo}_CI_Lower'] = row['CI_Lower']
+                        avg_df.loc[mask, f'{coluna_nota_tipo}_CI_Upper'] = row['CI_Upper']
+        
+        # Adicionar ICs ao avg_df2
+        if ic_data2 is not None:
+            for _, row in ic_data2.iterrows():
+                coluna_nota_tipo = nota_tipo_map.get(row['Nota_Tipo'])
+                if coluna_nota_tipo:
+                    mask = avg_df2['Área de Avaliação'] == row['Área de Avaliação']
+                    if mask.any():
+                        avg_df2.loc[mask, f'{coluna_nota_tipo}_CI_Lower'] = row['CI_Lower']
+                        avg_df2.loc[mask, f'{coluna_nota_tipo}_CI_Upper'] = row['CI_Upper']
+    
     # Unir os dois dataframes
     df_comparacao = pd.concat([avg_df, avg_df2], ignore_index=True)
+    
+    # Preparar dados de erro se mostrar_ic está ativo
+    error_column = None
+    if mostrar_ic:
+        # Criar coluna de erro baseada no tipo de nota selecionada
+        error_col_lower = f'{coluna_nota}_CI_Lower'
+        error_col_upper = f'{coluna_nota}_CI_Upper'
+        
+        if error_col_lower in df_comparacao.columns and error_col_upper in df_comparacao.columns:
+            # Calcular margens de erro (erro simétrico: metade da amplitude do IC)
+            df_comparacao['erro'] = (
+                (df_comparacao[error_col_upper] - df_comparacao[error_col_lower]) / 2
+            ).fillna(0)
+            error_column = 'erro'
+        else:
+            # Se não tiver colunas de IC, desabilitar mostrar_ic
+            mostrar_ic = False
     
     # Se checkbox marcado, filtrar apenas cursos em comum
     if apenas_comum:
@@ -266,16 +326,22 @@ if not filtered_df.empty and not filtered_df2.empty:
     df_comparacao = df_comparacao.sort_values(['Sigla Área', 'Instituicao'])
     
     # Criar gráfico de linha comparativo
-    fig_comparativo = px.line(
-        df_comparacao, 
-        x='Sigla Área', 
-        y=coluna_nota, 
-        color='Instituicao',
-        markers=True,
-        line_shape='linear',
-        title="",
-        custom_data=['Área de Avaliação','Instituicao','Média','Formação Geral','Componente Específico']
-    )
+    fig_params = {
+        'data_frame': df_comparacao,
+        'x': 'Sigla Área',
+        'y': coluna_nota,
+        'color': 'Instituicao',
+        'markers': True,
+        'line_shape': 'linear',
+        'title': "",
+        'custom_data': ['Área de Avaliação','Instituicao','Média','Formação Geral','Componente Específico']
+    }
+    
+    # Adicionar error_y se mostrar_ic está ativo e temos dados de erro
+    if mostrar_ic and error_column:
+        fig_params['error_y'] = error_column
+    
+    fig_comparativo = px.line(**fig_params)
     
     # Definir rótulo do eixo Y conforme a nota selecionada
     labels_y = {

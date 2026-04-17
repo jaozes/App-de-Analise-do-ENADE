@@ -683,7 +683,7 @@ pass
 selected_var = st.selectbox(
     "Selecione a questão a ser veríficada:",
     options=available_vars,
-    format_func=lambda v: available_labels.get(v, v),
+    format_func=lambda v: str(available_labels.get(v, v) if available_labels.get(v) is not None else v),
 )
 
 # Carregar dados de microdados para a variável

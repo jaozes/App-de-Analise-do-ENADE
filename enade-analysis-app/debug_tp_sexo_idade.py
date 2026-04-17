@@ -3,8 +3,8 @@ import unicodedata
 from pathlib import Path
 
 # load conceito
-pd.read_excel('data/conceito_enade_2023.xlsx', engine='openpyxl')
-c.columns = [unicodedata.normalize('NFKD', str(x)).encode('ascii','ignore').decode('ascii').strip() for x in c.columns]
+df = pd.read_excel('data/conceito_enade_2023.xlsx', engine='openpyxl')
+df.columns = [unicodedata.normalize('NFKD', str(x)).encode('ascii','ignore').decode('ascii').strip() for x in df.columns]
 
 # find microdados files for TP_SEXO and NU_IDADE
 base = Path('enade-analysis-app/data')
@@ -38,7 +38,7 @@ print('TP_SEXO unique', df['TP_SEXO'].unique()[:20])
 print('TP_SEXO counts', df['TP_SEXO'].value_counts(dropna=False).head(20))
 
 # join with conceito
-left = c.rename(columns={'Ano': 'NU_ANO', 'Codigo do Curso': 'CO_CURSO'})
+left = df.rename(columns={'Ano': 'NU_ANO', 'Codigo do Curso': 'CO_CURSO'})
 merged = pd.merge(df, left, on=['NU_ANO','CO_CURSO'], how='inner')
 print('merged rows', len(merged))
 print('merged TP_SEXO counts', merged['TP_SEXO'].value_counts(dropna=False).head(20))
