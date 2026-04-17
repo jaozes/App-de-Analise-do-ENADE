@@ -11,6 +11,14 @@ from utils.header import inject_css
 #inject_css()
 show_logo()
 
+# Estilo para alinhar tabelas à esquerda
+st.markdown("""
+    <style>
+        [data-testid="stDataFrame"] {text-align: left !important;}
+        [data-testid="stDataFrame"] > div {text-align: left !important;}
+    </style>
+""", unsafe_allow_html=True)
+
 st.set_page_config(layout="wide", page_title="Perfil Socioeconômico - ENADE 2023")
 
 # Mapeamento das questões QE (texto para exibição)

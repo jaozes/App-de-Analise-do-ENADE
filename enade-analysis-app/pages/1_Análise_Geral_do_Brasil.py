@@ -9,6 +9,14 @@ from utils.header import inject_css
 #inject_css()
 show_logo()
 
+# Estilo para alinhar tabelas à esquerda
+st.markdown("""
+    <style>
+        [data-testid="stDataFrame"] {text-align: left !important;}
+        [data-testid="stDataFrame"] > div {text-align: left !important;}
+    </style>
+""", unsafe_allow_html=True)
+
 st.set_page_config(layout="centered", page_title="Análise Geral do Brasil - ENADE 2023")
 
 df = load_conceito()
