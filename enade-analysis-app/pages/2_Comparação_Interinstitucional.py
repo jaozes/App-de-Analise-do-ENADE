@@ -257,6 +257,22 @@ if not filtered_df.empty and not filtered_df2.empty:
     avg_df2["Instituicao"] = nome_inst2
     avg_df2 = avg_df2.rename(columns={'Área_abrev': 'Sigla Área'})
     
+    # Pré-criar colunas de Min, Max, Std se mostrar_ic estiver ativo
+    if mostrar_ic:
+        for nota in ['Média', 'Formação Geral', 'Componente Específico']:
+            avg_df[f'{nota}_Min'] = np.nan
+            avg_df[f'{nota}_Max'] = np.nan
+            avg_df[f'{nota}_Std'] = np.nan
+            avg_df[f'{nota}_CI_Lower'] = np.nan
+            avg_df[f'{nota}_CI_Upper'] = np.nan
+            avg_df[f'{nota}_SE'] = np.nan
+            avg_df2[f'{nota}_Min'] = np.nan
+            avg_df2[f'{nota}_Max'] = np.nan
+            avg_df2[f'{nota}_Std'] = np.nan
+            avg_df2[f'{nota}_CI_Lower'] = np.nan
+            avg_df2[f'{nota}_CI_Upper'] = np.nan
+            avg_df2[f'{nota}_SE'] = np.nan
+    
     # Adicionar dados de intervalo de confiança, se selecionado
     if mostrar_ic and ic_df is not None and not ic_df.empty:
         # Calcular ICs para as instituições filtradas
