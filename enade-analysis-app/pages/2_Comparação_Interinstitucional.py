@@ -241,7 +241,7 @@ if not filtered_df.empty and not filtered_df2.empty:
     
     # Recalcular os dataframes sem o sort para manter a ordem original
     # agrupa pelo nome original para manter coluna completa, depois adiciona abreviatura
-    avg_df = filtered_df.groupby('Área de Avaliação')['Conceito Enade (Contínuo)'].mean().reset_index()
+    avg_df = filtered_df.groupby('Área de Avaliação')['Conceito Enade (Contínuo)'].mean().reset_index().copy()
     avg_df['Área_abrev'] = avg_df['Área de Avaliação'].map(ABBR).fillna(avg_df['Área de Avaliação'])
     avg_df['Média'] = avg_df['Conceito Enade (Contínuo)'].round(2)
     avg_df['Formação Geral'] = filtered_df.groupby('Área de Avaliação')['Nota Padronizada - FG'].mean().round(2).reindex(avg_df['Área de Avaliação']).values
@@ -249,7 +249,7 @@ if not filtered_df.empty and not filtered_df2.empty:
     avg_df["Instituicao"] = nome_inst1
     avg_df = avg_df.rename(columns={'Área_abrev': 'Sigla Área'})
     
-    avg_df2 = filtered_df2.groupby('Área de Avaliação')['Conceito Enade (Contínuo)'].mean().reset_index()
+    avg_df2 = filtered_df2.groupby('Área de Avaliação')['Conceito Enade (Contínuo)'].mean().reset_index().copy()
     avg_df2['Área_abrev'] = avg_df2['Área de Avaliação'].map(ABBR).fillna(avg_df2['Área de Avaliação'])
     avg_df2['Média'] = avg_df2['Conceito Enade (Contínuo)'].round(2)
     avg_df2['Formação Geral'] = filtered_df2.groupby('Área de Avaliação')['Nota Padronizada - FG'].mean().round(2).reindex(avg_df2['Área de Avaliação']).values
@@ -279,18 +279,6 @@ if not filtered_df.empty and not filtered_df2.empty:
         ic_data1 = get_ic_by_area(filtered_df, ic_df)
         ic_data2 = get_ic_by_area(filtered_df2, ic_df)
         
-        # Debug
-        with st.expander("🔍 Debug IC Data"):
-            st.write(f"ic_data1 is None: {ic_data1 is None}")
-            if ic_data1 is not None:
-                st.write(f"ic_data1 shape: {ic_data1.shape}")
-                st.write(f"ic_data1 columns: {list(ic_data1.columns)}")
-                st.write(f"ic_data1 sample:\n{ic_data1.head()}")
-            st.write(f"ic_data2 is None: {ic_data2 is None}")
-            if ic_data2 is not None:
-                st.write(f"ic_data2 shape: {ic_data2.shape}")
-                st.write(f"ic_data2 sample:\n{ic_data2.head()}")
-        
         # Mapear tipo de nota para coluna
         nota_tipo_map = {
             "Conceito": "Média",
@@ -298,53 +286,61 @@ if not filtered_df.empty and not filtered_df2.empty:
             "Componente Específico": "Componente Específico"
         }
         
-        # Adicionar ICs, Min, Max, Std ao avg_df
+        # Adicionar ICs, Min, Max, Std ao avg_df usando merge
         if ic_data1 is not None and not ic_data1.empty:
-            for idx, row in ic_data1.iterrows():
-                # Verificar se 'Área de Avaliação' e 'Nota_Tipo' existem na linha
-                if 'Área de Avaliação' not in row.index or pd.isna(row['Área de Avaliação']):
-                    continue
-                    
-                coluna_nota_tipo = nota_tipo_map.get(row['Nota_Tipo'])
+            # Criar dicionários para cada tipo de nota
+            for nota_tipo in ic_data1['Nota_Tipo'].unique():
+                ic_subset = ic_data1[ic_data1['Nota_Tipo'] == nota_tipo].copy()
+                coluna_nota_tipo = nota_tipo_map.get(nota_tipo)
+                
                 if coluna_nota_tipo:
-                    mask = avg_df['Área de Avaliação'] == row['Área de Avaliação']
-                    if mask.any():
-                        # Usar valores com fallback para NaN
-                        ci_lower = row['CI_Lower'] if 'CI_Lower' in row.index and pd.notna(row['CI_Lower']) else np.nan
-                        ci_upper = row['CI_Upper'] if 'CI_Upper' in row.index and pd.notna(row['CI_Upper']) else np.nan
-                        min_val = row['Min'] if 'Min' in row.index and pd.notna(row['Min']) else np.nan
-                        max_val = row['Max'] if 'Max' in row.index and pd.notna(row['Max']) else np.nan
-                        std_val = row['Std'] if 'Std' in row.index and pd.notna(row['Std']) else np.nan
+                    # Fazer merge dos dados
+                    for _, row in ic_subset.iterrows():
+                        area = row['Área de Avaliação']
+                        if pd.isna(area):
+                            continue
                         
-                        avg_df.loc[mask, f'{coluna_nota_tipo}_CI_Lower'] = ci_lower
-                        avg_df.loc[mask, f'{coluna_nota_tipo}_CI_Upper'] = ci_upper
-                        avg_df.loc[mask, f'{coluna_nota_tipo}_Min'] = round(min_val, 2) if pd.notna(min_val) else np.nan
-                        avg_df.loc[mask, f'{coluna_nota_tipo}_Max'] = round(max_val, 2) if pd.notna(max_val) else np.nan
-                        avg_df.loc[mask, f'{coluna_nota_tipo}_Std'] = round(std_val, 2) if pd.notna(std_val) else np.nan
+                        # Encontrar a linha correspondente
+                        idx = avg_df[avg_df['Área de Avaliação'] == area].index
+                        if len(idx) > 0:
+                            idx_val = idx[0]
+                            # Usar .at[] que é mais seguro para atribuições escalares
+                            avg_df.at[idx_val, f'{coluna_nota_tipo}_CI_Lower'] = float(row['CI_Lower']) if pd.notna(row['CI_Lower']) else np.nan
+                            avg_df.at[idx_val, f'{coluna_nota_tipo}_CI_Upper'] = float(row['CI_Upper']) if pd.notna(row['CI_Upper']) else np.nan
+                            if pd.notna(row['Min']):
+                                avg_df.at[idx_val, f'{coluna_nota_tipo}_Min'] = round(float(row['Min']), 2)
+                            if pd.notna(row['Max']):
+                                avg_df.at[idx_val, f'{coluna_nota_tipo}_Max'] = round(float(row['Max']), 2)
+                            if pd.notna(row['Std']):
+                                avg_df.at[idx_val, f'{coluna_nota_tipo}_Std'] = round(float(row['Std']), 2)
         
-        # Adicionar ICs, Min, Max, Std ao avg_df2
+        # Adicionar ICs, Min, Max, Std ao avg_df2 usando merge
         if ic_data2 is not None and not ic_data2.empty:
-            for idx, row in ic_data2.iterrows():
-                # Verificar se 'Área de Avaliação' e 'Nota_Tipo' existem na linha
-                if 'Área de Avaliação' not in row.index or pd.isna(row['Área de Avaliação']):
-                    continue
-                    
-                coluna_nota_tipo = nota_tipo_map.get(row['Nota_Tipo'])
+            # Criar dicionários para cada tipo de nota
+            for nota_tipo in ic_data2['Nota_Tipo'].unique():
+                ic_subset = ic_data2[ic_data2['Nota_Tipo'] == nota_tipo].copy()
+                coluna_nota_tipo = nota_tipo_map.get(nota_tipo)
+                
                 if coluna_nota_tipo:
-                    mask = avg_df2['Área de Avaliação'] == row['Área de Avaliação']
-                    if mask.any():
-                        # Usar valores com fallback para NaN
-                        ci_lower = row['CI_Lower'] if 'CI_Lower' in row.index and pd.notna(row['CI_Lower']) else np.nan
-                        ci_upper = row['CI_Upper'] if 'CI_Upper' in row.index and pd.notna(row['CI_Upper']) else np.nan
-                        min_val = row['Min'] if 'Min' in row.index and pd.notna(row['Min']) else np.nan
-                        max_val = row['Max'] if 'Max' in row.index and pd.notna(row['Max']) else np.nan
-                        std_val = row['Std'] if 'Std' in row.index and pd.notna(row['Std']) else np.nan
+                    # Fazer merge dos dados
+                    for _, row in ic_subset.iterrows():
+                        area = row['Área de Avaliação']
+                        if pd.isna(area):
+                            continue
                         
-                        avg_df2.loc[mask, f'{coluna_nota_tipo}_CI_Lower'] = ci_lower
-                        avg_df2.loc[mask, f'{coluna_nota_tipo}_CI_Upper'] = ci_upper
-                        avg_df2.loc[mask, f'{coluna_nota_tipo}_Min'] = round(min_val, 2) if pd.notna(min_val) else np.nan
-                        avg_df2.loc[mask, f'{coluna_nota_tipo}_Max'] = round(max_val, 2) if pd.notna(max_val) else np.nan
-                        avg_df2.loc[mask, f'{coluna_nota_tipo}_Std'] = round(std_val, 2) if pd.notna(std_val) else np.nan
+                        # Encontrar a linha correspondente
+                        idx = avg_df2[avg_df2['Área de Avaliação'] == area].index
+                        if len(idx) > 0:
+                            idx_val = idx[0]
+                            # Usar .at[] que é mais seguro para atribuições escalares
+                            avg_df2.at[idx_val, f'{coluna_nota_tipo}_CI_Lower'] = float(row['CI_Lower']) if pd.notna(row['CI_Lower']) else np.nan
+                            avg_df2.at[idx_val, f'{coluna_nota_tipo}_CI_Upper'] = float(row['CI_Upper']) if pd.notna(row['CI_Upper']) else np.nan
+                            if pd.notna(row['Min']):
+                                avg_df2.at[idx_val, f'{coluna_nota_tipo}_Min'] = round(float(row['Min']), 2)
+                            if pd.notna(row['Max']):
+                                avg_df2.at[idx_val, f'{coluna_nota_tipo}_Max'] = round(float(row['Max']), 2)
+                            if pd.notna(row['Std']):
+                                avg_df2.at[idx_val, f'{coluna_nota_tipo}_Std'] = round(float(row['Std']), 2)
     
     # Unir os dois dataframes
     df_comparacao = pd.concat([avg_df, avg_df2], ignore_index=True)
