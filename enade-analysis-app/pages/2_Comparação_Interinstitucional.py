@@ -315,17 +315,6 @@ if not filtered_df.empty and not filtered_df2.empty:
     # Unir os dois dataframes
     df_comparacao = pd.concat([avg_df, avg_df2], ignore_index=True)
     
-    # Se mostrar_ic está ativo, garantir que as colunas Min, Max, Std existem
-    if mostrar_ic:
-        # Criar colunas com valores padrão se não existirem
-        for nota in ['Média', 'Formação Geral', 'Componente Específico']:
-            for sufixo in ['_Min', '_Max', '_Std']:
-                coluna = f'{nota}{sufixo}'
-                if coluna not in df_comparacao.columns:
-                    df_comparacao[coluna] = np.nan
-                # Preencher NaNs com valores padrão
-                df_comparacao[coluna] = df_comparacao[coluna].fillna(0.0)
-    
     # Preparar dados de erro se mostrar_ic está ativo
     error_column = None
     if mostrar_ic:
