@@ -19,14 +19,6 @@ df = load_conceito()
 # Carregar dados de ICs dos microdados (se disponível)
 ic_df = load_grades_with_ic()
 
-# Debug inicial
-st.write(f"🔍 DEBUG INICIAL: ic_df is None = {ic_df is None}")
-if ic_df is not None:
-    st.write(f"🔍 DEBUG INICIAL: ic_df.shape = {ic_df.shape}")
-    st.write(f"🔍 DEBUG INICIAL: ic_df.columns = {list(ic_df.columns)}")
-else:
-    st.write(f"🔍 AVISO: ic_df é None!")
-
 # abreviações dos cursos para exibição nos eixos X
 ABBR = {
     "AGRONOMIA": "AG",
@@ -282,9 +274,7 @@ if not filtered_df.empty and not filtered_df2.empty:
             avg_df2[f'{nota}_SE'] = np.nan
     
     # Adicionar dados de intervalo de confiança, se selecionado
-    st.write(f"🔍 DEBUG ANTES DO IC: mostrar_ic = {mostrar_ic}, ic_df is None = {ic_df is None}, ic_df.empty = {ic_df.empty if ic_df is not None else 'N/A'}")
     if mostrar_ic and ic_df is not None and not ic_df.empty:
-        st.write(f"✅ ENTRANDO NA SEÇÃO DE IC")
         # Calcular ICs para as instituições filtradas
         ic_data1 = get_ic_by_area(filtered_df, ic_df)
         ic_data2 = get_ic_by_area(filtered_df2, ic_df)
