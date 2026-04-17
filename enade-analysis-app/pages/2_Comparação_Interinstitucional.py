@@ -478,7 +478,7 @@ elif filtered_df2.empty:
     st.write('Nenhum dado encontrado com os filtros selecionados para a segunda instituição.')
 
 show_footer(
-    advisor_text="Orientador: Prof. Dr. César Candido Xavier • /n Email: cesarcx@gmail.com",
+    advisor_text="Orientador: Prof. Dr. César Candido Xavier • Email: cesarcx@gmail.com",
     text="Pesquisador: João Octavio Venâncio Borba • UNISO - Universidade de Sorocaba • Email: joaooctaviov.borba@gmail.com",
     links=[("Github", "https://github.com/jaozes"), ("LinkedIn", "https://www.linkedin.com/in/jo%C3%A3o-octavio-vb/"), ("Currículo Lattes", "http://lattes.cnpq.br/0821075410761662")],
     bg_color="#ffffff",

@@ -1170,7 +1170,7 @@ else:
 
 show_footer(
 
-    advisor_text="Orientador: Prof. Dr. César Candido Xavier • /n Email: cesarcx@gmail.com",
+    advisor_text="Orientador: Prof. Dr. César Candido Xavier • Email: cesarcx@gmail.com",
     text="Pesquisador: João Octavio Venâncio Borba • UNISO - Universidade de Sorocaba • Email: joaooctaviov.borba@gmail.com",
     links=[
         ("Github", "https://github.com/jaozes"),

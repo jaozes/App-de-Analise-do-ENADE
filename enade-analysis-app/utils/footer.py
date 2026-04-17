@@ -1,5 +1,6 @@
 import streamlit as st
 from typing import List, Tuple, Optional
+import html
 
 def show_footer(
     text: str = "Seu nome • Contato: seu@email.com",
@@ -20,8 +21,8 @@ def show_footer(
         [f'<a href="{url}" target="_blank" style="color:{text_color}; text-decoration:underline;">{label}</a>' for label, url in links]
     )
 
-    advisor_section = f'<div>{advisor_text}</div>' if advisor_text else ""
-    citation_section = f'<div style="margin-top: 16px; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 12px; font-size: 13px; font-style: italic;">{citation}</div>' if citation else ""
+    advisor_section = f'<div>{html.escape(advisor_text)}</div>' if advisor_text else ""
+    citation_section = f'<div style="margin-top: 16px; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 12px; font-size: 13px; font-style: italic;">{html.escape(citation)}</div>' if citation else ""
 
     html = f"""
     <style>
