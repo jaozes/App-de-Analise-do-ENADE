@@ -174,6 +174,12 @@ def get_ic_by_area(filtered_df, ic_data):
     ic_data_copy = ic_data.copy()
     ic_data_copy["Área de Avaliação"] = ic_data_copy["CO_CURSO"].map(mapping)
     
+    # Remover linhas onde 'Área de Avaliação' é NaN
+    ic_data_copy = ic_data_copy.dropna(subset=['Área de Avaliação'])
+    
+    if ic_data_copy.empty:
+        return None
+    
     # Group by area and note type, then aggregate
     result = ic_data_copy.groupby(["Área de Avaliação", "Nota_Tipo"]).agg({
         "Media": "mean",
