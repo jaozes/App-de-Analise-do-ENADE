@@ -8,6 +8,7 @@ def show_footer(
     bg_color: str = "#0f1724",
     text_color: str = "#ffffff",
     height_px: int = 56,
+    citation: Optional[str] = None,
 ):
     """
     Exibe um footer que acompanha o conteúdo (sem fixed position).
@@ -20,6 +21,7 @@ def show_footer(
     )
 
     advisor_section = f'<div>{advisor_text}</div>' if advisor_text else ""
+    citation_section = f'<div style="margin-top: 16px; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 12px; font-size: 13px; font-style: italic;">{citation}</div>' if citation else ""
 
     html = f"""
     <style>
@@ -65,6 +67,7 @@ def show_footer(
     <div class="custom-footer">
       <div class="left">
         {advisor_section}
+        {citation_section}
       </div>
       <div class="right">
         <div>{text}</div>
