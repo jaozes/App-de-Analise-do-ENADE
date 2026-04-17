@@ -128,7 +128,15 @@ def load_grades_with_ic():
                     "Std": nota_std
                 })
     
-    return pd.DataFrame(results)
+    result_df = pd.DataFrame(results)
+    
+    # Debug
+    import streamlit as st
+    st.write(f"DEBUG load_grades_with_ic - Returned columns: {list(result_df.columns)}")
+    st.write(f"DEBUG load_grades_with_ic - Shape: {result_df.shape}")
+    st.write(f"DEBUG load_grades_with_ic - First row:\n{result_df.iloc[0] if len(result_df) > 0 else 'Empty'}")
+    
+    return result_df
 
 
 def create_co_curso_to_area_mapping(conceito_df):
