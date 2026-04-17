@@ -279,6 +279,18 @@ if not filtered_df.empty and not filtered_df2.empty:
         ic_data1 = get_ic_by_area(filtered_df, ic_df)
         ic_data2 = get_ic_by_area(filtered_df2, ic_df)
         
+        # Debug
+        with st.expander("🔍 Debug IC Data"):
+            st.write(f"ic_data1 is None: {ic_data1 is None}")
+            if ic_data1 is not None:
+                st.write(f"ic_data1 shape: {ic_data1.shape}")
+                st.write(f"ic_data1 columns: {list(ic_data1.columns)}")
+                st.write(f"ic_data1 sample:\n{ic_data1.head()}")
+            st.write(f"ic_data2 is None: {ic_data2 is None}")
+            if ic_data2 is not None:
+                st.write(f"ic_data2 shape: {ic_data2.shape}")
+                st.write(f"ic_data2 sample:\n{ic_data2.head()}")
+        
         # Mapear tipo de nota para coluna
         nota_tipo_map = {
             "Conceito": "Média",
