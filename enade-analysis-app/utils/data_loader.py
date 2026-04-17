@@ -88,7 +88,6 @@ def calculate_confidence_interval(values, confidence=0.95):
     return mean, mean - margin, mean + margin, se
 
 
-@st.cache_data
 def load_grades_with_ic():
     """
     Load individual grades and calculate 95% confidence intervals by CO_CURSO.
@@ -164,10 +163,6 @@ def get_ic_by_area(filtered_df, ic_data):
     if ic_data is None or ic_data.empty:
         return None
     
-    # Debug: verificar colunas de entrada
-    import streamlit as st
-    st.write(f"DEBUG get_ic_by_area - Input ic_data columns: {list(ic_data.columns)}")
-    
     # Carregar o conceito completo para ter mapeamento de todos os CO_CURSO
     conceito_completo = load_conceito()
     
@@ -186,8 +181,6 @@ def get_ic_by_area(filtered_df, ic_data):
     
     if ic_data_copy.empty:
         return None
-    
-    st.write(f"DEBUG get_ic_by_area - After dropna columns: {list(ic_data_copy.columns)}")
     
     # Group by area and note type, then aggregate
     # Construir o agg dict dinamicamente apenas com as colunas que existem
@@ -208,8 +201,6 @@ def get_ic_by_area(filtered_df, ic_data):
         agg_dict["Std"] = "mean"
     
     result = ic_data_copy.groupby(["Área de Avaliação", "Nota_Tipo"]).agg(agg_dict).reset_index()
-    
-    st.write(f"DEBUG get_ic_by_area - Final result columns: {list(result.columns)}")
     
     return result
 
