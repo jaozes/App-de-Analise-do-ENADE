@@ -24,7 +24,7 @@ def show_footer(
     advisor_section = f'<div>{html.escape(advisor_text)}</div>' if advisor_text else ""
     citation_section = f'<div style="margin-top: 16px; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 12px; font-size: 13px; font-style: italic;">{html.escape(citation)}</div>' if citation else ""
 
-    html = f"""
+    footer_html = f"""
     <style>
       .custom-footer {{
         background: {bg_color};
@@ -76,4 +76,4 @@ def show_footer(
       </div>
     </div>
     """
-    st.markdown(html, unsafe_allow_html=True)
+    st.markdown(footer_html, unsafe_allow_html=True)
