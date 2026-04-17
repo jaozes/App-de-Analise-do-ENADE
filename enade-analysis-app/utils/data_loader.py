@@ -164,6 +164,10 @@ def get_ic_by_area(filtered_df, ic_data):
     if ic_data is None or ic_data.empty:
         return None
     
+    # Debug: verificar colunas de entrada
+    import streamlit as st
+    st.write(f"DEBUG get_ic_by_area - Input ic_data columns: {list(ic_data.columns)}")
+    
     # Carregar o conceito completo para ter mapeamento de todos os CO_CURSO
     conceito_completo = load_conceito()
     
@@ -183,17 +187,29 @@ def get_ic_by_area(filtered_df, ic_data):
     if ic_data_copy.empty:
         return None
     
+    st.write(f"DEBUG get_ic_by_area - After dropna columns: {list(ic_data_copy.columns)}")
+    
     # Group by area and note type, then aggregate
-    result = ic_data_copy.groupby(["Área de Avaliação", "Nota_Tipo"]).agg({
+    # Construir o agg dict dinamicamente apenas com as colunas que existem
+    agg_dict = {
         "Media": "mean",
         "CI_Lower": "mean",
         "CI_Upper": "mean",
         "SE": "mean",
         "N_Alunos": "sum",
-        "Min": "min",  # Nota mínima entre todos os cursos
-        "Max": "max",  # Nota máxima entre todos os cursos
-        "Std": "mean"  # Média dos desvios padrão
-    }).reset_index()
+    }
+    
+    # Adicionar Min, Max, Std só se existirem
+    if "Min" in ic_data_copy.columns:
+        agg_dict["Min"] = "min"
+    if "Max" in ic_data_copy.columns:
+        agg_dict["Max"] = "max"
+    if "Std" in ic_data_copy.columns:
+        agg_dict["Std"] = "mean"
+    
+    result = ic_data_copy.groupby(["Área de Avaliação", "Nota_Tipo"]).agg(agg_dict).reset_index()
+    
+    st.write(f"DEBUG get_ic_by_area - Final result columns: {list(result.columns)}")
     
     return result
 
