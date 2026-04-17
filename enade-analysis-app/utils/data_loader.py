@@ -164,8 +164,11 @@ def get_ic_by_area(filtered_df, ic_data):
     if ic_data is None or ic_data.empty:
         return None
     
-    # Try to create mapping between CO_CURSO and Área
-    mapping = create_co_curso_to_area_mapping(filtered_df)
+    # Carregar o conceito completo para ter mapeamento de todos os CO_CURSO
+    conceito_completo = load_conceito()
+    
+    # Try to create mapping between CO_CURSO and Área usando o conceito COMPLETO
+    mapping = create_co_curso_to_area_mapping(conceito_completo)
     
     if not mapping:
         return None

@@ -288,45 +288,51 @@ if not filtered_df.empty and not filtered_df2.empty:
         
         # Adicionar ICs, Min, Max, Std ao avg_df
         if ic_data1 is not None and not ic_data1.empty:
-            for _, row in ic_data1.iterrows():
+            for idx, row in ic_data1.iterrows():
                 # Verificar se 'Área de Avaliação' e 'Nota_Tipo' existem na linha
-                if 'Área de Avaliação' not in row or pd.isna(row['Área de Avaliação']):
+                if 'Área de Avaliação' not in row.index or pd.isna(row['Área de Avaliação']):
                     continue
                     
                 coluna_nota_tipo = nota_tipo_map.get(row['Nota_Tipo'])
                 if coluna_nota_tipo:
                     mask = avg_df['Área de Avaliação'] == row['Área de Avaliação']
                     if mask.any():
-                        avg_df.loc[mask, f'{coluna_nota_tipo}_CI_Lower'] = row.get('CI_Lower', np.nan)
-                        avg_df.loc[mask, f'{coluna_nota_tipo}_CI_Upper'] = row.get('CI_Upper', np.nan)
-                        # Adicionar Min, Max, Std com verificação de segurança
-                        if 'Min' in row and pd.notna(row['Min']):
-                            avg_df.loc[mask, f'{coluna_nota_tipo}_Min'] = round(row['Min'], 2)
-                        if 'Max' in row and pd.notna(row['Max']):
-                            avg_df.loc[mask, f'{coluna_nota_tipo}_Max'] = round(row['Max'], 2)
-                        if 'Std' in row and pd.notna(row['Std']):
-                            avg_df.loc[mask, f'{coluna_nota_tipo}_Std'] = round(row['Std'], 2)
+                        # Usar valores com fallback para NaN
+                        ci_lower = row['CI_Lower'] if 'CI_Lower' in row.index and pd.notna(row['CI_Lower']) else np.nan
+                        ci_upper = row['CI_Upper'] if 'CI_Upper' in row.index and pd.notna(row['CI_Upper']) else np.nan
+                        min_val = row['Min'] if 'Min' in row.index and pd.notna(row['Min']) else np.nan
+                        max_val = row['Max'] if 'Max' in row.index and pd.notna(row['Max']) else np.nan
+                        std_val = row['Std'] if 'Std' in row.index and pd.notna(row['Std']) else np.nan
+                        
+                        avg_df.loc[mask, f'{coluna_nota_tipo}_CI_Lower'] = ci_lower
+                        avg_df.loc[mask, f'{coluna_nota_tipo}_CI_Upper'] = ci_upper
+                        avg_df.loc[mask, f'{coluna_nota_tipo}_Min'] = round(min_val, 2) if pd.notna(min_val) else np.nan
+                        avg_df.loc[mask, f'{coluna_nota_tipo}_Max'] = round(max_val, 2) if pd.notna(max_val) else np.nan
+                        avg_df.loc[mask, f'{coluna_nota_tipo}_Std'] = round(std_val, 2) if pd.notna(std_val) else np.nan
         
         # Adicionar ICs, Min, Max, Std ao avg_df2
         if ic_data2 is not None and not ic_data2.empty:
-            for _, row in ic_data2.iterrows():
+            for idx, row in ic_data2.iterrows():
                 # Verificar se 'Área de Avaliação' e 'Nota_Tipo' existem na linha
-                if 'Área de Avaliação' not in row or pd.isna(row['Área de Avaliação']):
+                if 'Área de Avaliação' not in row.index or pd.isna(row['Área de Avaliação']):
                     continue
                     
                 coluna_nota_tipo = nota_tipo_map.get(row['Nota_Tipo'])
                 if coluna_nota_tipo:
                     mask = avg_df2['Área de Avaliação'] == row['Área de Avaliação']
                     if mask.any():
-                        avg_df2.loc[mask, f'{coluna_nota_tipo}_CI_Lower'] = row.get('CI_Lower', np.nan)
-                        avg_df2.loc[mask, f'{coluna_nota_tipo}_CI_Upper'] = row.get('CI_Upper', np.nan)
-                        # Adicionar Min, Max, Std com verificação de segurança
-                        if 'Min' in row and pd.notna(row['Min']):
-                            avg_df2.loc[mask, f'{coluna_nota_tipo}_Min'] = round(row['Min'], 2)
-                        if 'Max' in row and pd.notna(row['Max']):
-                            avg_df2.loc[mask, f'{coluna_nota_tipo}_Max'] = round(row['Max'], 2)
-                        if 'Std' in row and pd.notna(row['Std']):
-                            avg_df2.loc[mask, f'{coluna_nota_tipo}_Std'] = round(row['Std'], 2)
+                        # Usar valores com fallback para NaN
+                        ci_lower = row['CI_Lower'] if 'CI_Lower' in row.index and pd.notna(row['CI_Lower']) else np.nan
+                        ci_upper = row['CI_Upper'] if 'CI_Upper' in row.index and pd.notna(row['CI_Upper']) else np.nan
+                        min_val = row['Min'] if 'Min' in row.index and pd.notna(row['Min']) else np.nan
+                        max_val = row['Max'] if 'Max' in row.index and pd.notna(row['Max']) else np.nan
+                        std_val = row['Std'] if 'Std' in row.index and pd.notna(row['Std']) else np.nan
+                        
+                        avg_df2.loc[mask, f'{coluna_nota_tipo}_CI_Lower'] = ci_lower
+                        avg_df2.loc[mask, f'{coluna_nota_tipo}_CI_Upper'] = ci_upper
+                        avg_df2.loc[mask, f'{coluna_nota_tipo}_Min'] = round(min_val, 2) if pd.notna(min_val) else np.nan
+                        avg_df2.loc[mask, f'{coluna_nota_tipo}_Max'] = round(max_val, 2) if pd.notna(max_val) else np.nan
+                        avg_df2.loc[mask, f'{coluna_nota_tipo}_Std'] = round(std_val, 2) if pd.notna(std_val) else np.nan
     
     # Unir os dois dataframes
     df_comparacao = pd.concat([avg_df, avg_df2], ignore_index=True)
