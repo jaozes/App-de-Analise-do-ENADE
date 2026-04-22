@@ -6,9 +6,6 @@ from utils.header import show_logo
 from utils.header import inject_css
 from utils.footer import show_footer
 
-#inject_css()
-show_logo()
-
 st.set_page_config(layout="wide")
 
 # Estilo para alinhar tabelas à esquerda
@@ -18,6 +15,9 @@ st.markdown("""
         [data-testid="stDataFrame"] > div {text-align: left !important;}
     </style>
 """, unsafe_allow_html=True)
+
+#inject_css()
+show_logo()
 
 
 

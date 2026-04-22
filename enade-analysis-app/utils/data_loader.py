@@ -8,6 +8,8 @@ import numpy as np
 DATA_DIR = Path(__file__).parent.parent / "data"
 CONCEITO_PATH = DATA_DIR / "conceito_enade_2023.xlsx"
 MICRODADOS_ARQ3 = DATA_DIR / "microdados2023_arq3.txt"
+MICRODADOS_PARQUET = DATA_DIR / "microdados2023_arq3.parquet"
+
 
 @st.cache_data
 def load_conceito():
@@ -48,16 +50,25 @@ def load_microdados_grades():
     Returns DataFrame with columns: CO_CURSO, NT_GER, NT_FG, NT_CE (all in 0-5 scale)
     """
     try:
-        if not MICRODADOS_ARQ3.exists():
-            st.warning(f"⚠️ Arquivo de microdados não encontrado: {MICRODADOS_ARQ3}")
-            return None
+        parquet_path = MICRODADOS_PARQUET
+        txt_path = MICRODADOS_ARQ3
         
-        df = pd.read_csv(
-            MICRODADOS_ARQ3, 
-            sep=";", 
-            encoding="latin1",
-            usecols=["CO_CURSO", "NT_GER", "NT_FG", "NT_CE"]
-        )
+        if parquet_path.exists():
+            df = pd.read_parquet(parquet_path)
+        else:
+            if not txt_path.exists():
+                st.warning(f"⚠️ Arquivo de microdados não encontrado: {txt_path}")
+                return None
+            
+            df = pd.read_csv(
+                txt_path, 
+                sep=";", 
+                encoding="latin1",
+                usecols=["CO_CURSO", "NT_GER", "NT_FG", "NT_CE"]
+            )
+            df.to_parquet(parquet_path)
+        
+        # Remove rows with missing values in any of the grade columns
         
         # Remove rows with missing values in any of the grade columns
         df = df.dropna(subset=['NT_GER', 'NT_FG', 'NT_CE'])
@@ -88,48 +99,56 @@ def calculate_confidence_interval(values, confidence=0.95):
     return mean, mean - margin, mean + margin, se
 
 
+@st.cache_data
 def load_grades_with_ic():
     """
-    Load individual grades and calculate 95% confidence intervals by CO_CURSO.
+    Load individual grades and calculate 95% confidence intervals by CO_CURSO (vectorized).
     Grades are in 0-5 scale (converted from 0-100).
     
     Returns DataFrame with: CO_CURSO, Nota_Tipo, Media, CI_Lower, CI_Upper, SE, N_Alunos, Min, Max, Std
-    (columns for both NT_GER, NT_FG, and NT_CE)
     """
     micro_df = load_microdados_grades()
     
     if micro_df is None or micro_df.empty:
         return None
     
-    results = []
+    grade_cols = ['NT_GER', 'NT_FG', 'NT_CE']
+    nota_names = ["Conceito", "Formação Geral", "Componente Específico"]
+    stats_dfs = []
     
-    # Group by course code
-    # Note: Values are already in 0-5 scale
-    for co_curso, group in micro_df.groupby("CO_CURSO"):
-        for nota_col, nota_nome in [("NT_GER", "Conceito"), ("NT_FG", "Formação Geral"), ("NT_CE", "Componente Específico")]:
-            valores = group[nota_col].dropna()
-            
-            if len(valores) >= 2:
-                media, ci_lower, ci_upper, se = calculate_confidence_interval(valores)
-                nota_min = valores.min()
-                nota_max = valores.max()
-                nota_std = valores.std()
-                
-                results.append({
-                    "CO_CURSO": co_curso,
-                    "Nota_Tipo": nota_nome,
-                    "Media": media,
-                    "CI_Lower": ci_lower,
-                    "CI_Upper": ci_upper,
-                    "SE": se,
-                    "N_Alunos": len(valores),
-                    "Min": nota_min,
-                    "Max": nota_max,
-                    "Std": nota_std
-                })
+    for col, nota_nome in zip(grade_cols, nota_names):
+        group_stats = (
+            micro_df.groupby("CO_CURSO")[col]
+            .agg(mean='mean', count='count', min='min', max='max', std='std')
+            .round(4)
+            .reset_index()
+        )
+        
+        group_stats = group_stats.rename(columns={
+            'mean': 'Media',
+            'count': 'N_Alunos', 
+            'min': 'Min',
+            'max': 'Max',
+            'std': 'Std'
+        })
+        
+        group_stats['Nota_Tipo'] = nota_nome
+        group_stats['SE'] = group_stats['Std'] / np.sqrt(group_stats['N_Alunos'])
+        
+        # Vectorized CI calculation for valid groups
+        mask = group_stats['N_Alunos'] >= 2
+        group_stats.loc[~mask, ['CI_Lower', 'CI_Upper', 'SE']] = np.nan
+        
+        valid_mask = mask.copy()
+        if valid_mask.any():
+            N = group_stats.loc[valid_mask, 'N_Alunos']
+            t_crit = stats.t.ppf(0.975, N - 1)
+            group_stats.loc[valid_mask, 'CI_Lower'] = group_stats.loc[valid_mask, 'Media'] - t_crit * group_stats.loc[valid_mask, 'SE']
+            group_stats.loc[valid_mask, 'CI_Upper'] = group_stats.loc[valid_mask, 'Media'] + t_crit * group_stats.loc[valid_mask, 'SE']
+        
+        stats_dfs.append(group_stats)
     
-    result_df = pd.DataFrame(results)
-    
+    result_df = pd.concat(stats_dfs, ignore_index=True)
     return result_df
 
 
@@ -150,59 +169,55 @@ def create_co_curso_to_area_mapping(conceito_df):
     return mapping
 
 
-def get_ic_by_area(filtered_df, ic_data):
+@st.cache_data
+def get_co_curso_to_area_mapping():
     """
-    Calculate IC bounds for each Área de Avaliação from filtered data.
-    Uses the IC data to compute aggregate error bars.
+    Cached mapping CO_CURSO → Área de Avaliação from conceito data.
+    """
+    conceito_df = load_conceito()
+    return create_co_curso_to_area_mapping(conceito_df)
+
+
+@st.cache_data
+def get_ic_by_area(filtered_areas_tuple):
+    """
+    Calculate IC bounds for specified areas using cached data and mapping.
     
     Args:
-        filtered_df: The filtered conceito dataframe (already filtered by user selections)
-        ic_data: DataFrame with IC information by CO_CURSO
+        filtered_areas_tuple: Tuple of area names to filter, or None for all
     
     Returns:
-        DataFrame with CI bounds by "Área de Avaliação" and nota type
+        DataFrame with aggregated IC by "Área de Avaliação" and "Nota_Tipo"
     """
+    ic_data = load_grades_with_ic()
     if ic_data is None or ic_data.empty:
         return None
     
-    # Carregar o conceito completo para ter mapeamento de todos os CO_CURSO
-    conceito_completo = load_conceito()
-    
-    # Try to create mapping between CO_CURSO and Área usando o conceito COMPLETO
-    mapping = create_co_curso_to_area_mapping(conceito_completo)
-    
+    mapping = get_co_curso_to_area_mapping()
     if not mapping:
         return None
     
-    # Add "Área de Avaliação" to ic_data
     ic_data_copy = ic_data.copy()
     ic_data_copy["Área de Avaliação"] = ic_data_copy["CO_CURSO"].map(mapping)
-    
-    # Remover linhas onde 'Área de Avaliação' é NaN
     ic_data_copy = ic_data_copy.dropna(subset=['Área de Avaliação'])
+    
+    if filtered_areas_tuple:
+        ic_data_copy = ic_data_copy[ic_data_copy["Área de Avaliação"].isin(filtered_areas_tuple)]
     
     if ic_data_copy.empty:
         return None
     
-    # Group by area and note type, then aggregate
-    # Construir o agg dict dinamicamente apenas com as colunas que existem
     agg_dict = {
         "Media": "mean",
         "CI_Lower": "mean",
         "CI_Upper": "mean",
         "SE": "mean",
         "N_Alunos": "sum",
+        "Min": "min",
+        "Max": "max",
+        "Std": "mean"
     }
     
-    # Adicionar Min, Max, Std só se existirem
-    if "Min" in ic_data_copy.columns:
-        agg_dict["Min"] = "min"
-    if "Max" in ic_data_copy.columns:
-        agg_dict["Max"] = "max"
-    if "Std" in ic_data_copy.columns:
-        agg_dict["Std"] = "mean"
-    
     result = ic_data_copy.groupby(["Área de Avaliação", "Nota_Tipo"]).agg(agg_dict).reset_index()
-    
     return result
 

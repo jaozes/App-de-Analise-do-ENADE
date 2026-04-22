@@ -7,9 +7,7 @@ from utils.header import show_logo
 from utils.footer import show_footer
 from utils.header import inject_css
 
-#streamlit run enade-analysis-app/Home.py
-#inject_css()
-show_logo()
+st.set_page_config(layout="wide", page_title="Perfil Socioeconômico - ENADE 2023")
 
 # Estilo para alinhar tabelas à esquerda
 st.markdown("""
@@ -19,7 +17,9 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.set_page_config(layout="wide", page_title="Perfil Socioeconômico - ENADE 2023")
+#streamlit run enade-analysis-app/Home.py
+#inject_css()
+show_logo()
 
 # Mapeamento das questões QE (texto para exibição)
 QUESTION_METADATA = {
@@ -698,22 +698,35 @@ selected_var = st.selectbox(
 micro_q = load_question_df(selected_var)
 
 # Função auxiliar para atualizar opções de filtro dinamicamente (igual à página 2)
-def get_filtered_df(uf, municipio, ies, curso, modalidade, categoria, grau):
+def get_filtered_df(uf=None, municipio=None, ies=None, curso=None, modalidade=None, categoria=None, grau=None):
     """Filtra dataframe com base nas seleções (baseado na página 2)."""
+    def safe_tuple(val):
+        if val is None or val == []:
+            return tuple()
+        return tuple(val) if hasattr(val, '__iter__') else (val,)
+    
+    uf = safe_tuple(uf)
+    municipio = safe_tuple(municipio)
+    ies = safe_tuple(ies)
+    curso = safe_tuple(curso)
+    modalidade = safe_tuple(modalidade)
+    categoria = safe_tuple(categoria)
+    grau = safe_tuple(grau)
+    
     filtered = conceito_df.copy()
-    if uf:
+    if len(uf) > 0:
         filtered = filtered[filtered['Sigla da UF** '].isin(uf)]
-    if municipio:
+    if len(municipio) > 0:
         filtered = filtered[filtered['Município do Curso**'].isin(municipio)]
-    if ies:
+    if len(ies) > 0:
         filtered = filtered[filtered['Nome da IES*'].isin(ies)]
-    if curso:
+    if len(curso) > 0:
         filtered = filtered[filtered['Área de Avaliação'].isin(curso)]
-    if modalidade:
+    if len(modalidade) > 0:
         filtered = filtered[filtered['Modalidade de Ensino'].isin(modalidade)]
-    if categoria:
+    if len(categoria) > 0:
         filtered = filtered[filtered['Categoria Administrativa'].isin(categoria)]
-    if grau:
+    if len(grau) > 0:
         filtered = filtered[filtered['Grau Acadêmico'].isin(grau)]
     return filtered
 

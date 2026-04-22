@@ -6,8 +6,7 @@ from utils.footer import show_footer
 from utils.data_loader import load_conceito
 from utils.header import inject_css
 
-#inject_css()
-show_logo()
+st.set_page_config(layout="centered", page_title="Análise Geral do Brasil - ENADE 2023")
 
 # Estilo para alinhar tabelas à esquerda
 st.markdown("""
@@ -17,7 +16,8 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.set_page_config(layout="centered", page_title="Análise Geral do Brasil - ENADE 2023")
+#inject_css()
+show_logo()
 
 df = load_conceito()
 
