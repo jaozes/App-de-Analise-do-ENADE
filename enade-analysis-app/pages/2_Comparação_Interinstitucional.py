@@ -231,15 +231,15 @@ coluna_nota = mapa_notas[nota_selecionada]
 with col_checkbox:
     apenas_comum = st.checkbox("Mostrar apenas cursos em comum", value=False)
 
-# Toggle para mostrar intervalos de confiança (se dados disponíveis)
+# Toggle para mostrar barras de desvio padrão (se dados disponíveis)
 with col_ic:
     mostrar_ic = False
     if ic_df is not None and not ic_df.empty:
-        mostrar_ic = st.checkbox("📊 Mostrar IC 95%", value=False, help="Intervalo de confiança calculado a partir dos dados individuais dos alunos FILTRADOS pelos critérios selecionados (notas convertidas de 0-100 para 0-5)")
+        mostrar_ic = st.checkbox("📊 Mostrar Desvio Padrão", value=False, help="Barras de erro representam o desvio padrão dos alunos FILTRADOS pelos critérios selecionados (notas convertidas de 0-100 para 0-5)")
 
-# Mostrar aviso sobre o IC filtrado quando ativo
+# Mostrar aviso sobre o desvio padrão filtrado quando ativo
 if mostrar_ic and ic_df is not None and not ic_df.empty:
-    st.info("📊 **IC Filtrado**: O intervalo de confiança reflete os dados dos alunos do subconjunto selecionado pelos filtros aplicados. Notas na escala 0-5.")
+    st.info("📊 **Desvio Padrão Filtrado**: As barras de erro representam a dispersão (desvio padrão) dos alunos do subconjunto selecionado pelos filtros aplicados. Notas na escala 0-5.")
 
 
 # Verificar se ambos os dataframes têm dados
@@ -393,18 +393,14 @@ if not filtered_df.empty and not filtered_df2.empty:
     # Preparar dados de erro se mostrar_ic está ativo
     error_column = None
     if mostrar_ic:
-        # Criar coluna de erro baseada no tipo de nota selecionada
-        error_col_lower = f'{coluna_nota}_CI_Lower'
-        error_col_upper = f'{coluna_nota}_CI_Upper'
+        # Usar desvio padrão como tamanho da barra de erro
+        error_col_std = f'{coluna_nota}_Std'
         
-        if error_col_lower in df_comparacao.columns and error_col_upper in df_comparacao.columns:
-            # Calcular margens de erro (erro simétrico: metade da amplitude do IC)
-            df_comparacao['erro'] = (
-                (df_comparacao[error_col_upper] - df_comparacao[error_col_lower]) / 2
-            ).fillna(0)
+        if error_col_std in df_comparacao.columns:
+            df_comparacao['erro'] = df_comparacao[error_col_std].fillna(0)
             error_column = 'erro'
         else:
-            # Se não tiver colunas de IC, desabilitar mostrar_ic
+            # Se não tiver coluna de Std, desabilitar mostrar_ic
             mostrar_ic = False
     
     # Se checkbox marcado, filtrar apenas cursos em comum
