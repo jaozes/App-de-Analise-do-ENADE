@@ -9,6 +9,7 @@ DATA_DIR = Path(__file__).parent.parent / "data"
 CONCEITO_PATH = DATA_DIR / "conceito_enade_2023.xlsx"
 MICRODADOS_ARQ3 = DATA_DIR / "microdados2023_arq3.txt"
 MICRODADOS_PARQUET = DATA_DIR / "microdados2023_arq3.parquet"
+MICRODADOS_ENRICHED_PARQUET = DATA_DIR / "microdados2023_enriched.parquet"
 
 
 @st.cache_data
@@ -220,4 +221,153 @@ def get_ic_by_area(filtered_areas_tuple):
     
     result = ic_data_copy.groupby(["Área de Avaliação", "Nota_Tipo"]).agg(agg_dict).reset_index()
     return result
+
+
+@st.cache_data
+def load_microdados_enriched():
+    """
+    Load microdados merged with conceito metadata for each student.
+    Adds: Área de Avaliação, Nome da IES, UF, Município, Modalidade, Categoria, Grau.
+    Converts grades from 0-100 to 0-5. Cached as Parquet.
+    
+    Returns DataFrame with columns:
+    CO_CURSO, NT_GER, NT_FG, NT_CE, Área de Avaliação, Nome da IES*, 
+    Sigla da UF** , Município do Curso**, Modalidade de Ensino, 
+    Categoria Administrativa, Grau Acadêmico
+    """
+    try:
+        if MICRODADOS_ENRICHED_PARQUET.exists():
+            return pd.read_parquet(MICRODADOS_ENRICHED_PARQUET)
+        
+        # Load basic microdados
+        micro_df = load_microdados_grades()
+        if micro_df is None or micro_df.empty:
+            return None
+        
+        # Load conceito with metadata columns
+        conceito_df = load_conceito()
+        if conceito_df is None or conceito_df.empty:
+            return None
+        
+        # Select only needed columns from conceito
+        meta_cols = [
+            'Código do Curso',
+            'Área de Avaliação',
+            'Nome da IES*',
+            'Sigla da UF** ',
+            'Município do Curso**',
+            'Modalidade de Ensino',
+            'Categoria Administrativa',
+            'Grau Acadêmico'
+        ]
+        
+        # Check which columns actually exist
+        available_meta_cols = [c for c in meta_cols if c in conceito_df.columns]
+        if 'Código do Curso' not in available_meta_cols:
+            st.warning("⚠️ Coluna 'Código do Curso' não encontrada no conceito.")
+            return None
+        
+        conceito_meta = conceito_df[available_meta_cols].copy()
+        conceito_meta['Código do Curso'] = conceito_meta['Código do Curso'].astype(int)
+        
+        # Merge microdados with metadata
+        micro_df['CO_CURSO'] = micro_df['CO_CURSO'].astype(int)
+        enriched = micro_df.merge(
+            conceito_meta,
+            left_on='CO_CURSO',
+            right_on='Código do Curso',
+            how='left'
+        )
+        
+        # Drop rows without area mapping
+        enriched = enriched.dropna(subset=['Área de Avaliação'])
+        
+        if enriched.empty:
+            st.warning("⚠️ Nenhum aluno pôde ser mapeado para Área de Avaliação.")
+            return None
+        
+        # Save enriched parquet for fast loading next time
+        enriched.to_parquet(MICRODADOS_ENRICHED_PARQUET, index=False)
+        
+        return enriched
+        
+    except Exception as e:
+        st.warning(f"⚠️ Erro ao carregar microdados enriquecidos: {str(e)}")
+        return None
+
+
+@st.cache_data
+def get_ic_filtered(areas_tuple=(), uf=(), municipio=(), ies=(), modalidade=(), categoria=(), grau=()):
+    """
+    Calculate 95% confidence intervals over the FILTERED raw student sample.
+    
+    Args:
+        areas_tuple: Tuple of area names to include
+        uf, municipio, ies, modalidade, categoria, grau: Filter values (tuples/lists)
+    
+    Returns:
+        DataFrame with columns: Área de Avaliação, Nota_Tipo, Media, CI_Lower, CI_Upper,
+        SE, N_Alunos, Min, Max, Std
+    """
+    df = load_microdados_enriched()
+    if df is None or df.empty:
+        return None
+    
+    # Apply filters dynamically
+    if areas_tuple:
+        df = df[df['Área de Avaliação'].isin(areas_tuple)]
+    if uf:
+        df = df[df['Sigla da UF** '].isin(uf)]
+    if municipio:
+        df = df[df['Município do Curso**'].isin(municipio)]
+    if ies:
+        df = df[df['Nome da IES*'].isin(ies)]
+    if modalidade:
+        df = df[df['Modalidade de Ensino'].isin(modalidade)]
+    if categoria:
+        df = df[df['Categoria Administrativa'].isin(categoria)]
+    if grau:
+        df = df[df['Grau Acadêmico'].isin(grau)]
+    
+    if df.empty:
+        return None
+    
+    nota_map = {
+        'NT_GER': 'Conceito',
+        'NT_FG': 'Formação Geral',
+        'NT_CE': 'Componente Específico'
+    }
+    
+    results = []
+    
+    for col, nota_nome in nota_map.items():
+        # Group by area and calculate stats on raw student data
+        grouped = df.groupby('Área de Avaliação')[col]
+        
+        for area, group in grouped:
+            values = group.dropna()
+            n = len(values)
+            if n < 2:
+                continue
+            
+            mean, ci_lower, ci_upper, se = calculate_confidence_interval(values)
+            
+            results.append({
+                'Área de Avaliação': area,
+                'Nota_Tipo': nota_nome,
+                'Media': round(mean, 4),
+                'CI_Lower': round(ci_lower, 4) if pd.notna(ci_lower) else np.nan,
+                'CI_Upper': round(ci_upper, 4) if pd.notna(ci_upper) else np.nan,
+                'SE': round(se, 4) if pd.notna(se) else np.nan,
+                'N_Alunos': n,
+                'Min': round(float(values.min()), 4),
+                'Max': round(float(values.max()), 4),
+                'Std': round(float(values.std(ddof=1)), 4)
+            })
+    
+    if not results:
+        return None
+    
+    return pd.DataFrame(results)
+
 

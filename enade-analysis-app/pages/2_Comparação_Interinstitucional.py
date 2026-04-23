@@ -27,7 +27,7 @@ st.markdown("""
 show_logo()
 
 # Carregar os dados
-from utils.data_loader import load_conceito, load_grades_with_ic, get_ic_by_area
+from utils.data_loader import load_conceito, load_grades_with_ic, get_ic_filtered
 
 df = load_conceito()
 
@@ -235,11 +235,11 @@ with col_checkbox:
 with col_ic:
     mostrar_ic = False
     if ic_df is not None and not ic_df.empty:
-        mostrar_ic = st.checkbox("📊 Mostrar IC 95%", value=False, help="Intervalo de confiança calculado a partir dos dados individuais dos alunos (notas convertidas de 0-100 para 0-5)")
+        mostrar_ic = st.checkbox("📊 Mostrar IC 95%", value=False, help="Intervalo de confiança calculado a partir dos dados individuais dos alunos FILTRADOS pelos critérios selecionados (notas convertidas de 0-100 para 0-5)")
 
-# Mostrar aviso sobre conversão de escala quando IC está ativo
+# Mostrar aviso sobre o IC filtrado quando ativo
 if mostrar_ic and ic_df is not None and not ic_df.empty:
-    st.info("📊 **Notas Convertidas**: As notas foram convertidas de 0-100 para 0-5 para melhor visualização do intervalo de confiança. O eixo Y do gráfico mostra a escala 0-5.")
+    st.info("📊 **IC Filtrado**: O intervalo de confiança reflete os dados dos alunos do subconjunto selecionado pelos filtros aplicados. Notas na escala 0-5.")
 
 
 # Verificar se ambos os dataframes têm dados
@@ -298,11 +298,27 @@ if not filtered_df.empty and not filtered_df2.empty:
     
     # Adicionar dados de intervalo de confiança, se selecionado
     if mostrar_ic and ic_df is not None and not ic_df.empty:
-        # Calcular ICs para as instituições filtradas
+        # Calcular ICs para as instituições filtradas (agora com filtros aplicados aos microdados)
         areas1 = tuple(sorted(filtered_df['Área de Avaliação'].dropna().unique()))
         areas2 = tuple(sorted(filtered_df2['Área de Avaliação'].dropna().unique()))
-        ic_data1 = get_ic_by_area(areas1)
-        ic_data2 = get_ic_by_area(areas2)
+        ic_data1 = get_ic_filtered(
+            areas1,
+            uf=tuple(selected_uf) if selected_uf else (),
+            municipio=tuple(selected_municipio) if selected_municipio else (),
+            ies=tuple(selected_ies) if selected_ies else (),
+            modalidade=tuple(selected_modalidade) if selected_modalidade else (),
+            categoria=tuple(selected_categoria) if selected_categoria else (),
+            grau=tuple(selected_grau) if selected_grau else ()
+        )
+        ic_data2 = get_ic_filtered(
+            areas2,
+            uf=tuple(selected_uf2) if selected_uf2 else (),
+            municipio=tuple(selected_municipio2) if selected_municipio2 else (),
+            ies=tuple(selected_ies2) if selected_ies2 else (),
+            modalidade=tuple(selected_modalidade2) if selected_modalidade2 else (),
+            categoria=tuple(selected_categoria2) if selected_categoria2 else (),
+            grau=tuple(selected_grau2) if selected_grau2 else ()
+        )
         
         # Mapear tipo de nota para coluna
         nota_tipo_map = {
