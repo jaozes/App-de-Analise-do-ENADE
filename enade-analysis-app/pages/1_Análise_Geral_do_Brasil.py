@@ -652,6 +652,7 @@ elif grafico_selecionado == "Densidade de Cursos no Brasil":
     st.subheader("Dados da Análise")
     # Exibir tabela formatada
     tabela_dados = cursos_por_estado[['Estado', 'Quantidade de Cursos', 'Densidade Relativa (%)']].copy()
+    tabela_dados['Quantidade de Cursos'] = tabela_dados['Quantidade de Cursos'].apply(lambda x: format_br_number(x, 0))
     tabela_dados['Densidade Relativa (%)'] = tabela_dados['Densidade Relativa (%)'].apply(format_br_percentage)
     st.dataframe(
         tabela_dados,
