@@ -1175,7 +1175,7 @@ else:
 
 show_footer(
 
-    advisor_text="Orientador: Prof. Dr. César Candido Xavier • Email: cesarcx@gmail.com",
+    advisor_text="Orientador: Prof. Dr. César Candido Xavier • Email: cesarcx@gmail.com • <a href=\"http://lattes.cnpq.br/2281060219061831\" target=\"_blank\" style=\"color:inherit; text-decoration:underline;\">Currículo Lattes</a>",
     text="Pesquisador: João Octavio Venâncio Borba • UNISO - Universidade de Sorocaba • Email: joaooctaviov.borba@gmail.com",
     links=[
         ("Github", "https://github.com/jaozes"),
@@ -1185,5 +1185,5 @@ show_footer(
     bg_color="#ffffff",
     text_color="#000000",
     height_px=56,
-    citation="Como citar: BORBA, J. O. V. Mapeando o desempenho e o perfil do estudante no Enade: uma plataforma interativa para comparações interinstitucionais. Sorocaba, SP, 2026.",
+    citation="Como citar: BORBA, J. O. V. ; XAVIER, C. C. Mapeando o desempenho e o perfil do estudante no Enade: uma plataforma interativa para comparações interinstitucionais. Sorocaba, SP, 2026.",
 )
