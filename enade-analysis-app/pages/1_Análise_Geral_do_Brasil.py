@@ -5,6 +5,7 @@ from utils.header import show_logo
 from utils.footer import show_footer
 from utils.data_loader import load_conceito
 from utils.header import inject_css
+from utils.formatting import format_br_number, format_br_percentage
 
 st.set_page_config(layout="centered", page_title="Análise Geral do Brasil - ENADE 2023")
 
@@ -158,7 +159,9 @@ if grafico_selecionado == "Média de Conceitos por Área de Avaliação":
     st.plotly_chart(fig1, use_container_width=True)
 
     st.subheader("📋 Dados da Análise")
-    st.dataframe(avg_area, width='stretch', hide_index=True)
+    avg_area_display = avg_area.copy()
+    avg_area_display['Média'] = avg_area_display['Média'].apply(lambda x: format_br_number(x, 2))
+    st.dataframe(avg_area_display, width='stretch', hide_index=True)
 
 # Análise por UF
 elif grafico_selecionado == "Média por Estado":
@@ -252,7 +255,9 @@ elif grafico_selecionado == "Média por Estado":
     st.plotly_chart(fig2, width='stretch')
 
     st.subheader("Dados da Análise")
-    st.dataframe(avg_uf, width='stretch', hide_index=True)
+    avg_uf_display = avg_uf.copy()
+    avg_uf_display['Média'] = avg_uf_display['Média'].apply(lambda x: format_br_number(x, 2))
+    st.dataframe(avg_uf_display, width='stretch', hide_index=True)
 
 # Análise por Modalidade
 elif grafico_selecionado == "Média por Modalidade de Ensino":
@@ -321,7 +326,9 @@ elif grafico_selecionado == "Média por Modalidade de Ensino":
     st.plotly_chart(fig3, width='stretch')
 
     st.subheader("Dados da Análise")
-    st.dataframe(avg_mod, width='stretch', hide_index=True)
+    avg_mod_display = avg_mod.copy()
+    avg_mod_display['Média'] = avg_mod_display['Média'].apply(lambda x: format_br_number(x, 2))
+    st.dataframe(avg_mod_display, width='stretch', hide_index=True)
 
 # Análise de Quantidade de Alunos por Curso ou Estado
 elif grafico_selecionado == "Quantidade de Alunos por Curso ou Estado":
@@ -420,7 +427,7 @@ elif grafico_selecionado == "Quantidade de Alunos por Curso ou Estado":
         qtd_por_estado = qtd_por_estado.sort_values('Valor', ascending=False)
 
         # Criar coluna formatada para texto
-        qtd_por_estado['Quantidade'] = qtd_por_estado['Valor'].apply(lambda x: f"{x:,.0f}".replace(",", "."))
+        qtd_por_estado['Quantidade'] = qtd_por_estado['Valor'].apply(lambda x: format_br_number(x, 0))
 
         st.subheader("👥 Quantidade de Alunos por Estado")
         fig4 = px.bar(
@@ -462,7 +469,7 @@ elif grafico_selecionado == "Quantidade de Alunos por Curso ou Estado":
         qtd_por_curso = qtd_por_curso.sort_values('Valor', ascending=False)
 
         # Criar coluna formatada para texto
-        qtd_por_curso['Quantidade'] = qtd_por_curso['Valor'].apply(lambda x: f"{x:,.0f}".replace(",", "."))
+        qtd_por_curso['Quantidade'] = qtd_por_curso['Valor'].apply(lambda x: format_br_number(x, 0))
 
         st.subheader("📚 Quantidade de Alunos por Curso")
         fig5 = px.bar(
@@ -645,7 +652,7 @@ elif grafico_selecionado == "Densidade de Cursos no Brasil":
     st.subheader("Dados da Análise")
     # Exibir tabela formatada
     tabela_dados = cursos_por_estado[['Estado', 'Quantidade de Cursos', 'Densidade Relativa (%)']].copy()
-    tabela_dados['Densidade Relativa (%)'] = tabela_dados['Densidade Relativa (%)'].apply(lambda x: f"{x:.2f}%")
+    tabela_dados['Densidade Relativa (%)'] = tabela_dados['Densidade Relativa (%)'].apply(format_br_percentage)
     st.dataframe(
         tabela_dados,
         width='stretch',
@@ -717,10 +724,9 @@ elif grafico_selecionado == "Densidade de Alunos por Instituição de Ensino":
     merged['Ratio'] = merged.apply(lambda r: r['Alunos']/r['Instituições'] if r['Instituições'] > 0 else 0, axis=1)
 
     # Criar colunas com formatação brasileira (ponto mil, vírgula decimal)
-    fmt = lambda x: f"{x:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
-    merged['Alunos_fmt'] = merged['Alunos'].apply(lambda x: f"{x:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-    merged['Instituições_fmt'] = merged['Instituições'].apply(lambda x: f"{x:,.0f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-    merged['Ratio_fmt'] = merged['Ratio'].apply(fmt)
+    merged['Alunos_fmt'] = merged['Alunos'].apply(lambda x: format_br_number(x, 0))
+    merged['Instituições_fmt'] = merged['Instituições'].apply(lambda x: format_br_number(x, 0))
+    merged['Ratio_fmt'] = merged['Ratio'].apply(lambda x: format_br_number(x, 2))
 
     # Garantir todos os estados presentes
     todos_estados = ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 

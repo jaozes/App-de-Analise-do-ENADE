@@ -6,6 +6,7 @@ from pathlib import Path
 from utils.header import show_logo
 from utils.footer import show_footer
 from utils.header import inject_css
+from utils.formatting import format_br_number, format_br_percentage
 
 st.set_page_config(layout="wide", page_title="Perfil Socioeconômico - ENADE 2023")
 
@@ -530,23 +531,6 @@ QE_ABBREVIATIONS = {
 def normalize_col(name: str) -> str:
     """Normaliza nomes de colunas para facilitar uso (remove acentos e espaços extras)."""
     return unicodedata.normalize("NFKD", str(name)).encode("ascii", "ignore").decode("ascii").strip()
-
-
-def format_br_number(value: float, decimal_places: int = 0) -> str:
-    """Formata número para o padrão brasileiro (ponto para milhares, vírgula para decimal)."""
-    if pd.isna(value):
-        return ""
-    if decimal_places == 0:
-        return f"{int(value):,}".replace(",", ".")
-    else:
-        return f"{value:,.{decimal_places}f}".replace(",", "X").replace(".", ",").replace("X", ".")
-
-
-def format_br_percentage(value: float) -> str:
-    """Formata percentual para o padrão brasileiro."""
-    if pd.isna(value):
-        return ""
-    return f"{value:.2f}%".replace(".", ",")
 
 
 def sort_responses(df: pd.DataFrame, column: str, var_name: str = None) -> pd.DataFrame:

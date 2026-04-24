@@ -5,6 +5,7 @@ import plotly.express as px
 from utils.header import show_logo
 from utils.footer import show_footer
 from utils.header import inject_css
+from utils.formatting import format_br_number, format_br_percentage
 
 def safe_tuple(val):
     """Convert value to tuple safely, handling Streamlit Never/None."""
@@ -27,7 +28,7 @@ st.markdown("""
 show_logo()
 
 # Carregar os dados
-from utils.data_loader import load_conceito, load_grades_with_ic, get_ic_filtered
+from utils.data_loader import load_conceito, load_grades_with_ic, get_ic_filtered, get_microdados_filtered
 
 df = load_conceito()
 
@@ -497,15 +498,114 @@ if not filtered_df.empty and not filtered_df2.empty:
     fig_comparativo.update_xaxes(categoryorder='array', categoryarray=cursos_ordenados)
     st.plotly_chart(fig_comparativo, width='stretch')
     
+    # ------------------------------------------------------------------
+    # Box plot com notas individuais dos alunos (incluindo outliers)
+    # ------------------------------------------------------------------
+    if mostrar_ic:
+        st.markdown("---")
+        st.subheader("📦 Distribuição das Notas dos Alunos")
+        
+        # Mapear tipo de nota para coluna dos microdados
+        coluna_micro = {
+            "Média": "NT_GER",
+            "Formação Geral": "NT_FG",
+            "Componente Específico": "NT_CE"
+        }.get(coluna_nota, "NT_GER")
+        
+        # Carregar microdados brutos filtrados para cada instituição
+        micro1 = get_microdados_filtered(
+            areas_tuple=tuple(sorted(avg_df['Área de Avaliação'].unique())),
+            uf=tuple(selected_uf) if selected_uf else (),
+            municipio=tuple(selected_municipio) if selected_municipio else (),
+            ies=tuple(selected_ies) if selected_ies else (),
+            modalidade=tuple(selected_modalidade) if selected_modalidade else (),
+            categoria=tuple(selected_categoria) if selected_categoria else (),
+            grau=tuple(selected_grau) if selected_grau else ()
+        )
+        micro2 = get_microdados_filtered(
+            areas_tuple=tuple(sorted(avg_df2['Área de Avaliação'].unique())),
+            uf=tuple(selected_uf2) if selected_uf2 else (),
+            municipio=tuple(selected_municipio2) if selected_municipio2 else (),
+            ies=tuple(selected_ies2) if selected_ies2 else (),
+            modalidade=tuple(selected_modalidade2) if selected_modalidade2 else (),
+            categoria=tuple(selected_categoria2) if selected_categoria2 else (),
+            grau=tuple(selected_grau2) if selected_grau2 else ()
+        )
+        
+        box_frames = []
+        if micro1 is not None and not micro1.empty:
+            micro1 = micro1.copy()
+            micro1['Instituicao'] = nome_inst1
+            micro1['Sigla Área'] = micro1['Área de Avaliação'].map(ABBR).fillna(micro1['Área de Avaliação'])
+            box_frames.append(micro1[['Sigla Área', 'Área de Avaliação', coluna_micro, 'Instituicao']])
+        
+        if micro2 is not None and not micro2.empty:
+            micro2 = micro2.copy()
+            micro2['Instituicao'] = nome_inst2
+            micro2['Sigla Área'] = micro2['Área de Avaliação'].map(ABBR).fillna(micro2['Área de Avaliação'])
+            box_frames.append(micro2[['Sigla Área', 'Área de Avaliação', coluna_micro, 'Instituicao']])
+        
+        if box_frames:
+            df_box = pd.concat(box_frames, ignore_index=True)
+            df_box = df_box.rename(columns={coluna_micro: 'Nota'})
+            
+            # Manter apenas cursos presentes no gráfico comparativo
+            cursos_visiveis = set(df_comparacao['Sigla Área'].unique())
+            df_box = df_box[df_box['Sigla Área'].isin(cursos_visiveis)]
+            
+            if not df_box.empty:
+                fig_box = px.box(
+                    df_box,
+                    x='Sigla Área',
+                    y='Nota',
+                    color='Instituicao',
+                    points='outliers',   # mostra outliers individuais
+                    title='',
+                    labels={'Nota': labels_y[coluna_nota], 'Sigla Área': 'Curso'},
+                    template='plotly_white',
+                    height=500
+                )
+                
+                fig_box.update_layout(
+                    boxmode='group',
+                    xaxis_tickangle=0,
+                    yaxis=dict(range=[0, 5]),
+                    legend_title_text='Instituição'
+                )
+                
+                fig_box.update_traces(
+                    hovertemplate='<b>%{x}</b><br>Nota: %{y:.2f}<br>Instituição: %{customdata[0]}<extra></extra>',
+                    customdata=np.stack([df_box['Instituicao']], axis=-1)
+                )
+                
+                st.plotly_chart(fig_box, use_container_width=True)
+                
+                st.caption(
+                    f"📊 Cada box mostra a distribuição completa das notas dos alunos: "
+                    f"mediana (linha central), quartis (caixa), bigodes (1,5× IQR) e outliers (pontos individuais). "
+                    f"Total de alunos exibidos: {len(df_box):,}."
+                )
+            else:
+                st.info("Nenhum dado individual de aluno disponível para os cursos selecionados.")
+        else:
+            st.info("Dados individuais dos alunos não disponíveis para os filtros aplicados.")
+    
     # Exibir tabelas de médias por curso de cada instituição
     col_tab1, col_tab2 = st.columns(2)
     with col_tab1:
         st.subheader(f'{nome_inst1} - Médias por Curso')
-        # mostramos também a abreviatura para facilitar visualização
-        st.dataframe(avg_df[['Sigla Área','Área de Avaliação', 'Média', 'Formação Geral', 'Componente Específico']], height=400, width='stretch', hide_index=True)
+        avg_df_display = avg_df[['Sigla Área','Área de Avaliação', 'Média', 'Formação Geral', 'Componente Específico']].copy()
+        avg_df_display['Média'] = avg_df_display['Média'].apply(lambda x: format_br_number(x, 2))
+        avg_df_display['Formação Geral'] = avg_df_display['Formação Geral'].apply(lambda x: format_br_number(x, 2))
+        avg_df_display['Componente Específico'] = avg_df_display['Componente Específico'].apply(lambda x: format_br_number(x, 2))
+        st.dataframe(avg_df_display, width='stretch', hide_index=True)
     with col_tab2:
         st.subheader(f'{nome_inst2} - Médias por Curso')
-        st.dataframe(avg_df2[['Sigla Área','Área de Avaliação', 'Média', 'Formação Geral', 'Componente Específico']], height=400, width='stretch', hide_index=True)
+        avg_df2_display = avg_df2[['Sigla Área','Área de Avaliação', 'Média', 'Formação Geral', 'Componente Específico']].copy()
+        avg_df2_display['Média'] = avg_df2_display['Média'].apply(lambda x: format_br_number(x, 2))
+        avg_df2_display['Formação Geral'] = avg_df2_display['Formação Geral'].apply(lambda x: format_br_number(x, 2))
+        avg_df2_display['Componente Específico'] = avg_df2_display['Componente Específico'].apply(lambda x: format_br_number(x, 2))
+        st.dataframe(avg_df2_display, width='stretch', hide_index=True)
     
 elif filtered_df.empty and filtered_df2.empty:
     st.write('Nenhum dado encontrado com os filtros selecionados para ambas as instituições.')

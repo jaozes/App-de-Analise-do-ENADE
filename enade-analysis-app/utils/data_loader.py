@@ -371,3 +371,44 @@ def get_ic_filtered(areas_tuple=(), uf=(), municipio=(), ies=(), modalidade=(), 
     return pd.DataFrame(results)
 
 
+@st.cache_data
+def get_microdados_filtered(areas_tuple=(), uf=(), municipio=(), ies=(), modalidade=(), categoria=(), grau=()):
+    """
+    Return raw student-level microdados filtered by user criteria.
+    
+    Args:
+        areas_tuple: Tuple of area names to include
+        uf, municipio, ies, modalidade, categoria, grau: Filter values (tuples/lists)
+    
+    Returns:
+        DataFrame with one row per student and columns:
+        CO_CURSO, NT_GER, NT_FG, NT_CE, Área de Avaliação, Nome da IES*,
+        Sigla da UF** , Município do Curso**, Modalidade de Ensino,
+        Categoria Administrativa, Grau Acadêmico
+    """
+    df = load_microdados_enriched()
+    if df is None or df.empty:
+        return None
+    
+    if areas_tuple:
+        df = df[df['Área de Avaliação'].isin(areas_tuple)]
+    if uf:
+        df = df[df['Sigla da UF** '].isin(uf)]
+    if municipio:
+        df = df[df['Município do Curso**'].isin(municipio)]
+    if ies:
+        df = df[df['Nome da IES*'].isin(ies)]
+    if modalidade:
+        df = df[df['Modalidade de Ensino'].isin(modalidade)]
+    if categoria:
+        df = df[df['Categoria Administrativa'].isin(categoria)]
+    if grau:
+        df = df[df['Grau Acadêmico'].isin(grau)]
+    
+    if df.empty:
+        return None
+    
+    return df.copy()
+
+
+
