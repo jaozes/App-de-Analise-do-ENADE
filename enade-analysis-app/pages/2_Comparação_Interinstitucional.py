@@ -583,7 +583,6 @@ if not filtered_df.empty and not filtered_df2.empty:
                 st.caption(
                     f"📊 Cada box mostra a distribuição completa das notas dos alunos: "
                     f"mediana (linha central), quartis (caixa), bigodes (1,5× IQR) e outliers (pontos individuais). "
-                    f"Total de alunos exibidos: {len(df_box):,}."
                 )
             else:
                 st.info("Nenhum dado individual de aluno disponível para os cursos selecionados.")
