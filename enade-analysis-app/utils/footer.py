@@ -5,6 +5,7 @@ import html
 def show_footer(
     text: str = "Seu nome • Contato: seu@email.com",
     advisor_text: Optional[str] = None,
+    advisor_link: Optional[Tuple[str, str]] = None,
     links: Optional[List[Tuple[str, str]]] = None,
     bg_color: str = "#0f1724",
     text_color: str = "#ffffff",
@@ -21,7 +22,13 @@ def show_footer(
         [f'<a href="{url}" target="_blank" style="color:{text_color}; text-decoration:underline;">{label}</a>' for label, url in links]
     )
 
-    advisor_section = f'<div>{advisor_text}</div>' if advisor_text else ""
+    if advisor_text:
+        if advisor_link:
+            advisor_section = f'<div>{advisor_text} • <a href="{advisor_link[1]}" target="_blank" style="color:{text_color}; text-decoration:underline;">{advisor_link[0]}</a></div>'
+        else:
+            advisor_section = f'<div>{advisor_text}</div>'
+    else:
+        advisor_section = ""
     citation_section = f'<div style="margin-top: 16px; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 12px; font-size: 13px; font-style: italic;">{html.escape(citation)}</div>' if citation else ""
 
     footer_html = f"""

@@ -1174,8 +1174,8 @@ else:
         st.dataframe(freq_display, width='stretch', hide_index=True)
 
 show_footer(
-
-    advisor_text="Orientador: Prof. Dr. César Candido Xavier • Email: cesarcx@gmail.com • <a href=\"http://lattes.cnpq.br/2281060219061831\" target=\"_blank\" style=\"color:inherit; text-decoration:underline;\">Currículo Lattes</a>",
+    advisor_text="Orientador: Prof. Dr. César Candido Xavier • Email: cesarcx@gmail.com",
+    advisor_link=("Currículo Lattes", "http://lattes.cnpq.br/2281060219061831"),
     text="Pesquisador: João Octavio Venâncio Borba • UNISO - Universidade de Sorocaba • Email: joaooctaviov.borba@gmail.com",
     links=[
         ("Github", "https://github.com/jaozes"),
