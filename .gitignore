@@ -1,7 +1,15 @@
 TODO.md
-enade-analysis-app/pages/__pycache__/1_Análise_Geral_do_Brasil.cpython-313.pyc
-enade-analysis-app/utils/__pycache__/header.cpython-313.pyc
-enade-analysis-app/utils/__pycache__/footer.cpython-313.pyc
-enade-analysis-app/utils/__pycache__/header.cpython-313.pyc
-enade-analysis-app/utils/__pycache__/data_loader.cpython-313.pyc
-enade-analysis-app/data/~$conceito_enade_2023.xlsx
+
+# Arquivos de teste e debug
+test_*.py
+test_report.txt
+debug_*.py
+check_columns.py
+
+# Cache Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Arquivos temporários do Excel
+~$*.xlsx
