@@ -15,5 +15,5 @@ def format_br_percentage(value: float) -> str:
     """Formata percentual para o padrão brasileiro."""
     if pd.isna(value):
         return ""
-    return f"{value:.2f}%".replace(".", ",")
+    return f"{value:.2f}".replace(".", ",")
 

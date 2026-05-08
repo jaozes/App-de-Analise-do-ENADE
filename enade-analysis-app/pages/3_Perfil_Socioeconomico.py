@@ -1093,13 +1093,13 @@ else:
                 perc1 = (display_df1['Contagem'] / display_df1['Contagem'].sum() * 100).round(1)
                 display_df1['Resposta_Completa'] = display_df1['Resposta_Completa'].apply(lambda x: format_br_number(int(x), 0))
                 display_df1['Contagem'] = display_df1['Contagem'].apply(lambda x: format_br_number(x, 0))
-                display_df1['%'] = [format_br_percentage(p) for p in perc1]
+                display_df1['%'] = [format_br_percentage(p).replace('%', '').strip() for p in perc1]
                 display_df1.columns = ['Idade', 'Contagem', '%']
             else:
                 display_df1 = freq1_prep[['Resposta_Completa', 'Abreviacao', 'Contagem']].copy()
                 perc1 = (display_df1['Contagem'] / display_df1['Contagem'].sum() * 100).round(1)
                 display_df1['Contagem'] = display_df1['Contagem'].apply(lambda x: format_br_number(x, 0))
-                display_df1['%'] = [format_br_percentage(p) for p in perc1]
+                display_df1['%'] = [format_br_percentage(p).replace('%', '').strip() for p in perc1]
                 display_df1.columns = ['Resposta', 'Abreviação', 'Contagem', '%']
             st.dataframe(display_df1, width='stretch', hide_index=True)
         with col_tab2:
@@ -1109,13 +1109,13 @@ else:
                 perc2 = (display_df2['Contagem'] / display_df2['Contagem'].sum() * 100).round(1)
                 display_df2['Resposta_Completa'] = display_df2['Resposta_Completa'].apply(lambda x: format_br_number(int(x), 0))
                 display_df2['Contagem'] = display_df2['Contagem'].apply(lambda x: format_br_number(x, 0))
-                display_df2['%'] = [format_br_percentage(p) for p in perc2]
+                display_df2['%'] = [format_br_percentage(p).replace('%', '').strip().replace(' ', '') for p in perc2]
                 display_df2.columns = ['Idade', 'Contagem', '%']
             else:
                 display_df2 = freq2_prep[['Resposta_Completa', 'Abreviacao', 'Contagem']].copy()
                 perc2 = (display_df2['Contagem'] / display_df2['Contagem'].sum() * 100).round(1)
                 display_df2['Contagem'] = display_df2['Contagem'].apply(lambda x: format_br_number(x, 0))
-                display_df2['%'] = [format_br_percentage(p) for p in perc2]
+                display_df2['%'] = [format_br_percentage(p).replace('%', '').strip() for p in perc2]
                 display_df2.columns = ['Resposta', 'Abreviação', 'Contagem', '%']
             st.dataframe(display_df2, width='stretch', hide_index=True)
     else:
