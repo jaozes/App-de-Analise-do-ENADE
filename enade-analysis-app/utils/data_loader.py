@@ -412,3 +412,121 @@ def get_microdados_filtered(areas_tuple=(), uf=(), municipio=(), ies=(), modalid
 
 
 
+@st.cache_data
+def build_boxplot_alunos_data(
+    *,
+    nome_inst1: str,
+    nome_inst2: str,
+    coluna_micro: str,
+    areas1: tuple,
+    uf1: tuple,
+    municipio1: tuple,
+    ies1: tuple,
+    modalidade1: tuple,
+    categoria1: tuple,
+    grau1: tuple,
+    areas2: tuple,
+    uf2: tuple,
+    municipio2: tuple,
+    ies2: tuple,
+    modalidade2: tuple,
+    categoria2: tuple,
+    grau2: tuple,
+    cursos_visiveis: tuple,
+    abbr_map: dict,
+):
+    """Build cacheable data for the boxplot (students) in the comparison page.
+
+    Returns:
+        (df_box, df_box_hover) or None.
+    """
+    micro1 = get_microdados_filtered(
+        areas_tuple=tuple(sorted(areas1)),
+        uf=uf1,
+        municipio=municipio1,
+        ies=ies1,
+        modalidade=modalidade1,
+        categoria=categoria1,
+        grau=grau1,
+    )
+    micro2 = get_microdados_filtered(
+        areas_tuple=tuple(sorted(areas2)),
+        uf=uf2,
+        municipio=municipio2,
+        ies=ies2,
+        modalidade=modalidade2,
+        categoria=categoria2,
+        grau=grau2,
+    )
+
+    box_frames = []
+    if micro1 is not None and not micro1.empty:
+        m1 = micro1.copy()
+        m1['Instituicao'] = nome_inst1
+        m1['Sigla Área'] = m1['Área de Avaliação'].map(abbr_map).fillna(m1['Área de Avaliação'])
+        box_frames.append(m1[['Sigla Área', 'Área de Avaliação', coluna_micro, 'Instituicao']])
+
+    if micro2 is not None and not micro2.empty:
+        m2 = micro2.copy()
+        m2['Instituicao'] = nome_inst2
+        m2['Sigla Área'] = m2['Área de Avaliação'].map(abbr_map).fillna(m2['Área de Avaliação'])
+        box_frames.append(m2[['Sigla Área', 'Área de Avaliação', coluna_micro, 'Instituicao']])
+
+    if not box_frames:
+        return None
+
+    df_box = pd.concat(box_frames, ignore_index=True)
+    df_box = df_box.rename(columns={coluna_micro: 'Nota'})
+
+    cursos_visiveis_local = set(cursos_visiveis)
+    df_box = df_box[df_box['Sigla Área'].isin(cursos_visiveis_local)]
+    if df_box.empty:
+        return None
+
+    stats_raw = (
+        df_box.groupby(['Sigla Área', 'Área de Avaliação'], dropna=False)['Nota']
+        .agg(
+            Q1=lambda s: np.percentile(pd.to_numeric(s, errors='coerce').dropna(), 25)
+            if len(pd.to_numeric(s, errors='coerce').dropna())
+            else np.nan,
+            Mediana=lambda s: np.percentile(pd.to_numeric(s, errors='coerce').dropna(), 50)
+            if len(pd.to_numeric(s, errors='coerce').dropna())
+            else np.nan,
+            Q3=lambda s: np.percentile(pd.to_numeric(s, errors='coerce').dropna(), 75)
+            if len(pd.to_numeric(s, errors='coerce').dropna())
+            else np.nan,
+            Min=lambda s: float(pd.to_numeric(s, errors='coerce').dropna().min())
+            if not pd.to_numeric(s, errors='coerce').dropna().empty
+            else np.nan,
+            Max=lambda s: float(pd.to_numeric(s, errors='coerce').dropna().max())
+            if not pd.to_numeric(s, errors='coerce').dropna().empty
+            else np.nan,
+        )
+        .reset_index()
+    )
+
+    iqr = stats_raw['Q3'] - stats_raw['Q1']
+    stats_raw['Bigode Inferior'] = np.maximum(stats_raw['Min'], stats_raw['Q1'] - 1.5 * iqr)
+    stats_raw['Bigode Superior'] = np.minimum(stats_raw['Max'], stats_raw['Q3'] + 1.5 * iqr)
+
+    df_box_hover = df_box.merge(
+        stats_raw[
+            [
+                'Sigla Área',
+                'Área de Avaliação',
+                'Mediana',
+                'Q1',
+                'Q3',
+                'Bigode Inferior',
+                'Bigode Superior',
+            ]
+        ],
+        on=['Sigla Área', 'Área de Avaliação'],
+        how='left',
+    )
+
+    return df_box, df_box_hover
+
+
+
+
