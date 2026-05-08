@@ -612,22 +612,193 @@ if not filtered_df.empty and not filtered_df2.empty:
         else:
             st.info("Dados individuais dos alunos não disponíveis para os filtros aplicados.")
     
-    # Exibir tabelas de médias por curso de cada instituição
+    # Exibir tabelas por curso (Médias ou Estatísticas do Boxplot)
     col_tab1, col_tab2 = st.columns(2)
+
+    def _box_stats_table(df_box_local: pd.DataFrame, sigla_area_col: str, area_full_col: str, nota_col: str):
+        if df_box_local is None or df_box_local.empty:
+            return pd.DataFrame(columns=[
+                'Sigla Área',
+                'Área de Avaliação',
+                'Q1',
+                'Mediana',
+                'Q3',
+                'Bigode Inferior',
+                'Bigode Superior',
+                'Min',
+                'Max',
+                'N'
+            ])
+
+        def _calc_stats(values: pd.Series):
+            v = pd.to_numeric(values, errors='coerce').dropna()
+            if v.empty:
+                return pd.Series({
+                    'Q1': np.nan,
+                    'Mediana': np.nan,
+                    'Q3': np.nan,
+                    'Bigode Inferior': np.nan,
+                    'Bigode Superior': np.nan,
+                    'Min': np.nan,
+                    'Max': np.nan,
+                    'N': 0
+                })
+
+            q1 = np.percentile(v, 25)
+            med = np.percentile(v, 50)
+            q3 = np.percentile(v, 75)
+            iqr = q3 - q1
+            lower_fence = q1 - 1.5 * iqr
+            upper_fence = q3 + 1.5 * iqr
+            vmin = float(v.min())
+            vmax = float(v.max())
+            bigode_inferior = max(vmin, lower_fence)
+            bigode_superior = min(vmax, upper_fence)
+
+            return pd.Series({
+                'Q1': q1,
+                'Mediana': med,
+                'Q3': q3,
+                'Bigode Inferior': bigode_inferior,
+                'Bigode Superior': bigode_superior,
+                'Min': vmin,
+                'Max': vmax,
+                'N': int(v.shape[0])
+            })
+
+        # Calcula stats por curso/área usando agg (evita duplicações e mantém colunas nomeadas)
+        grouped = (
+            df_box_local
+            .groupby([sigla_area_col, area_full_col], dropna=False)[nota_col]
+            .agg(
+                Q1=lambda s: np.percentile(pd.to_numeric(s, errors='coerce').dropna(), 25) if len(pd.to_numeric(s, errors='coerce').dropna()) else np.nan,
+                Mediana=lambda s: np.percentile(pd.to_numeric(s, errors='coerce').dropna(), 50) if len(pd.to_numeric(s, errors='coerce').dropna()) else np.nan,
+                Q3=lambda s: np.percentile(pd.to_numeric(s, errors='coerce').dropna(), 75) if len(pd.to_numeric(s, errors='coerce').dropna()) else np.nan,
+                Min=lambda s: float(pd.to_numeric(s, errors='coerce').dropna().min()) if not pd.to_numeric(s, errors='coerce').dropna().empty else np.nan,
+                Max=lambda s: float(pd.to_numeric(s, errors='coerce').dropna().max()) if not pd.to_numeric(s, errors='coerce').dropna().empty else np.nan,
+                N=lambda s: int(pd.to_numeric(s, errors='coerce').dropna().shape[0])
+            )
+            .reset_index()
+        )
+
+        # Bigodes a partir de Q1/Q3/IQR e Min/Max
+        grouped['Bigode Inferior'] = grouped.apply(
+            lambda r: max(r['Min'], r['Q1'] - 1.5 * (r['Q3'] - r['Q1'])) if pd.notna(r['Q1']) and pd.notna(r['Q3']) and pd.notna(r['Min']) else np.nan,
+            axis=1
+        )
+        grouped['Bigode Superior'] = grouped.apply(
+            lambda r: min(r['Max'], r['Q3'] + 1.5 * (r['Q3'] - r['Q1'])) if pd.notna(r['Q1']) and pd.notna(r['Q3']) and pd.notna(r['Max']) else np.nan,
+            axis=1
+        )
+
+
+        # Ordenação consistente com o eixo X do gráfico
+        if 'Sigla Área' in grouped.columns:
+            ordered = cursos_ordenados
+            grouped['Sigla Área'] = pd.Categorical(grouped['Sigla Área'], categories=ordered, ordered=True)
+            grouped = grouped.sort_values(['Sigla Área', area_full_col])
+
+        # Formatação numérica (0-5)
+        for c in ['Q1', 'Mediana', 'Q3', 'Bigode Inferior', 'Bigode Superior', 'Min', 'Max']:
+            if c in grouped.columns:
+                grouped[c] = grouped[c].apply(lambda x: format_br_number(x, 2) if pd.notna(x) else x)
+
+        return grouped
+
     with col_tab1:
-        st.subheader(f'{nome_inst1} - Médias por Curso')
-        avg_df_display = avg_df[['Sigla Área','Área de Avaliação', 'Média', 'Formação Geral', 'Componente Específico']].copy()
-        avg_df_display['Média'] = avg_df_display['Média'].apply(lambda x: format_br_number(x, 2))
-        avg_df_display['Formação Geral'] = avg_df_display['Formação Geral'].apply(lambda x: format_br_number(x, 2))
-        avg_df_display['Componente Específico'] = avg_df_display['Componente Específico'].apply(lambda x: format_br_number(x, 2))
-        st.dataframe(avg_df_display, width='stretch', hide_index=True)
+        if mostrar_ic:
+            st.subheader(f'{nome_inst1} - Estatísticas (Boxplot - alunos)')
+            # Recalcular df_box para a instituição 1
+            micro1 = get_microdados_filtered(
+                areas_tuple=tuple(sorted(avg_df['Área de Avaliação'].unique())),
+                uf=tuple(selected_uf) if selected_uf else (),
+                municipio=tuple(selected_municipio) if selected_municipio else (),
+                ies=tuple(selected_ies) if selected_ies else (),
+                modalidade=tuple(selected_modalidade) if selected_modalidade else (),
+                categoria=tuple(selected_categoria) if selected_categoria else (),
+                grau=tuple(selected_grau) if selected_grau else ()
+            )
+
+            if micro1 is not None and not micro1.empty:
+                micro1 = micro1.copy()
+                micro1['Sigla Área'] = micro1['Área de Avaliação'].map(ABBR).fillna(micro1['Área de Avaliação'])
+                coluna_micro = {
+                    'Média': 'NT_GER',
+                    'Formação Geral': 'NT_FG',
+                    'Componente Específico': 'NT_CE'
+                }.get(coluna_nota, 'NT_GER')
+
+                df_box_1 = micro1[['Sigla Área', 'Área de Avaliação', coluna_micro]].copy()
+                df_box_1 = df_box_1.rename(columns={coluna_micro: 'Nota'})
+
+                stats_df_1 = _box_stats_table(df_box_1, 'Sigla Área', 'Área de Avaliação', 'Nota')
+
+                # Garantir presença das colunas esperadas (evita KeyError em casos vazios/degenerados)
+                desired_cols = ['Sigla Área', 'Área de Avaliação', 'Q1', 'Mediana', 'Q3', 'Bigode Inferior', 'Bigode Superior', 'Min', 'Max', 'N']
+                for c in desired_cols:
+                    if c not in stats_df_1.columns:
+                        stats_df_1[c] = np.nan
+                stats_df_1 = stats_df_1[desired_cols]
+
+                st.dataframe(stats_df_1, width='stretch', hide_index=True)
+
+            else:
+                st.info('Nenhum dado individual de aluno disponível para os filtros aplicados.')
+        else:
+            st.subheader(f'{nome_inst1} - Médias por Curso')
+            avg_df_display = avg_df[['Sigla Área','Área de Avaliação', 'Média', 'Formação Geral', 'Componente Específico']].copy()
+            avg_df_display['Média'] = avg_df_display['Média'].apply(lambda x: format_br_number(x, 2))
+            avg_df_display['Formação Geral'] = avg_df_display['Formação Geral'].apply(lambda x: format_br_number(x, 2))
+            avg_df_display['Componente Específico'] = avg_df_display['Componente Específico'].apply(lambda x: format_br_number(x, 2))
+            st.dataframe(avg_df_display, width='stretch', hide_index=True)
+
     with col_tab2:
-        st.subheader(f'{nome_inst2} - Médias por Curso')
-        avg_df2_display = avg_df2[['Sigla Área','Área de Avaliação', 'Média', 'Formação Geral', 'Componente Específico']].copy()
-        avg_df2_display['Média'] = avg_df2_display['Média'].apply(lambda x: format_br_number(x, 2))
-        avg_df2_display['Formação Geral'] = avg_df2_display['Formação Geral'].apply(lambda x: format_br_number(x, 2))
-        avg_df2_display['Componente Específico'] = avg_df2_display['Componente Específico'].apply(lambda x: format_br_number(x, 2))
-        st.dataframe(avg_df2_display, width='stretch', hide_index=True)
+        if mostrar_ic:
+            st.subheader(f'{nome_inst2} - Estatísticas (Boxplot - alunos)')
+            micro2 = get_microdados_filtered(
+                areas_tuple=tuple(sorted(avg_df2['Área de Avaliação'].unique())),
+                uf=tuple(selected_uf2) if selected_uf2 else (),
+                municipio=tuple(selected_municipio2) if selected_municipio2 else (),
+                ies=tuple(selected_ies2) if selected_ies2 else (),
+                modalidade=tuple(selected_modalidade2) if selected_modalidade2 else (),
+                categoria=tuple(selected_categoria2) if selected_categoria2 else (),
+                grau=tuple(selected_grau2) if selected_grau2 else ()
+            )
+
+            if micro2 is not None and not micro2.empty:
+                micro2 = micro2.copy()
+                micro2['Sigla Área'] = micro2['Área de Avaliação'].map(ABBR).fillna(micro2['Área de Avaliação'])
+                coluna_micro = {
+                    'Média': 'NT_GER',
+                    'Formação Geral': 'NT_FG',
+                    'Componente Específico': 'NT_CE'
+                }.get(coluna_nota, 'NT_GER')
+
+                df_box_2 = micro2[['Sigla Área', 'Área de Avaliação', coluna_micro]].copy()
+                df_box_2 = df_box_2.rename(columns={coluna_micro: 'Nota'})
+                df_box_2['N'] = 1  # placeholder
+
+                stats_df_2 = _box_stats_table(df_box_2, 'Sigla Área', 'Área de Avaliação', 'Nota')
+
+                # Garantir presença das colunas esperadas (evita KeyError em casos vazios/degenerados)
+                desired_cols = ['Sigla Área', 'Área de Avaliação', 'Q1', 'Mediana', 'Q3', 'Bigode Inferior', 'Bigode Superior', 'Min', 'Max', 'N']
+                for c in desired_cols:
+                    if c not in stats_df_2.columns:
+                        stats_df_2[c] = np.nan
+                stats_df_2 = stats_df_2[desired_cols]
+
+                st.dataframe(stats_df_2, width='stretch', hide_index=True)
+
+            else:
+                st.info('Nenhum dado individual de aluno disponível para os filtros aplicados.')
+        else:
+            st.subheader(f'{nome_inst2} - Médias por Curso')
+            avg_df2_display = avg_df2[['Sigla Área','Área de Avaliação', 'Média', 'Formação Geral', 'Componente Específico']].copy()
+            avg_df2_display['Média'] = avg_df2_display['Média'].apply(lambda x: format_br_number(x, 2))
+            avg_df2_display['Formação Geral'] = avg_df2_display['Formação Geral'].apply(lambda x: format_br_number(x, 2))
+            avg_df2_display['Componente Específico'] = avg_df2_display['Componente Específico'].apply(lambda x: format_br_number(x, 2))
+            st.dataframe(avg_df2_display, width='stretch', hide_index=True)
+
     
 elif filtered_df.empty and filtered_df2.empty:
     st.write('Nenhum dado encontrado com os filtros selecionados para ambas as instituições.')
