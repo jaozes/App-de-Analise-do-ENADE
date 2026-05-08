@@ -212,7 +212,8 @@ st.markdown("---")
 st.header('📊 Comparação Interinstitucional')
 
 # Seletor para escolher qual nota exibir
-col_selector, col_checkbox, col_ic = st.columns([1, 2, 1.5])
+# e qual visualização (linha vs boxplot)
+col_selector, col_checkbox, col_ic, col_tipo_grafico = st.columns([1, 2, 1.5, 2])
 with col_selector:
     nota_selecionada = st.selectbox(
         "Selecionar nota",
@@ -496,15 +497,28 @@ if not filtered_df.empty and not filtered_df2.empty:
     )
     # Forçar a ordem dos cursos no eixo X (já são abreviados)
     fig_comparativo.update_xaxes(categoryorder='array', categoryarray=cursos_ordenados)
-    st.plotly_chart(fig_comparativo, width='stretch')
-    
+    # ------------------------------------------------------------------
+    # Seletor: decidir qual gráfico mostrar (linha vs boxplot)
+    # ------------------------------------------------------------------
+    tipo_grafico = col_tipo_grafico.selectbox(
+        "Visualização",
+        ["Linha (normal)", "Boxplot (alunos)"],
+        index=0,
+    )
+
+    if tipo_grafico == "Linha (normal)":
+        st.plotly_chart(fig_comparativo, width='stretch')
+    else:
+        if mostrar_ic:
+            st.markdown("---")
+            st.subheader("📦 Distribuição das Notas dos Alunos")
+        else:
+            st.info("Ative 📊 Mostrar Desvio Padrão para exibir o boxplot (notas individuais dos alunos).")
+
     # ------------------------------------------------------------------
     # Box plot com notas individuais dos alunos (incluindo outliers)
     # ------------------------------------------------------------------
-    if mostrar_ic:
-        st.markdown("---")
-        st.subheader("📦 Distribuição das Notas dos Alunos")
-        
+    if tipo_grafico == "Boxplot (alunos)" and mostrar_ic:
         # Mapear tipo de nota para coluna dos microdados
         coluna_micro = {
             "Média": "NT_GER",
@@ -570,11 +584,20 @@ if not filtered_df.empty and not filtered_df2.empty:
                     boxmode='group',
                     xaxis_tickangle=0,
                     yaxis=dict(range=[0, 5]),
-                    legend_title_text='Instituição'
+                    legend_title_text='Instituição',
+                    xaxis=dict(categoryorder='array', categoryarray=sorted(df_box['Sigla Área'].unique()))
                 )
                 
                 fig_box.update_traces(
-                    hovertemplate='<b>%{x}</b><br>Nota: %{y:.2f}<br>Instituição: %{customdata[0]}<extra></extra>',
+                    hoverinfo='skip',
+                    hovertemplate=(
+                        '<b>%{x}</b><br>'
+                        'Mediana (linha central): %{median:.2f}<br>'
+                        'Quartil 1 (Q1): %{q1:.2f}<br>'
+                        'Quartil 3 (Q3): %{q3:.2f}<br>'
+                        'Bigodes (1,5× IQR): %{lowerfence:.2f} - %{upperfence:.2f}<br>'
+                        'Outlier (ponto): %{y:.2f}<extra></extra>'
+                    ),
                     customdata=np.stack([df_box['Instituicao']], axis=-1)
                 )
                 
