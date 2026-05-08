@@ -587,11 +587,12 @@ if not filtered_df.empty and not filtered_df2.empty:
                     legend_title_text='Instituição',
                     xaxis=dict(categoryorder='array', categoryarray=sorted(df_box['Sigla Área'].unique()))
                 )
-                
+
                 fig_box.update_traces(
                     hoverinfo='skip',
                     hovertemplate=(
                         '<b>%{x}</b><br>'
+                        'Instituição: %{customdata[0]}<br>'
                         'Mediana (linha central): %{median:.2f}<br>'
                         'Quartil 1 (Q1): %{q1:.2f}<br>'
                         'Quartil 3 (Q3): %{q3:.2f}<br>'
@@ -600,7 +601,7 @@ if not filtered_df.empty and not filtered_df2.empty:
                     ),
                     customdata=np.stack([df_box['Instituicao']], axis=-1)
                 )
-                
+
                 st.plotly_chart(fig_box, use_container_width=True)
                 
                 st.caption(
@@ -698,10 +699,14 @@ if not filtered_df.empty and not filtered_df2.empty:
             grouped['Sigla Área'] = pd.Categorical(grouped['Sigla Área'], categories=ordered, ordered=True)
             grouped = grouped.sort_values(['Sigla Área', area_full_col])
 
-        # Formatação numérica (0-5)
+        # Formatação numérica (0-5) para estatísticas contínuas
         for c in ['Q1', 'Mediana', 'Q3', 'Bigode Inferior', 'Bigode Superior', 'Min', 'Max']:
             if c in grouped.columns:
                 grouped[c] = grouped[c].apply(lambda x: format_br_number(x, 2) if pd.notna(x) else x)
+
+        # Formatação numérica para N (contagem inteira)
+        if 'N' in grouped.columns:
+            grouped['N'] = grouped['N'].apply(lambda x: format_br_number(x, 0) if pd.notna(x) else x)
 
         return grouped
 
