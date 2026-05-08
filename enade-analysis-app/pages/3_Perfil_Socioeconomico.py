@@ -1077,7 +1077,8 @@ else:
             template="plotly_white",
             xaxis_title='Resposta',
             yaxis_title='Percentual (%)',
-            height=600
+            height=600,
+            legend=dict(title=dict(text='Instituição<br>Clique na legenda para ocultar.'))
         )
         fig_comparativo.update_yaxes(ticksuffix='%')
         fig_comparativo.update_traces(hovertemplate='<b>%{customdata[0]}</b><br>Instituição: %{customdata[1]}<br>Percentual: %{customdata[2]}<br>Contagem: %{customdata[3]}<extra></extra>', hoverlabel=dict(font=dict(size=14)), line=dict(width=4), marker=dict(size=8))

@@ -465,7 +465,8 @@ if not filtered_df.empty and not filtered_df2.empty:
         xaxis_title='Curso',
         yaxis_title=labels_y[coluna_nota],
         yaxis=dict(range=[0, 5]),  # Escala de 0 a 5 para as notas convertidas
-        height=600
+        height=600,
+        legend=dict(title=dict(text='Instituição<br>Clique na legenda para ocultar.'))
     )
     
     # Definir hovertemplate conforme o IC está ativo ou não
@@ -584,8 +585,32 @@ if not filtered_df.empty and not filtered_df2.empty:
                     boxmode='group',
                     xaxis_tickangle=0,
                     yaxis=dict(range=[0, 5]),
-                    legend_title_text='Instituição',
+                    legend=dict(title=dict(text='Instituição<br>Clique na legenda para ocultar.')),
                     xaxis=dict(categoryorder='array', categoryarray=sorted(df_box['Sigla Área'].unique()))
+                )
+
+                # Calcula estatísticas por (Sigla Área, Área de Avaliação) para popular customdata do hover.
+                stats_raw = (
+                    df_box.groupby(['Sigla Área', 'Área de Avaliação'], dropna=False)['Nota']
+                    .agg(
+                        Q1=lambda s: np.percentile(pd.to_numeric(s, errors='coerce').dropna(), 25) if len(pd.to_numeric(s, errors='coerce').dropna()) else np.nan,
+                        Mediana=lambda s: np.percentile(pd.to_numeric(s, errors='coerce').dropna(), 50) if len(pd.to_numeric(s, errors='coerce').dropna()) else np.nan,
+                        Q3=lambda s: np.percentile(pd.to_numeric(s, errors='coerce').dropna(), 75) if len(pd.to_numeric(s, errors='coerce').dropna()) else np.nan,
+                        Min=lambda s: float(pd.to_numeric(s, errors='coerce').dropna().min()) if not pd.to_numeric(s, errors='coerce').dropna().empty else np.nan,
+                        Max=lambda s: float(pd.to_numeric(s, errors='coerce').dropna().max()) if not pd.to_numeric(s, errors='coerce').dropna().empty else np.nan,
+                    )
+                    .reset_index()
+                )
+
+                iqr = stats_raw['Q3'] - stats_raw['Q1']
+                stats_raw['Bigode Inferior'] = np.maximum(stats_raw['Min'], stats_raw['Q1'] - 1.5 * iqr)
+                stats_raw['Bigode Superior'] = np.minimum(stats_raw['Max'], stats_raw['Q3'] + 1.5 * iqr)
+
+                # Conecta estatísticas agregadas ao df_box (por curso/área) para cada aluno.
+                df_box_hover = df_box.merge(
+                    stats_raw[['Sigla Área', 'Área de Avaliação', 'Mediana', 'Q1', 'Q3', 'Bigode Inferior', 'Bigode Superior']],
+                    on=['Sigla Área', 'Área de Avaliação'],
+                    how='left'
                 )
 
                 fig_box.update_traces(
@@ -593,13 +618,21 @@ if not filtered_df.empty and not filtered_df2.empty:
                     hovertemplate=(
                         '<b>%{x}</b><br>'
                         'Instituição: %{customdata[0]}<br>'
-                        'Mediana (linha central): %{median:.2f}<br>'
-                        'Quartil 1 (Q1): %{q1:.2f}<br>'
-                        'Quartil 3 (Q3): %{q3:.2f}<br>'
-                        'Bigodes (1,5× IQR): %{lowerfence:.2f} - %{upperfence:.2f}<br>'
+                        'Mediana (linha central): %{customdata[1]:.2f}<br>'
+                        'Quartil 1 (Q1): %{customdata[2]:.2f}<br>'
+                        'Quartil 3 (Q3): %{customdata[3]:.2f}<br>'
+                        'Bigodes (1,5× IQR): %{customdata[4]:.2f} - %{customdata[5]:.2f}<br>'
                         'Outlier (ponto): %{y:.2f}<extra></extra>'
                     ),
-                    customdata=np.stack([df_box['Instituicao']], axis=-1)
+                    # customdata deve ter 6 colunas: Instituição, Mediana, Q1, Q3, Bigode Inferior, Bigode Superior
+                    customdata=np.stack([
+                        df_box_hover['Instituicao'],
+                        df_box_hover['Mediana'],
+                        df_box_hover['Q1'],
+                        df_box_hover['Q3'],
+                        df_box_hover['Bigode Inferior'],
+                        df_box_hover['Bigode Superior']
+                    ], axis=-1)
                 )
 
                 st.plotly_chart(fig_box, use_container_width=True)
