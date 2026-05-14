@@ -717,7 +717,7 @@ def get_filtered_df(uf=None, municipio=None, ies=None, curso=None, modalidade=No
 # Filtros em colunas com lógica em cascata
 col_insts, _ = st.columns([1, 3])
 with col_insts:
-    enable_comparison = st.toggle("**Comparação Interinstitucional**", key="toggle_comparison")
+   enable_comparison = st.toggle("**Comparação Interinstitucional**", key="toggle_comparison")
 
 col1, col2 = st.columns(2)
 

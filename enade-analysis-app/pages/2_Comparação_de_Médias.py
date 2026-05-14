@@ -14,7 +14,7 @@ def safe_tuple(val):
     return tuple(val) if hasattr(val, '__iter__') else (val,)
 
 
-st.set_page_config(layout="wide", page_title="Comparação Interinstitucional - ENADE 2023")
+st.set_page_config(layout="wide", page_title="Comparação de Médias - ENADE 2023")
 
 # Estilo para alinhar tabelas à esquerda
 st.markdown("""
@@ -209,7 +209,7 @@ with col2:
 
 # Seção do gráfico comparativo
 st.markdown("---")
-st.header('📊 Comparação Interinstitucional')
+st.header('📊 Comparação Interinstitucional de Médias')
 
 # Seletor para escolher qual nota exibir
 # e qual visualização (linha vs boxplot)
