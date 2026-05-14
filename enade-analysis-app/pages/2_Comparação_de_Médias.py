@@ -240,12 +240,12 @@ with col_ic:
         mostrar_ic = st.checkbox(
             "📊 Agregar Médias dos Alunos",
             value=False,
-            help="Ative para complementar a visualização com dados individuais dos alunos (boxplot) e médias relacionadas aos alunos filtrados pelos critérios (notas na escala 0-5)."
+            help="Ative para complementar a visualização com dados individuais relacionados aos alunos filtrados pelos critérios (notas na escala 0-5)."
         )
 
 # Mostrar aviso quando ativo
 if mostrar_ic and ic_df is not None and not ic_df.empty:
-    st.info("📊 **Médias dos Alunos (filtradas)**: ao ativar, o app complementa a visualização com informações individuais dos alunos via boxplot (escala 0-5).")
+    st.info("📊 **Médias dos Alunos (filtradas)**: ao ativar, o app complementa a visualização com médias individuais dos alunos (escala 0-5).")
 
 
 # Verificar se ambos os dataframes têm dados
