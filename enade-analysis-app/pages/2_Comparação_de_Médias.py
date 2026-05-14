@@ -24,7 +24,6 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-#inject_css()
 show_logo()
 
 # Carregar os dados

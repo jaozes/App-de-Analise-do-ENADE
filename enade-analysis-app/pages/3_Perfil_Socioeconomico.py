@@ -19,7 +19,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 #streamlit run enade-analysis-app/Home.py
-#inject_css()
+
 show_logo()
 
 # Mapeamento das questões QE (texto para exibição)
