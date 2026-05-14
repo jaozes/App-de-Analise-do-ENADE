@@ -1,2 +1,3 @@
 [theme]
-base="dark"
+# base não fixado para permitir o toggle Dark/Light/Auto do Streamlit
+
