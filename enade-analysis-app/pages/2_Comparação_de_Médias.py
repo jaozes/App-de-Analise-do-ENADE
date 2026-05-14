@@ -237,11 +237,15 @@ with col_checkbox:
 with col_ic:
     mostrar_ic = False
     if ic_df is not None and not ic_df.empty:
-        mostrar_ic = st.checkbox("📊 Mostrar Desvio Padrão", value=False, help="Barras de erro representam o desvio padrão dos alunos FILTRADOS pelos critérios selecionados (notas convertidas de 0-100 para 0-5)")
+        mostrar_ic = st.checkbox(
+            "📊 Agregar Médias dos Alunos",
+            value=False,
+            help="Ative para complementar a visualização com dados individuais dos alunos (boxplot) e médias relacionadas aos alunos filtrados pelos critérios (notas na escala 0-5)."
+        )
 
-# Mostrar aviso sobre o desvio padrão filtrado quando ativo
+# Mostrar aviso quando ativo
 if mostrar_ic and ic_df is not None and not ic_df.empty:
-    st.info("📊 **Desvio Padrão Filtrado**: As barras de erro representam a dispersão (desvio padrão) dos alunos do subconjunto selecionado pelos filtros aplicados. Notas na escala 0-5.")
+    st.info("📊 **Médias dos Alunos (filtradas)**: ao ativar, o app complementa a visualização com informações individuais dos alunos via boxplot (escala 0-5).")
 
 
 # Verificar se ambos os dataframes têm dados
@@ -514,7 +518,7 @@ if not filtered_df.empty and not filtered_df2.empty:
             st.markdown("---")
             st.subheader("📦 Distribuição das Notas dos Alunos")
         else:
-            st.info("Ative 📊 Mostrar Desvio Padrão para exibir o boxplot (notas individuais dos alunos).")
+            st.info("Ative 📊 Agregar Médias dos Alunos para exibir o boxplot (notas individuais dos alunos).")
 
     # ------------------------------------------------------------------
     # Box plot com notas individuais dos alunos (incluindo outliers)
