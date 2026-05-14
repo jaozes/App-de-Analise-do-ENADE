@@ -1,5 +1,5 @@
 [theme]
-# base não fixado para permitir o toggle Dark/Light/Auto do Streamlit
+base = auto
 
 [client]
 toolbarMode = "auto"
