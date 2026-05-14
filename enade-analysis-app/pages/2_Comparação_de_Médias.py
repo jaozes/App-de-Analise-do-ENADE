@@ -470,7 +470,7 @@ if not filtered_df.empty and not filtered_df2.empty:
         yaxis_title=labels_y[coluna_nota],
         yaxis=dict(range=[0, 5]),  # Escala de 0 a 5 para as notas convertidas
         height=600,
-        legend=dict(title=dict(text='Instituição<br>Clique na legenda para ocultar.'))
+        legend=dict(title=dict(text='Clique na legenda para ocultar'))
     )
     
     # Definir hovertemplate conforme o IC está ativo ou não
