@@ -4,7 +4,6 @@ import numpy as np
 import plotly.express as px
 from utils.header import show_logo
 from utils.footer import show_footer
-from utils.header import inject_css
 from utils.formatting import format_br_number, format_br_percentage
 
 def safe_tuple(val):

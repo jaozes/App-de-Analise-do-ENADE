@@ -3,7 +3,6 @@ import pandas as pd
 import plotly.graph_objects as go
 import requests
 from utils.header import show_logo
-from utils.header import inject_css
 from utils.footer import show_footer
 
 st.set_page_config(layout="wide")

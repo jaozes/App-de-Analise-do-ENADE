@@ -5,7 +5,6 @@ import unicodedata
 from pathlib import Path
 from utils.header import show_logo
 from utils.footer import show_footer
-from utils.header import inject_css
 from utils.formatting import format_br_number, format_br_percentage
 
 st.set_page_config(layout="wide", page_title="Perfil Socioeconômico - ENADE 2023")
