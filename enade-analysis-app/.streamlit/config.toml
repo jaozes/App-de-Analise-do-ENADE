@@ -3,3 +3,6 @@
 
 [client]
 toolbarMode = "auto"
+
+[ui]
+hideTopBar = false
