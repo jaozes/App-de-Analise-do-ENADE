@@ -1,5 +1,5 @@
 [theme]
-base="auto"
+base= auto
 
 [client]
 toolbarMode = "auto"
