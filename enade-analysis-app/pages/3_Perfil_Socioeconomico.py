@@ -908,6 +908,7 @@ if enable_comparison and nome_inst1 == nome_inst2:
         nome_inst2 = f"{nome_inst2} (2)"
 
 
+
 st.markdown("---")
 
 # Validar se há dados antes de fazer merge (como na página 2)

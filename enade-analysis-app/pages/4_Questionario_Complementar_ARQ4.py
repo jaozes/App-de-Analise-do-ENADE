@@ -44,25 +44,25 @@ EIXO_TEXTO = {
 
 # Mapeamento de rótulos para a escala 1..6, 7 e 8 (mesmo para todas as QE_Ixx do arq4)
 QE4_SCALE_LABELS = {
-    "1": "1 (Discordância total)",
-    "2": "2",
-    "3": "3",
-    "4": "4",
-    "5": "5",
-    "6": "6 (Concordância total)",
-    "7": "7 (Não sei responder)",
-    "8": "8 (Não se aplica)",
+    "1": "1 - Discordo totalmente",
+    "2": "2 - Discordo",
+    "3": "3 - Discordo parcialmente",
+    "4": "4 - Concordo parcialmente",
+    "5": "5 - Concordo",
+    "6": "6 - Concordo totalmente",
+    "7": "7 - Não sei responder",
+    "8": "8 - Não se aplica",
 }
 
 QE4_SCALE_ABBREV = {
-    "1": "1-Discordo",
-    "2": "2",
-    "3": "3",
-    "4": "4",
-    "5": "5",
-    "6": "6-Concordo",
-    "7": "7-Não sei",
-    "8": "8-N/A",
+    "1": "1 - Discordo totalmente",
+    "2": "2 - Discordo",
+    "3": "3 - Discordo parc.",
+    "4": "4 - Concordo parc.",
+    "5": "5 - Concordo",
+    "6": "6 - Concordo totalmente",
+    "7": "7 - Não sei responder",
+    "8": "8 - Não se aplica",
 }
 
 # Como a página 3 usa dicionários por variável para ordenação,
@@ -253,11 +253,13 @@ QE4_ASSERTIVE_TEXT = {
     "QE_I68": "A instituição dispôs de refeitório, cantina e banheiros em condições adequadas que atenderam as necessidades dos seus usuários.",
 }
 
+# Exibe apenas o título da assertiva (sem QE_Ixx)
 selected_var = st.selectbox(
     "Selecione a assertiva (QE):",
     options=available_vars,
-    format_func=lambda v: f"{v} - {QE4_ASSERTIVE_TEXT.get(v, '')}".strip(),
+    format_func=lambda v: QE4_ASSERTIVE_TEXT.get(v, v),
 )
+
 
 
 micro_q = load_question_df_arq4(selected_var)
@@ -481,18 +483,66 @@ if freq1 is None or freq1["count"].sum() == 0:
 if enable_comparison and not merged2.empty:
     freq2 = compute_freq(merged2, selected_var)
 
-    st.subheader(f"📊 Comparação Interinstitucional: {selected_var} (Processo formativo)")
+    st.subheader(
+        f"📊 Comparação Interinstitucional: {QE4_ASSERTIVE_TEXT.get(selected_var, selected_var)}"
+    )
+
 
     freq1_prep = freq1.reset_index()
     freq1_prep["Contagem"] = freq1_prep["count"].round(0)
     freq1_prep["Percentual"] = (freq1_prep["count"] / freq1_prep["count"].sum() * 100).round(2)
-    freq1_prep["Instituicao"] = "Instituição 1"
+
+    # Ajuste dinâmico de nomes (igual à página 3)
+    selected_ies_safe = list(selected_ies) if isinstance(selected_ies, (list, tuple)) else []
+    selected_curso_safe = list(selected_curso) if isinstance(selected_curso, (list, tuple)) else []
+
+    has_filters1 = bool(
+        (selected_uf and len(selected_uf) > 0)
+        or (selected_curso_safe and len(selected_curso_safe) > 0)
+        or (selected_modalidade and len(selected_modalidade) > 0)
+        or (selected_categoria and len(selected_categoria) > 0)
+        or (selected_grau and len(selected_grau) > 0)
+        or (selected_ies_safe and len(selected_ies_safe) > 0)
+        or (selected_municipio and len(selected_municipio) > 0)
+    )
+
+    if len(selected_ies_safe) == 1:
+        nome_inst1 = selected_ies_safe[0]
+    elif has_filters1:
+        nome_inst1 = "Instituição 1"
+    else:
+        nome_inst1 = "Contagem Nacional"
+
+    nome_inst2 = "Instituição 2"
+    if enable_comparison:
+        has_filters2 = bool(selected_uf2 or selected_curso2 or selected_modalidade2 or selected_categoria2 or selected_grau2 or selected_ies2 or selected_municipio2)
+        if selected_ies2 and len(selected_ies2) == 1:
+            nome_inst2 = selected_ies2[0]
+        elif has_filters2:
+            nome_inst2 = "Instituição 2"
+        else:
+            nome_inst2 = "Contagem Nacional"
+
+    if enable_comparison and nome_inst1 == nome_inst2:
+        curso1_list = list(selected_curso) if isinstance(selected_curso, (list, tuple)) else []
+        curso2_list = list(selected_curso2) if isinstance(selected_curso2, (list, tuple)) else []
+        curso1_label = curso1_list[0] if len(curso1_list) >= 1 else None
+        curso2_label = curso2_list[0] if len(curso2_list) >= 1 else None
+
+        if curso1_label and curso2_label and curso1_label != curso2_label:
+            nome_inst1 = f"{nome_inst1} ({curso1_label})"
+            nome_inst2 = f"{nome_inst2} ({curso2_label})"
+        else:
+            nome_inst1 = f"{nome_inst1} (1)"
+            nome_inst2 = f"{nome_inst2} (2)"
+
+    freq1_prep["Instituicao"] = nome_inst1
     freq1_prep = freq1_prep.rename(columns={"Resposta": "Resposta_Completa"})
 
     freq2_prep = freq2.reset_index()
     freq2_prep["Contagem"] = freq2_prep["count"].round(0)
     freq2_prep["Percentual"] = (freq2_prep["count"] / freq2_prep["count"].sum() * 100).round(2)
-    freq2_prep["Instituicao"] = "Instituição 2"
+    freq2_prep["Instituicao"] = nome_inst2
     freq2_prep = freq2_prep.rename(columns={"Resposta": "Resposta_Completa"})
 
     freq1_prep["Abreviacao"] = freq1_prep["Resposta_Completa"].apply(lambda x: abbreviate_response(selected_var, x))
@@ -549,22 +599,40 @@ if enable_comparison and not merged2.empty:
 
     col_tab1, col_tab2 = st.columns(2)
     with col_tab1:
-        st.markdown("**Instituição 1**")
+        st.markdown(f"**{nome_inst1}**")
+
+        display_df1 = freq1.reset_index()[["Resposta", "count"]].rename(columns={"Resposta": "Resposta", "count": "Contagem"}).copy()
+        display_df1["Contagem"] = display_df1["Contagem"].apply(lambda x: format_br_number(int(x), 0) if pd.notna(x) else x)
+
+        # % logo após Contagem (igual ao padrão da página 3)
+        perc1 = (freq1.reset_index()["count"] / freq1.reset_index()["count"].sum()) * 100
+        display_df1["%"] = perc1.apply(lambda x: format_br_percentage(float(x)) if pd.notna(x) else x)
+        
+        display_df1 = display_df1[["Resposta", "Contagem", "%"]]
+
         st.dataframe(
-            freq1.reset_index()[["Resposta", "count"]].rename(columns={"Resposta": "Resposta", "count": "Contagem"}),
+            display_df1,
             hide_index=True,
             width="stretch",
         )
+
     with col_tab2:
-        st.markdown("**Instituição 2**")
+        st.markdown(f"**{nome_inst2}**")
+
+        display_df2 = freq2.reset_index()[["Resposta", "count"]].rename(columns={"Resposta": "Resposta", "count": "Contagem"}).copy()
+        display_df2["Contagem"] = display_df2["Contagem"].apply(lambda x: format_br_number(int(x), 0) if pd.notna(x) else x)
+
         st.dataframe(
-            freq2.reset_index()[["Resposta", "count"]].rename(columns={"Resposta": "Resposta", "count": "Contagem"}),
+            display_df2,
             hide_index=True,
             width="stretch",
         )
 
 else:
-    st.subheader(f"📊 Contagem de respostas: {selected_var} (Processo formativo)")
+    st.subheader(
+        f"📊 Contagem de respostas: {QE4_ASSERTIVE_TEXT.get(selected_var, selected_var)}"
+    )
+
 
     freq_line = freq1.reset_index()
 
@@ -609,10 +677,15 @@ else:
     st.plotly_chart(fig, width="stretch")
 
     st.subheader("**Distribuição**")
+    df_display = freq_line[["Resposta", "count", "percent_fmt"]].rename(
+        columns={"count": "Contagem", "percent_fmt": "%"}
+    ).copy()
+
+
+    df_display["Contagem"] = df_display["Contagem"].apply(lambda x: format_br_number(int(x), 0) if pd.notna(x) else x)
+
     st.dataframe(
-        freq_line[["Resposta", "Abreviacao", "count", "percent_fmt"]].rename(
-            columns={"count": "Contagem", "percent_fmt": "%"}
-        ),
+        df_display,
         hide_index=True,
         width="stretch",
     )
