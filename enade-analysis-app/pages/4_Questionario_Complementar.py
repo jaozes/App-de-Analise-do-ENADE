@@ -9,7 +9,7 @@ from utils.footer import show_footer
 from utils.formatting import format_br_number, format_br_percentage
 from utils.data_loader import load_conceito
 
-st.set_page_config(layout="wide", page_title="Questionário Complementar ARQ4 - ENADE 2023")
+st.set_page_config(layout="wide", page_title="Questionário Complementar - ENADE 2023")
 
 # Estilo para alinhar tabelas à esquerda
 st.markdown(
@@ -185,10 +185,10 @@ def get_filtered_df(conceito_df: pd.DataFrame, uf=None, municipio=None, ies=None
 # UI
 # -------------------------
 
-st.markdown("# 📘 Questionário Complementar (arq4) - Avaliação do Processo Formativo")
+st.markdown("# 📘 Questionário Complementar - Avaliação do Processo Formativo")
 st.markdown(
     """
-Este painel compila respostas do **questionário complementar do ENADE 2023 (arq4)**, especificamente as assertivas **QE_I27 a QE_I68**, que avaliam o **processo formativo**.
+Este painel compila respostas do **questionário complementar do ENADE 2023**, especificamente as assertivas **QE_I27 a QE_I68**, que avaliam o **processo formativo**.
 
 **Legenda (escala de concordância):**
 - 1..6: grau de concordância (1 = discordância total, 6 = concordância total)
