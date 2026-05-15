@@ -559,7 +559,8 @@ def sort_responses(df: pd.DataFrame, column: str, var_name: str = None) -> pd.Da
     return df.sort_values("count", ascending=False).reset_index(drop=True)
 
 
-def abbreviate_response(var_name: str, full_text: str) -> str:
+def abbreviate_response(var_name: str, full_text: str | None) -> str:
+
     """Converte resposta completa para abreviação usando QE_ABBREVIATIONS."""
     if var_name not in QE_ABBREVIATIONS:
         return full_text
@@ -1094,13 +1095,18 @@ else:
             fig_comparativo.update_traces(
                 hovertemplate='<b>%{customdata[0]}</b><br>Instituição: %{customdata[1]}<br>Percentual: %{customdata[2]}<br>Contagem: %{customdata[3]}<extra></extra>',
                 hoverlabel=dict(font=dict(size=14)),
-            marker=dict(),
+                marker=dict(line=dict(width=1.5, color="rgba(0,0,0,0.35)")),
             )
         else:
             fig_comparativo.update_traces(
                 hovertemplate='<b>%{customdata[0]}</b><br>Instituição: %{customdata[1]}<br>Percentual: %{customdata[2]}<br>Contagem: %{customdata[3]}<extra></extra>',
                 hoverlabel=dict(font=dict(size=14)),
+                marker=dict(size=8),
             )
+
+
+
+
         fig_comparativo.update_layout(
             title="",
             xaxis_tickangle=0,
@@ -1127,15 +1133,9 @@ else:
             ),
         )
         fig_comparativo.update_yaxes(ticksuffix='%')
-        # Para o gráfico de barras, `line` não é propriedade válida em traces do tipo `bar`.
-        # Ajusta apenas as propriedades aplicáveis ao tipo atual.
-        fig_comparativo.update_traces(
-            hovertemplate='<b>%{customdata[0]}</b><br>Instituição: %{customdata[1]}<br>Percentual: %{customdata[2]}<br>Contagem: %{customdata[3]}<extra></extra>',
-            hoverlabel=dict(font=dict(size=14)),
-            marker=dict(
-                line=dict(width=1.5, color="rgba(0,0,0,0.35)"),
-            ),
-        )
+        # Garantir que não haverá sobrescrita indevida de 'marker.line' em traces de barras/linha
+
+
 
 
         fig_comparativo.update_xaxes(categoryorder='array', categoryarray=abrev_ordenadas)
@@ -1219,13 +1219,21 @@ else:
             height=600
         )
         fig.update_yaxes(ticksuffix='%')
-        fig.update_traces(
-            hovertemplate='<b>%{customdata[0]}</b><br>Contagem: %{customdata[1]}<br>Percentual: %{customdata[2]}<extra></extra>',
-            hoverlabel=dict(font=dict(size=14)),
-            marker=dict(
-                line=dict(width=1.5, color="rgba(0,0,0,0.35)"),
-            ),
-        )
+        if chart_type == "Barras":
+            fig.update_traces(
+                hovertemplate='<b>%{customdata[0]}</b><br>Contagem: %{customdata[1]}<br>Percentual: %{customdata[2]}<extra></extra>',
+                hoverlabel=dict(font=dict(size=14)),
+                marker=dict(
+                    line=dict(width=1.5, color="rgba(0,0,0,0.35)"),
+                ),
+            )
+        else:
+            fig.update_traces(
+                hovertemplate='<b>%{customdata[0]}</b><br>Contagem: %{customdata[1]}<br>Percentual: %{customdata[2]}<extra></extra>',
+                hoverlabel=dict(font=dict(size=14)),
+                marker=dict(size=8),
+            )
+
 
 
         fig.update_xaxes(categoryorder='array', categoryarray=freq_line['Abreviacao'].cat.categories.tolist())
