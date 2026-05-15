@@ -622,6 +622,12 @@ if enable_comparison and not merged2.empty:
         display_df2 = freq2.reset_index()[["Resposta", "count"]].rename(columns={"Resposta": "Resposta", "count": "Contagem"}).copy()
         display_df2["Contagem"] = display_df2["Contagem"].apply(lambda x: format_br_number(int(x), 0) if pd.notna(x) else x)
 
+        # % logo após Contagem (igual ao padrão da página 3)
+        perc2 = (freq2.reset_index()["count"] / freq2.reset_index()["count"].sum()) * 100
+        display_df2["%"] = perc2.apply(lambda x: format_br_percentage(float(x)) if pd.notna(x) else x)
+        
+        display_df2 = display_df2[["Resposta", "Contagem", "%"]]
+
         st.dataframe(
             display_df2,
             hide_index=True,
