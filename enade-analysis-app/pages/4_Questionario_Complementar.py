@@ -195,7 +195,7 @@ Este painel compila respostas do **questionário complementar do ENADE 2023**, e
 - 7: não ter elementos para avaliar (**Não sei responder**)
 - 8: não pertinente ao curso (**Não se aplica**)
 
-A análise permite filtrar por curso/IES e relacionar a distribuição das respostas com o **Conceito Enade (Contínuo)**.
+A análise permite filtrar por curso/IES e relacionar a distribuição das respostas com o curso.
 """
 )
 
