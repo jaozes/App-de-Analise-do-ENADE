@@ -1077,7 +1077,23 @@ else:
             xaxis_title='Resposta',
             yaxis_title='Percentual (%)',
             height=600,
-            legend=dict(title=dict(text='Clique na legenda para ocultar'))
+
+            legend=dict(
+                title=dict(
+                text="Clique para ocultar",
+                font=dict(size=11, color="gray"),
+                ),
+                font=dict(size=12, family="Source Sans Pro, sans-serif"),
+                bgcolor="rgba(255,255,255,0.9)",
+                bordercolor="rgba(0,0,0,0.1)",
+                borderwidth=1,
+
+                orientation="h",
+                x=0.99,
+                xanchor="right",
+                y=0.99,
+                yanchor="top",
+            ),
         )
         fig_comparativo.update_yaxes(ticksuffix='%')
         fig_comparativo.update_traces(hovertemplate='<b>%{customdata[0]}</b><br>Instituição: %{customdata[1]}<br>Percentual: %{customdata[2]}<br>Contagem: %{customdata[3]}<extra></extra>', hoverlabel=dict(font=dict(size=14)), line=dict(width=4), marker=dict(size=8))

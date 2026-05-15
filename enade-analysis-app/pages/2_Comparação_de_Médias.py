@@ -461,15 +461,42 @@ if not filtered_df.empty and not filtered_df2.empty:
     }
     
     fig_comparativo.update_layout(
-        title="",
         xaxis_tickangle=0,
         template="plotly_white",
         xaxis_title='Curso',
         yaxis_title=labels_y[coluna_nota],
-        yaxis=dict(range=[0, 5]),  # Escala de 0 a 5 para as notas convertidas
+        yaxis=dict(range=[0, 5]),
         height=600,
-        legend=dict(title=dict(text='Clique na legenda para ocultar'))
-    )
+
+        legend=dict(
+        # Posição — canto superior direito dentro do gráfico
+            x=0.99,
+            y=0.99,
+            xanchor="right",
+            yanchor="top",
+
+        # Visual de card/pill
+            bgcolor="rgba(255,255,255,0.9)",
+            bordercolor="rgba(0,0,0,0.1)",
+            borderwidth=1,
+
+        # Tipografia
+            font=dict(size=12, family="Source Sans Pro, sans-serif"),
+
+        # Título clicável
+            title=dict(
+                text="Clique para ocultar",
+                font=dict(size=11, color="gray"),
+            ),
+
+        # Orientação horizontal (estilo strip de pills)
+            #orientation="h",
+            #x=0.5,
+            #xanchor="center",
+            #y=-0.15,          # abaixo do gráfico
+            #yanchor="top",
+    ),
+)
     
     # Definir hovertemplate conforme o IC está ativo ou não
     if mostrar_ic:
@@ -574,8 +601,28 @@ if not filtered_df.empty and not filtered_df2.empty:
                 boxmode='group',
                 xaxis_tickangle=0,
                 yaxis=dict(range=[0, 5]),
-                legend=dict(title=dict(text='Instituição<br>Clique na legenda para ocultar.')),
-                xaxis=dict(categoryorder='array', categoryarray=sorted(df_box['Sigla Área'].unique())),
+                xaxis=dict(
+                categoryorder='array',
+                categoryarray=sorted(df_box['Sigla Área'].unique())
+                ),
+
+                legend=dict(
+                    title=dict(
+                        text="Instituição",
+                        font=dict(size=11, color="gray"),
+                    ),
+                    font=dict(size=12, family="Source Sans Pro, sans-serif"),
+                    bgcolor="rgba(255,255,255,0.9)",
+                    bordercolor="rgba(0,0,0,0.1)",
+                    borderwidth=1,
+
+                    # Strip abaixo do gráfico
+                    orientation="h",
+                    x=0.5,
+                    xanchor="center",
+                    y=-0.15,
+                    yanchor="top",
+                ),
             )
 
             fig_box.update_traces(
