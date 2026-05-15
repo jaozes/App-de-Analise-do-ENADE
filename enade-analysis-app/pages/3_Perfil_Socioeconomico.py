@@ -717,6 +717,13 @@ def get_filtered_df(uf=None, municipio=None, ies=None, curso=None, modalidade=No
 col_insts, _ = st.columns([1, 3])
 with col_insts:
    enable_comparison = st.toggle("**Comparação Interinstitucional**", key="toggle_comparison")
+   chart_type = st.radio(
+       "Tipo de gráfico",
+       options=["Linha", "Barras"],
+       index=0,
+       horizontal=True,
+       key="toggle_chart_type",
+   )
 
 col1, col2 = st.columns(2)
 
@@ -1060,16 +1067,40 @@ else:
         df_comparacao['Contagem_fmt'] = df_comparacao['Contagem'].apply(lambda x: format_br_number(x, 0))
         df_comparacao['Percentual_fmt'] = df_comparacao['Percentual'].apply(lambda x: format_br_percentage(x))
 
-        fig_comparativo = px.line(
-            df_comparacao, 
-            x='Abreviacao', 
-            y='Percentual', 
-            color='Instituicao',
-            markers=True,
-            line_shape='linear',
-            title="",
-            custom_data=['Resposta_Completa','Instituicao', 'Percentual_fmt', 'Contagem_fmt']
-        )
+        if chart_type == "Barras":
+            fig_comparativo = px.bar(
+                df_comparacao,
+                x='Abreviacao',
+                y='Percentual',
+                color='Instituicao',
+                barmode='group',
+                title="",
+                custom_data=['Resposta_Completa','Instituicao', 'Percentual_fmt', 'Contagem_fmt'],
+            )
+        else:
+            fig_comparativo = px.line(
+                df_comparacao,
+                x='Abreviacao',
+                y='Percentual',
+                color='Instituicao',
+                markers=True,
+                line_shape='linear',
+                title="",
+                custom_data=['Resposta_Completa','Instituicao', 'Percentual_fmt', 'Contagem_fmt']
+            )
+
+        # Atualizações específicas para cada tipo de gráfico
+        if chart_type == "Barras":
+            fig_comparativo.update_traces(
+                hovertemplate='<b>%{customdata[0]}</b><br>Instituição: %{customdata[1]}<br>Percentual: %{customdata[2]}<br>Contagem: %{customdata[3]}<extra></extra>',
+                hoverlabel=dict(font=dict(size=14)),
+            marker=dict(),
+            )
+        else:
+            fig_comparativo.update_traces(
+                hovertemplate='<b>%{customdata[0]}</b><br>Instituição: %{customdata[1]}<br>Percentual: %{customdata[2]}<br>Contagem: %{customdata[3]}<extra></extra>',
+                hoverlabel=dict(font=dict(size=14)),
+            )
         fig_comparativo.update_layout(
             title="",
             xaxis_tickangle=0,
@@ -1096,7 +1127,17 @@ else:
             ),
         )
         fig_comparativo.update_yaxes(ticksuffix='%')
-        fig_comparativo.update_traces(hovertemplate='<b>%{customdata[0]}</b><br>Instituição: %{customdata[1]}<br>Percentual: %{customdata[2]}<br>Contagem: %{customdata[3]}<extra></extra>', hoverlabel=dict(font=dict(size=14)), line=dict(width=4), marker=dict(size=8))
+        # Para o gráfico de barras, `line` não é propriedade válida em traces do tipo `bar`.
+        # Ajusta apenas as propriedades aplicáveis ao tipo atual.
+        fig_comparativo.update_traces(
+            hovertemplate='<b>%{customdata[0]}</b><br>Instituição: %{customdata[1]}<br>Percentual: %{customdata[2]}<br>Contagem: %{customdata[3]}<extra></extra>',
+            hoverlabel=dict(font=dict(size=14)),
+            marker=dict(
+                line=dict(width=1.5, color="rgba(0,0,0,0.35)"),
+            ),
+        )
+
+
         fig_comparativo.update_xaxes(categoryorder='array', categoryarray=abrev_ordenadas)
         st.plotly_chart(fig_comparativo, width="stretch")
 
@@ -1151,15 +1192,24 @@ else:
         freq_line['count_fmt'] = freq_line['count'].apply(lambda x: format_br_number(x, 0))
         freq_line['percent_fmt'] = freq_line['percent'].apply(lambda x: format_br_percentage(x))
         
-        fig = px.line(
-            freq_line,
-            x='Abreviacao',
-            y='percent',
-            markers=True,
-            line_shape='linear',
-            title="",
-            custom_data=['Resposta', 'count_fmt', 'percent_fmt']
-        )
+        if chart_type == "Barras":
+            fig = px.bar(
+                freq_line,
+                x='Abreviacao',
+                y='percent',
+                title="",
+                custom_data=['Resposta', 'count_fmt', 'percent_fmt'],
+            )
+        else:
+            fig = px.line(
+                freq_line,
+                x='Abreviacao',
+                y='percent',
+                markers=True,
+                line_shape='linear',
+                title="",
+                custom_data=['Resposta', 'count_fmt', 'percent_fmt']
+            )
         fig.update_layout(
             title="",
             template="plotly_white",
@@ -1172,9 +1222,11 @@ else:
         fig.update_traces(
             hovertemplate='<b>%{customdata[0]}</b><br>Contagem: %{customdata[1]}<br>Percentual: %{customdata[2]}<extra></extra>',
             hoverlabel=dict(font=dict(size=14)),
-            line=dict(width=4),
-            marker=dict(size=8)
+            marker=dict(
+                line=dict(width=1.5, color="rgba(0,0,0,0.35)"),
+            ),
         )
+
 
         fig.update_xaxes(categoryorder='array', categoryarray=freq_line['Abreviacao'].cat.categories.tolist())
         st.plotly_chart(fig, width="stretch")
