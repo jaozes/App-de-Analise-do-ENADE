@@ -888,6 +888,26 @@ if enable_comparison:
     else:
         nome_inst2 = "Contagem Nacional"
 
+# Se as duas seleções apontarem para a mesma IES (mesmo nome), diferenciar os rótulos
+# usando o curso selecionado (para evitar Plotly fundir as séries no color='Instituicao').
+if enable_comparison and nome_inst1 == nome_inst2:
+    # Curso pode ser lista/None; normalizar para lista
+    curso1_list = list(selected_curso) if selected_curso else []
+    curso2_list = list(selected_curso2) if selected_curso2 else []
+
+    curso1_label = curso1_list[0] if len(curso1_list) == 1 else (curso1_list[0] if len(curso1_list) > 1 else None)
+    curso2_label = curso2_list[0] if len(curso2_list) == 1 else (curso2_list[0] if len(curso2_list) > 1 else None)
+
+    # Caso específico do bug: cursos diferentes da mesma IES.
+    if curso1_label and curso2_label and curso1_label != curso2_label:
+        nome_inst1 = f"{nome_inst1} ({curso1_label})"
+        nome_inst2 = f"{nome_inst2} ({curso2_label})"
+    else:
+        # Fallback genérico: garante distinção mesmo sem curso bem definido
+        nome_inst1 = f"{nome_inst1} (1)"
+        nome_inst2 = f"{nome_inst2} (2)"
+
+
 st.markdown("---")
 
 # Validar se há dados antes de fazer merge (como na página 2)
