@@ -568,7 +568,11 @@ if enable_comparison and not merged2.empty:
 
     freq1_prep = freq1.reset_index()
     freq1_prep["Contagem"] = freq1_prep["count"].round(0)
+    freq1_prep["Contagem_fmt"] = freq1_prep["Contagem"].apply(
+        lambda x: format_br_number(int(x), 0) if pd.notna(x) else x
+    )
     freq1_prep["Percentual"] = (freq1_prep["count"] / freq1_prep["count"].sum() * 100).round(2)
+
 
     # Ajuste dinâmico de nomes — hierarquia IES > Município > UF > Nacional
     selected_ies_safe = list(selected_ies) if isinstance(selected_ies, (list, tuple)) else []
@@ -602,7 +606,11 @@ if enable_comparison and not merged2.empty:
 
     freq2_prep = freq2.reset_index()
     freq2_prep["Contagem"] = freq2_prep["count"].round(0)
+    freq2_prep["Contagem_fmt"] = freq2_prep["Contagem"].apply(
+        lambda x: format_br_number(int(x), 0) if pd.notna(x) else x
+    )
     freq2_prep["Percentual"] = (freq2_prep["count"] / freq2_prep["count"].sum() * 100).round(2)
+
     freq2_prep["Instituicao"] = nome_inst2
     freq2_prep = freq2_prep.rename(columns={"Resposta": "Resposta_Completa"})
 
@@ -611,11 +619,12 @@ if enable_comparison and not merged2.empty:
 
     df_comparacao = pd.concat(
         [
-            freq1_prep[["Abreviacao", "Contagem", "Percentual", "Instituicao", "Resposta_Completa"]],
-            freq2_prep[["Abreviacao", "Contagem", "Percentual", "Instituicao", "Resposta_Completa"]],
+            freq1_prep[["Abreviacao", "Contagem", "Contagem_fmt", "Percentual", "Instituicao", "Resposta_Completa"]],
+            freq2_prep[["Abreviacao", "Contagem", "Contagem_fmt", "Percentual", "Instituicao", "Resposta_Completa"]],
         ],
         ignore_index=True,
     )
+
 
     # Ordenação do eixo X
     ordem = [QE4_SCALE_ABBREV[str(i)] for i in range(1, 9)]
@@ -629,8 +638,10 @@ if enable_comparison and not merged2.empty:
             y="Percentual",
             color="Instituicao",
             barmode="group",
-            custom_data=["Resposta_Completa", "Instituicao", "Percentual", "Contagem"],
+            custom_data=["Resposta_Completa", "Instituicao", "Percentual", "Contagem_fmt"],
         )
+
+
     else:
         fig = px.line(
             df_comparacao,
@@ -639,8 +650,11 @@ if enable_comparison and not merged2.empty:
             color="Instituicao",
             markers=True,
             line_shape="linear",
-            custom_data=["Resposta_Completa", "Instituicao", "Percentual", "Contagem"],
+            custom_data=["Resposta_Completa", "Instituicao", "Percentual", "Contagem_fmt"],
+
         )
+
+
 
     fig.update_layout(
         template="plotly_white",
@@ -670,6 +684,9 @@ if enable_comparison and not merged2.empty:
     fig.update_traces(
         hovertemplate="<b>%{customdata[0]}</b><br>Instituição: %{customdata[1]}<br>Percentual: %{customdata[2]:.2f}%<br>Contagem: %{customdata[3]}<extra></extra>"
     )
+
+
+
 
     st.plotly_chart(fig, width="stretch")
 
