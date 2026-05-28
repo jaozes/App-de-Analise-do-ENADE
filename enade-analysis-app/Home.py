@@ -48,9 +48,11 @@ aggregated_df = df.groupby('Sigla da UF** ').agg(
 aggregated_df = aggregated_df.merge(top_ies_per_uf[['uf', 'top_ies', 'top_ies_conceito']], on='uf', how='left')
 
 num_cursos = df['Código do Curso'].nunique()
-num_inscritos = aggregated_df['inscritos'].sum()
-num_participantes = aggregated_df['participantes'].sum()
+num_inscritos_raw = aggregated_df['inscritos'].sum()
+num_participantes_raw = aggregated_df['participantes'].sum()
 num_ies = df['Sigla da IES*'].nunique()
+taxa_participacao = (num_participantes_raw / num_inscritos_raw * 100) if num_inscritos_raw > 0 else 0
+conceito_medio_nacional = df['Conceito Enade (Contínuo)'].mean()
 
 # Formatar números no padrão brasileiro para o mapa
 aggregated_df['inscritos'] = aggregated_df['inscritos'].apply(lambda x: f"{x:,.0f}".replace(",", "."))
@@ -58,19 +60,25 @@ aggregated_df['participantes'] = aggregated_df['participantes'].apply(lambda x: 
 aggregated_df['qtd_ies'] = aggregated_df['qtd_ies'].apply(lambda x: f"{x:,}".replace(",", "."))
 
 # Formatar números no padrão brasileiro (ponto como separador de milhares)
-num_inscritos = f"{num_inscritos:,.0f}".replace(",", ".")
-num_participantes = f"{num_participantes:,.0f}".replace(",", ".")
+num_inscritos = f"{num_inscritos_raw:,.0f}".replace(",", ".")
+num_participantes = f"{num_participantes_raw:,.0f}".replace(",", ".")
 num_cursos = f"{num_cursos:,}".replace(",", ".")
 num_ies = f"{num_ies:,}".replace(",", ".")
 
-col1, col2, col3, col4 = st.columns(4)
+col1, col2, col3, col4, col5, col6 = st.columns(6)
 with col1:
-    st.metric("Número de Inscritos", num_inscritos)
+    st.metric("Concluintes Inscritos", num_inscritos)
 with col2:
-    st.metric("Número de Participantes", num_participantes)
+    st.metric("Concluintes Participantes", num_participantes)
 with col3:
-    st.metric("Total de Cursos", num_cursos)
+    st.metric("Taxa de Participação", f"{taxa_participacao:.1f}%".replace(".", ","),
+              help="Percentual de inscritos que efetivamente participaram do ENADE 2023")
 with col4:
+    st.metric("Conceito Médio Nacional", f"{conceito_medio_nacional:.2f}".replace(".", ","),
+              help="Média do Conceito ENADE Contínuo (escala 0–5) de todos os cursos avaliados")
+with col5:
+    st.metric("Total de Cursos", num_cursos)
+with col6:
     st.metric("Total de IES", num_ies)
 
 
@@ -124,22 +132,102 @@ fig.update_traces(hoverlabel=dict(font=dict(size=14)))
 st.markdown("""
 ## Sobre o Projeto
 
-Este projeto analisa os conceitos do **Exame Nacional de Desempenho de Estudantes (ENADE)** de 2023.
+Este projeto analisa os conceitos do **Exame Nacional de Desempenho de Estudantes (ENADE)** de 2023,
+desenvolvido na **UNISO – Universidade de Sorocaba** como parte de uma pesquisa acadêmica orientada
+pelo Prof. Dr. César Candido Xavier.
 
 ### Objetivos
 
 - Comparar desempenho entre cursos, instituições e regiões.
 - Analisar tendências de qualidade no ensino superior.
 - Identificar variações por modalidade e categoria administrativa.
-- Fornecer insights estatísticos para analises educacionais.
-- Checar resultados do questionario socioeconômico.
-
-### Navegação
-
-Use o menu lateral para acessar:
-- **Análise Brasil**: Visão geral dos dados de todo o país
-- **Comparação**: Compare dois grupos diferentes de filtros
+- Fornecer insights estatísticos para análises educacionais.
+- Investigar o perfil socioeconômico e a avaliação do processo formativo pelos estudantes.
 """)
+
+st.markdown("---")
+
+# Descrição detalhada das páginas
+st.markdown("### 📂 Módulos Disponíveis")
+
+desc_col1, desc_col2 = st.columns(2)
+
+with desc_col1:
+    st.markdown("""
+    **📊 Comparação de Médias**
+
+    Compara o Conceito ENADE Contínuo (escala 0–5) entre dois grupos de filtros simultâneos —
+    por UF, município, IES, curso, modalidade, categoria administrativa e grau acadêmico.
+    Exibe gráficos de linha interativos, boxplots por aluno (quando disponíveis nos microdados)
+    e tabelas com estatísticas descritivas por curso.
+
+    **👤 Perfil Socioeconômico**
+
+    Analisa as respostas do Questionário Socioeconômico do ENADE 2023 (QE_I01 a QE_I26),
+    cobrindo variáveis como cor/raça, renda familiar, situação de trabalho, tipo de escola
+    do ensino médio, bolsas recebidas e motivação para escolha do curso. Permite comparação
+    interinstitucional em gráficos de barras ou linha.
+    """)
+
+with desc_col2:
+    st.markdown("""
+    **📘 Questionário Complementar**
+
+    Apresenta as respostas às assertivas QE_I27 a QE_I68 do questionário complementar,
+    que avaliam o processo formativo em três eixos: Organização Didático-Pedagógica,
+    Infraestrutura e Oportunidades de ampliação acadêmica. As respostas seguem escala
+    Likert de 1 (Discordo totalmente) a 6 (Concordo totalmente), com opções adicionais
+    "Não sei responder" e "Não se aplica".
+
+    **🗺️ Esta Página (Home)**
+
+    Visão geral do conjunto de dados: métricas nacionais, mapa coroplético do Conceito
+    Médio ENADE por estado e apresentação dos módulos da plataforma. Nenhum filtro é
+    aplicado aqui — os dados exibidos representam o Brasil inteiro.
+    """)
+
+st.markdown("---")
+
+# Metodologia e Stack
+method_col1, method_col2, method_col3 = st.columns(3)
+
+with method_col1:
+    st.markdown("""
+    **🔬 Nota Metodológica**
+
+    Os resultados desta plataforma são observacionais e não estabelecem relações de causalidade.
+    O **Conceito ENADE Contínuo** varia de 0 a 5 e é calculado pelo INEP com base nas notas
+    brutas de Formação Geral e Componente Específico, ponderadas pela proporção de participantes.
+
+    Nas páginas de Comparação de Médias, a unidade de análise é o **curso por IES**. Nas páginas
+    de Perfil Socioeconômico e Questionário Complementar, a unidade é o **aluno** (microdados).
+    Os dados são oficiais do INEP e respeitam integralmente as políticas de anonimização e uso ético.
+    """)
+
+with method_col2:
+    st.markdown("""
+    **💻 Stack Tecnológico**
+
+    **Interface:** Streamlit  
+    **Processamento:** Pandas + NumPy  
+    **Visualização:** Plotly  
+    **Dados:** Microdados ENADE 2023 (INEP)  
+    **Linguagem:** Python 3  
+    **Cache:** `@st.cache_data` para performance  
+    **Hospedagem:** Streamlit Community Cloud
+    """)
+
+with method_col3:
+    st.markdown("""
+    **🚀 Guia de Navegação**
+
+    1. Acesse uma página pelo **menu lateral**
+    2. Configure os **filtros em cascata** — UF → Município → IES → Curso → Modalidade
+    3. Ative a **Comparação Interinstitucional** para confrontar dois grupos lado a lado
+    4. Interaja com os **gráficos Plotly** (zoom, hover, clique na legenda para ocultar séries)
+    5. Consulte as **tabelas de estatísticas** abaixo de cada gráfico para os valores exatos
+    6. Use os tooltips (ícone **?**) nas métricas para entender cada indicador
+    """)
 
 #with col2:
 st.plotly_chart(fig, use_container_width=True)
