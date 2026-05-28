@@ -647,7 +647,22 @@ if enable_comparison and not merged2.empty:
         xaxis_title="Resposta (escala)",
         yaxis_title="Percentual (%)",
         height=600,
-        legend=dict(orientation="h", x=0.99, xanchor="right", y=0.99, yanchor="top"),
+        legend=dict(
+                title=dict(
+                text="",
+                font=dict(size=11, color="gray"),
+                ),
+                font=dict(size=12, family="Source Sans Pro, sans-serif"),
+                bgcolor="rgba(255,255,255,0.9)",
+                bordercolor="rgba(0,0,0,0.1)",
+                borderwidth=1,
+
+                orientation="h",
+                x=0.99,
+                xanchor="right",
+                y=0.99,
+                yanchor="top",
+            ),
     )
 
     fig.update_yaxes(ticksuffix="%")

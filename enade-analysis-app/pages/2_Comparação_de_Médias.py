@@ -476,6 +476,7 @@ if not filtered_df.empty and not filtered_df2.empty:
 
         legend=dict(
         # Posição — canto superior direito dentro do gráfico
+            orientation="h",
             x=0.99,
             y=0.99,
             xanchor="right",
@@ -491,7 +492,7 @@ if not filtered_df.empty and not filtered_df2.empty:
 
         # Título clicável
             title=dict(
-                text="Clique para ocultar",
+                text="",
                 font=dict(size=11, color="gray"),
             ),
 

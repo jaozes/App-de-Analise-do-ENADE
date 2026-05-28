@@ -1126,7 +1126,7 @@ else:
 
             legend=dict(
                 title=dict(
-                text="Clique para ocultar",
+                text="",
                 font=dict(size=11, color="gray"),
                 ),
                 font=dict(size=12, family="Source Sans Pro, sans-serif"),
