@@ -8,6 +8,7 @@ from utils.header import show_logo
 from utils.footer import show_footer
 from utils.formatting import format_br_number, format_br_percentage
 from utils.data_loader import load_conceito
+from utils.naming import resolve_institution_name, disambiguate_names
 
 st.set_page_config(layout="wide", page_title="Questionário Complementar - ENADE 2023")
 
@@ -569,49 +570,32 @@ if enable_comparison and not merged2.empty:
     freq1_prep["Contagem"] = freq1_prep["count"].round(0)
     freq1_prep["Percentual"] = (freq1_prep["count"] / freq1_prep["count"].sum() * 100).round(2)
 
-    # Ajuste dinâmico de nomes (igual à página 3)
+    # Ajuste dinâmico de nomes — hierarquia IES > Município > UF > Nacional
     selected_ies_safe = list(selected_ies) if isinstance(selected_ies, (list, tuple)) else []
-    selected_curso_safe = list(selected_curso) if isinstance(selected_curso, (list, tuple)) else []
 
-    has_filters1 = bool(
-        (selected_uf and len(selected_uf) > 0)
-        or (selected_curso_safe and len(selected_curso_safe) > 0)
-        or (selected_modalidade and len(selected_modalidade) > 0)
-        or (selected_categoria and len(selected_categoria) > 0)
-        or (selected_grau and len(selected_grau) > 0)
-        or (selected_ies_safe and len(selected_ies_safe) > 0)
-        or (selected_municipio and len(selected_municipio) > 0)
+    nome_inst1 = resolve_institution_name(
+        ies=selected_ies_safe,
+        municipio=selected_municipio,
+        uf=selected_uf,
+        fallback="Contagem Nacional",
     )
 
-    if len(selected_ies_safe) == 1:
-        nome_inst1 = selected_ies_safe[0]
-    elif has_filters1:
-        nome_inst1 = "Instituição 1"
-    else:
-        nome_inst1 = "Contagem Nacional"
-
-    nome_inst2 = "Instituição 2"
+    nome_inst2 = "Contagem Nacional"
     if enable_comparison:
-        has_filters2 = bool(selected_uf2 or selected_curso2 or selected_modalidade2 or selected_categoria2 or selected_grau2 or selected_ies2 or selected_municipio2)
-        if selected_ies2 and len(selected_ies2) == 1:
-            nome_inst2 = selected_ies2[0]
-        elif has_filters2:
-            nome_inst2 = "Instituição 2"
-        else:
-            nome_inst2 = "Contagem Nacional"
+        selected_ies2_safe = list(selected_ies2) if isinstance(selected_ies2, (list, tuple)) else []
+        nome_inst2 = resolve_institution_name(
+            ies=selected_ies2_safe,
+            municipio=selected_municipio2,
+            uf=selected_uf2,
+            fallback="Contagem Nacional",
+        )
 
-    if enable_comparison and nome_inst1 == nome_inst2:
-        curso1_list = list(selected_curso) if isinstance(selected_curso, (list, tuple)) else []
-        curso2_list = list(selected_curso2) if isinstance(selected_curso2, (list, tuple)) else []
-        curso1_label = curso1_list[0] if len(curso1_list) >= 1 else None
-        curso2_label = curso2_list[0] if len(curso2_list) >= 1 else None
-
-        if curso1_label and curso2_label and curso1_label != curso2_label:
-            nome_inst1 = f"{nome_inst1} ({curso1_label})"
-            nome_inst2 = f"{nome_inst2} ({curso2_label})"
-        else:
-            nome_inst1 = f"{nome_inst1} (1)"
-            nome_inst2 = f"{nome_inst2} (2)"
+    # Desambiguar caso os dois lados resultem no mesmo rótulo
+    nome_inst1, nome_inst2 = disambiguate_names(
+        nome_inst1, nome_inst2,
+        curso1=selected_curso,
+        curso2=selected_curso2 if enable_comparison else [],
+    )
 
     freq1_prep["Instituicao"] = nome_inst1
     freq1_prep = freq1_prep.rename(columns={"Resposta": "Resposta_Completa"})

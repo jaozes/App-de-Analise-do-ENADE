@@ -27,6 +27,7 @@ show_logo()
 
 # Carregar os dados
 from utils.data_loader import load_conceito, load_grades_with_ic, get_ic_filtered, get_microdados_filtered, build_boxplot_alunos_data
+from utils.naming import resolve_institution_name, disambiguate_names
 
 df = load_conceito()
 
@@ -121,10 +122,10 @@ with col1:
         uf_options1 = sorted(df['Sigla da UF** '].dropna().unique())
         selected_uf = st.multiselect('UF', uf_options1, key='uf1')
     with filter_cols1_row1[1]:
-        municipio_options1 = sorted(get_filtered_df(uf=tuple(st.session_state.uf1), municipio=(), ies=tuple(st.session_state.ies1), curso=tuple(st.session_state.curso1), modalidade=tuple(st.session_state.mod1), categoria=tuple(st.session_state.cat1), grau=tuple(st.session_state.grau1))['Município do Curso**'].dropna().unique())
+        municipio_options1 = sorted(get_filtered_df(uf=tuple(st.session_state.uf1), municipio=(), ies=(), curso=(), modalidade=(), categoria=(), grau=())['Município do Curso**'].dropna().unique())
         selected_municipio = st.multiselect('Município', municipio_options1, key='mun1')
     with filter_cols1_row1[2]:
-        ies_options1 = sorted(get_filtered_df(uf=tuple(st.session_state.uf1), municipio=tuple(st.session_state.mun1), ies=(), curso=tuple(st.session_state.curso1), modalidade=tuple(st.session_state.mod1), categoria=tuple(st.session_state.cat1), grau=tuple(st.session_state.grau1))['Nome da IES*'].dropna().unique())
+        ies_options1 = sorted(get_filtered_df(uf=tuple(st.session_state.uf1), municipio=tuple(st.session_state.mun1), ies=(), curso=(), modalidade=(), categoria=(), grau=())['Nome da IES*'].dropna().unique())
         selected_ies = st.multiselect('IES', ies_options1, key='ies1')
     with filter_cols1_row1[3]:
         curso_options1 = sorted(get_filtered_df(safe_tuple(st.session_state.get('uf1')), safe_tuple(st.session_state.get('mun1')), safe_tuple(st.session_state.get('ies1')), None, safe_tuple(st.session_state.get('mod1')), safe_tuple(st.session_state.get('cat1')), safe_tuple(st.session_state.get('grau1')))['Área de Avaliação'].dropna().unique())
@@ -165,13 +166,13 @@ with col2:
     # Filtros para Segundo Gráfico
     filter_cols2_row1 = st.columns(4)
     with filter_cols2_row1[0]:
-        uf_options2 = sorted(get_filtered_df(None, safe_tuple(st.session_state.get('mun2')), safe_tuple(st.session_state.get('ies2')), safe_tuple(st.session_state.get('curso2')), safe_tuple(st.session_state.get('mod2')), safe_tuple(st.session_state.get('cat2')), safe_tuple(st.session_state.get('grau2')))['Sigla da UF** '].dropna().unique())
+        uf_options2 = sorted(df['Sigla da UF** '].dropna().unique())
         selected_uf2 = st.multiselect('UF', uf_options2, key='uf2')
     with filter_cols2_row1[1]:
-        municipio_options2 = sorted(get_filtered_df(safe_tuple(st.session_state.get('uf2')), None, safe_tuple(st.session_state.get('ies2')), safe_tuple(st.session_state.get('curso2')), safe_tuple(st.session_state.get('mod2')), safe_tuple(st.session_state.get('cat2')), safe_tuple(st.session_state.get('grau2')))['Município do Curso**'].dropna().unique())
+        municipio_options2 = sorted(get_filtered_df(safe_tuple(st.session_state.get('uf2')), None, (), (), (), (), ())['Município do Curso**'].dropna().unique())
         selected_municipio2 = st.multiselect('Município', municipio_options2, key='mun2')
     with filter_cols2_row1[2]:
-        ies_options2 = sorted(get_filtered_df(safe_tuple(st.session_state.get('uf2')), safe_tuple(st.session_state.get('mun2')), None, safe_tuple(st.session_state.get('curso2')), safe_tuple(st.session_state.get('mod2')), safe_tuple(st.session_state.get('cat2')), safe_tuple(st.session_state.get('grau2')))['Nome da IES*'].dropna().unique())
+        ies_options2 = sorted(get_filtered_df(safe_tuple(st.session_state.get('uf2')), safe_tuple(st.session_state.get('mun2')), None, (), (), (), ())['Nome da IES*'].dropna().unique())
         selected_ies2 = st.multiselect('IES', ies_options2, key='ies2')
     with filter_cols2_row1[3]:
         curso_options2 = sorted(get_filtered_df(safe_tuple(st.session_state.get('uf2')), safe_tuple(st.session_state.get('mun2')), safe_tuple(st.session_state.get('ies2')), None, safe_tuple(st.session_state.get('mod2')), safe_tuple(st.session_state.get('cat2')), safe_tuple(st.session_state.get('grau2')))['Área de Avaliação'].dropna().unique())
@@ -248,23 +249,28 @@ if mostrar_ic and ic_df is not None and not ic_df.empty:
 
 # Verificar se ambos os dataframes têm dados
 if not filtered_df.empty and not filtered_df2.empty:
-    # Determinar nome da instituição 1
-    has_filters1 = bool(selected_uf or selected_municipio or selected_curso or selected_modalidade or selected_categoria or selected_grau or selected_ies)
-    if selected_ies and len(selected_ies) == 1:
-        nome_inst1 = selected_ies[0]
-    elif has_filters1:
-        nome_inst1 = "Instituição 1"
-    else:
-        nome_inst1 = "Média Nacional"
-    
-    # Determinar nome da instituição 2
-    has_filters2 = bool(selected_uf2 or selected_municipio2 or selected_curso2 or selected_modalidade2 or selected_categoria2 or selected_grau2 or selected_ies2)
-    if selected_ies2 and len(selected_ies2) == 1:
-        nome_inst2 = selected_ies2[0]
-    elif has_filters2:
-        nome_inst2 = "Instituição 2"
-    else:
-        nome_inst2 = "Média Nacional"
+    # Determinar nome da instituição 1 (IES > Município > UF > Nacional)
+    nome_inst1 = resolve_institution_name(
+        ies=selected_ies,
+        municipio=selected_municipio,
+        uf=selected_uf,
+        fallback="Média Nacional",
+    )
+
+    # Determinar nome da instituição 2 (IES > Município > UF > Nacional)
+    nome_inst2 = resolve_institution_name(
+        ies=selected_ies2,
+        municipio=selected_municipio2,
+        uf=selected_uf2,
+        fallback="Média Nacional",
+    )
+
+    # Desambiguar caso os dois lados resultem no mesmo rótulo
+    nome_inst1, nome_inst2 = disambiguate_names(
+        nome_inst1, nome_inst2,
+        curso1=selected_curso,
+        curso2=selected_curso2,
+    )
     
     # Recalcular os dataframes sem o sort para manter a ordem original
     # agrupa pelo nome original para manter coluna completa, depois adiciona abreviatura

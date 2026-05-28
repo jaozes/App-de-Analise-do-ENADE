@@ -6,6 +6,7 @@ from pathlib import Path
 from utils.header import show_logo
 from utils.footer import show_footer
 from utils.formatting import format_br_number, format_br_percentage
+from utils.naming import resolve_institution_name, disambiguate_names
 
 st.set_page_config(layout="wide", page_title="Perfil Socioeconômico - ENADE 2023")
 
@@ -870,42 +871,29 @@ if enable_comparison:
         conceito_filtrado2 = conceito_filtrado2[conceito_filtrado2['Nome da IES*'].isin(selected_ies2)]
 
 # Define institution names for both modes
-has_filters1 = bool(selected_uf or selected_curso or selected_modalidade or selected_categoria or selected_grau or selected_ies or selected_municipio)
-if selected_ies and len(selected_ies) == 1:
-    nome_inst1 = selected_ies[0]
-elif has_filters1:
-    nome_inst1 = "Instituição 1"
-else:
-    nome_inst1 = "Contagem Nacional"
+nome_inst1 = resolve_institution_name(
+    ies=selected_ies,
+    municipio=selected_municipio,
+    uf=selected_uf,
+    fallback="Contagem Nacional",
+)
 
-nome_inst2 = "Instituição 2"
+nome_inst2 = "Contagem Nacional"
 if enable_comparison:
-    has_filters2 = bool(selected_uf2 or selected_curso2 or selected_modalidade2 or selected_categoria2 or selected_grau2 or selected_ies2 or selected_municipio2)
-    if selected_ies2 and len(selected_ies2) == 1:
-        nome_inst2 = selected_ies2[0]
-    elif has_filters2:
-        nome_inst2 = "Instituição 2"
-    else:
-        nome_inst2 = "Contagem Nacional"
+    nome_inst2 = resolve_institution_name(
+        ies=selected_ies2,
+        municipio=selected_municipio2,
+        uf=selected_uf2,
+        fallback="Contagem Nacional",
+    )
 
-# Se as duas seleções apontarem para a mesma IES (mesmo nome), diferenciar os rótulos
-# usando o curso selecionado (para evitar Plotly fundir as séries no color='Instituicao').
-if enable_comparison and nome_inst1 == nome_inst2:
-    # Curso pode ser lista/None; normalizar para lista
-    curso1_list = list(selected_curso) if selected_curso else []
-    curso2_list = list(selected_curso2) if selected_curso2 else []
-
-    curso1_label = curso1_list[0] if len(curso1_list) == 1 else (curso1_list[0] if len(curso1_list) > 1 else None)
-    curso2_label = curso2_list[0] if len(curso2_list) == 1 else (curso2_list[0] if len(curso2_list) > 1 else None)
-
-    # Caso específico do bug: cursos diferentes da mesma IES.
-    if curso1_label and curso2_label and curso1_label != curso2_label:
-        nome_inst1 = f"{nome_inst1} ({curso1_label})"
-        nome_inst2 = f"{nome_inst2} ({curso2_label})"
-    else:
-        # Fallback genérico: garante distinção mesmo sem curso bem definido
-        nome_inst1 = f"{nome_inst1} (1)"
-        nome_inst2 = f"{nome_inst2} (2)"
+# Desambiguar caso os dois lados resultem no mesmo rótulo
+if enable_comparison:
+    nome_inst1, nome_inst2 = disambiguate_names(
+        nome_inst1, nome_inst2,
+        curso1=selected_curso,
+        curso2=selected_curso2,
+    )
 
 
 
