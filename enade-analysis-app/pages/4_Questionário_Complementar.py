@@ -773,6 +773,8 @@ else:
         hovertemplate="<b>%{customdata[0]}</b><br>Contagem: %{customdata[1]}<br>Percentual: %{customdata[2]}<extra></extra>"
     )
 
+    st.caption("Passe o mouse nos pontos para mais informações. Clique na legenda superior-direita para ocultar items.")
+
     st.plotly_chart(fig, width="stretch")
 
     st.subheader("**Distribuição**")

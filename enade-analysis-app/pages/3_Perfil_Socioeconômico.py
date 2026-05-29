@@ -1148,6 +1148,8 @@ else:
 
 
         fig_comparativo.update_xaxes(categoryorder='array', categoryarray=abrev_ordenadas)
+        st.caption("Passe o mouse nos pontos para mais informações. Clique na legenda superior-direita para ocultar items.")
+
         st.plotly_chart(fig_comparativo, width="stretch")
 
         col_tab1, col_tab2 = st.columns(2)
@@ -1244,6 +1246,8 @@ else:
             )
 
 
+
+        st.caption("Passe o mouse nos pontos para mais informações. Clique na legenda superior-direita para ocultar items.")
 
         fig.update_xaxes(categoryorder='array', categoryarray=freq_line['Abreviacao'].cat.categories.tolist())
         st.plotly_chart(fig, width="stretch")

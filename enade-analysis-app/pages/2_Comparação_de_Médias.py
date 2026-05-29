@@ -544,11 +544,13 @@ if not filtered_df.empty and not filtered_df2.empty:
     )
 
     if tipo_grafico == "Linha (normal)":
+        st.caption("Passe o mouse nos pontos para mais informações. Clique na legenda superior-direita para ocultar items.")
         st.plotly_chart(fig_comparativo, width='stretch')
     else:
         if mostrar_ic:
             st.markdown("---")
             st.subheader("📦 Distribuição das Notas dos Alunos")
+            st.caption("Passe o mouse nos pontos para mais informações. Clique na legenda inferior-central para ocultar items.")
         else:
             st.info("Ative 📊 Agregar Médias dos Alunos para exibir o boxplot (notas individuais dos alunos).")
 
@@ -615,8 +617,8 @@ if not filtered_df.empty and not filtered_df2.empty:
 
                 legend=dict(
                     title=dict(
-                        text="Instituição",
-                        font=dict(size=11, color="gray"),
+                    text="",
+                    font=dict(size=11, color="gray"),
                     ),
                     font=dict(size=12, family="Source Sans Pro, sans-serif"),
                     bgcolor="rgba(255,255,255,0.9)",
@@ -627,7 +629,7 @@ if not filtered_df.empty and not filtered_df2.empty:
                     orientation="h",
                     x=0.5,
                     xanchor="center",
-                    y=-0.15,
+                    y=-0.18,
                     yanchor="top",
                 ),
             )
@@ -635,7 +637,7 @@ if not filtered_df.empty and not filtered_df2.empty:
             fig_box.update_traces(
                 hoverinfo='skip',
                 hovertemplate=(
-                    '<b>%{x}</b><br>'
+                    '<b>%{customdata[6]}</b><br>'
                     'Instituição: %{customdata[0]}<br>'
                     'Mediana (linha central): %{customdata[1]:.2f}<br>'
                     'Quartil 1 (Q1): %{customdata[2]:.2f}<br>'
@@ -650,14 +652,15 @@ if not filtered_df.empty and not filtered_df2.empty:
                     df_box_hover['Q3'],
                     df_box_hover['Bigode Inferior'],
                     df_box_hover['Bigode Superior'],
+                    df_box_hover['Área de Avaliação'],
                 ], axis=-1),
             )
 
-            st.plotly_chart(fig_box, use_container_width=True)
             st.caption(
                 "📊 Cada box mostra a distribuição completa das notas dos alunos: "
                 "mediana (linha central), quartis (caixa), bigodes (1,5× IQR) e outliers (pontos individuais). "
             )
+            st.plotly_chart(fig_box, use_container_width=True)
     
     # Exibir tabelas por curso (Médias ou Estatísticas do Boxplot)
     col_tab1, col_tab2 = st.columns(2)
