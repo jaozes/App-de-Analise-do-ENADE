@@ -579,83 +579,90 @@ if not filtered_df.empty and not filtered_df2.empty:
             modalidade2=tuple(selected_modalidade2) if selected_modalidade2 else (),
             categoria2=tuple(selected_categoria2) if selected_categoria2 else (),
             grau2=tuple(selected_grau2) if selected_grau2 else (),
-            cursos_visiveis=tuple(sorted(df_comparacao['Sigla Área'].unique())),
-            abbr_map=ABBR,
+            abbr_map=tuple(sorted(ABBR.items())),
         )
 
 
         if box_data is None:
             st.info("Nenhum dado individual de aluno disponível para os cursos selecionados.")
         else:
-            df_box, df_box_hover = box_data
+            df_box, df_box_hover, stats_raw = box_data
 
-            fig_box = px.box(
-                df_box,
-                x='Sigla Área',
-                y='Nota',
-                color='Instituicao',
-                points='outliers',
-                title='',
-                labels={'Nota': labels_y[coluna_nota], 'Sigla Área': 'Curso'},
-                height=500,
-            )
+            # Filtrar cursos visíveis aqui (fora do cache) para não invalidar o cache
+            cursos_visiveis_set = set(df_comparacao['Sigla Área'].unique())
+            df_box = df_box[df_box['Sigla Área'].isin(cursos_visiveis_set)]
+            df_box_hover = df_box_hover[df_box_hover['Sigla Área'].isin(cursos_visiveis_set)]
 
-            fig_box.update_layout(
-                boxmode='group',
-                xaxis_tickangle=0,
-                yaxis=dict(range=[0, 5]),
-                xaxis=dict(
-                categoryorder='array',
-                categoryarray=sorted(df_box['Sigla Área'].unique())
-                ),
+            if df_box.empty:
+                st.info("Nenhum dado individual de aluno disponível para os cursos selecionados.")
+            else:
+                fig_box = px.box(
+                    df_box,
+                    x='Sigla Área',
+                    y='Nota',
+                    color='Instituicao',
+                    points='outliers',
+                    title='',
+                    labels={'Nota': labels_y[coluna_nota], 'Sigla Área': 'Curso'},
+                    height=500,
+                )
 
-                legend=dict(
-                    title=dict(
-                    text="",
-                    font=dict(size=11, color="gray"),
+                fig_box.update_layout(
+                    boxmode='group',
+                    xaxis_tickangle=0,
+                    yaxis=dict(range=[0, 5]),
+                    xaxis=dict(
+                    categoryorder='array',
+                    categoryarray=sorted(df_box['Sigla Área'].unique())
                     ),
-                    font=dict(size=12, family="Source Sans Pro, sans-serif"),
-                    bgcolor="rgba(255,255,255,0.9)",
-                    bordercolor="rgba(0,0,0,0.1)",
-                    borderwidth=1,
 
-                    # Strip abaixo do gráfico
-                    orientation="h",
-                    x=0.5,
-                    xanchor="center",
-                    y=-0.18,
-                    yanchor="top",
-                ),
-            )
+                    legend=dict(
+                        title=dict(
+                        text="",
+                        font=dict(size=11, color="gray"),
+                        ),
+                        font=dict(size=12, family="Source Sans Pro, sans-serif"),
+                        bgcolor="rgba(255,255,255,0.9)",
+                        bordercolor="rgba(0,0,0,0.1)",
+                        borderwidth=1,
 
-            fig_box.update_traces(
-                hoverinfo='skip',
-                hovertemplate=(
-                    '<b>%{customdata[6]}</b><br>'
-                    'Instituição: %{customdata[0]}<br>'
-                    'Mediana (linha central): %{customdata[1]:.2f}<br>'
-                    'Quartil 1 (Q1): %{customdata[2]:.2f}<br>'
-                    'Quartil 3 (Q3): %{customdata[3]:.2f}<br>'
-                    'Bigodes (1,5× IQR): %{customdata[4]:.2f} - %{customdata[5]:.2f}<br>'
-                    'Outlier (ponto): %{y:.2f}<extra></extra>'
-                ),
-                customdata=np.stack([
-                    df_box_hover['Instituicao'],
-                    df_box_hover['Mediana'],
-                    df_box_hover['Q1'],
-                    df_box_hover['Q3'],
-                    df_box_hover['Bigode Inferior'],
-                    df_box_hover['Bigode Superior'],
-                    df_box_hover['Área de Avaliação'],
-                ], axis=-1),
-                hoverlabel=dict(bgcolor=hover_bg, font=dict(size=14, color=hover_font_color)),
-            )
+                        # Strip abaixo do gráfico
+                        orientation="h",
+                        x=0.5,
+                        xanchor="center",
+                        y=-0.18,
+                        yanchor="top",
+                    ),
+                )
 
-            st.caption(
-                "📊 Cada box mostra a distribuição completa das notas dos alunos: "
-                "mediana (linha central), quartis (caixa), bigodes (1,5× IQR) e outliers (pontos individuais). "
-            )
-            st.plotly_chart(fig_box, use_container_width=True)
+                fig_box.update_traces(
+                    hoverinfo='skip',
+                    hovertemplate=(
+                        '<b>%{customdata[6]}</b><br>'
+                        'Instituição: %{customdata[0]}<br>'
+                        'Mediana (linha central): %{customdata[1]:.2f}<br>'
+                        'Quartil 1 (Q1): %{customdata[2]:.2f}<br>'
+                        'Quartil 3 (Q3): %{customdata[3]:.2f}<br>'
+                        'Bigodes (1,5× IQR): %{customdata[4]:.2f} - %{customdata[5]:.2f}<br>'
+                        'Outlier (ponto): %{y:.2f}<extra></extra>'
+                    ),
+                    customdata=np.stack([
+                        df_box_hover['Instituicao'],
+                        df_box_hover['Mediana'],
+                        df_box_hover['Q1'],
+                        df_box_hover['Q3'],
+                        df_box_hover['Bigode Inferior'],
+                        df_box_hover['Bigode Superior'],
+                        df_box_hover['Área de Avaliação'],
+                    ], axis=-1),
+                    hoverlabel=dict(bgcolor=hover_bg, font=dict(size=14, color=hover_font_color)),
+                )
+
+                st.caption(
+                    "📊 Cada box mostra a distribuição completa das notas dos alunos: "
+                    "mediana (linha central), quartis (caixa), bigodes (1,5× IQR) e outliers (pontos individuais). "
+                )
+                st.plotly_chart(fig_box, use_container_width=True)
     
     # Exibir tabelas por curso (Médias ou Estatísticas do Boxplot)
     col_tab1, col_tab2 = st.columns(2)
@@ -757,40 +764,43 @@ if not filtered_df.empty and not filtered_df2.empty:
     with col_tab1:
         if mostrar_ic:
             st.subheader(f'{nome_inst1} - Estatísticas')
-            # Recalcular df_box para a instituição 1
-            micro1 = get_microdados_filtered(
-                areas_tuple=tuple(sorted(avg_df['Área de Avaliação'].unique())),
-                uf=tuple(selected_uf) if selected_uf else (),
-                municipio=tuple(selected_municipio) if selected_municipio else (),
-                ies=tuple(selected_ies) if selected_ies else (),
-                modalidade=tuple(selected_modalidade) if selected_modalidade else (),
-                categoria=tuple(selected_categoria) if selected_categoria else (),
-                grau=tuple(selected_grau) if selected_grau else ()
-            )
+            # Reutilizar stats_raw já calculado em build_boxplot_alunos_data (sem recalcular)
+            if 'box_data' in dir() and box_data is not None:
+                _, _, stats_raw_cached = box_data
+                stats_df_1 = stats_raw_cached[
+                    stats_raw_cached['Instituicao'] == nome_inst1
+                ][['Sigla Área', 'Área de Avaliação', 'Q1', 'Mediana', 'Q3',
+                   'Bigode Inferior', 'Bigode Superior', 'Min', 'Max']].copy()
 
-            if micro1 is not None and not micro1.empty:
-                micro1 = micro1.copy()
-                micro1['Sigla Área'] = micro1['Área de Avaliação'].map(ABBR).fillna(micro1['Área de Avaliação'])
-                coluna_micro = {
-                    'Média': 'NT_GER',
-                    'Formação Geral': 'NT_FG',
-                    'Componente Específico': 'NT_CE'
-                }.get(coluna_nota, 'NT_GER')
+                # Adicionar N contando alunos no df_box já filtrado
+                if 'df_box' in dir() and df_box is not None and not df_box.empty:
+                    n_counts = (
+                        df_box[df_box['Instituicao'] == nome_inst1]
+                        .groupby(['Sigla Área', 'Área de Avaliação'])['Nota']
+                        .count()
+                        .reset_index()
+                        .rename(columns={'Nota': 'N'})
+                    )
+                    stats_df_1 = stats_df_1.merge(n_counts, on=['Sigla Área', 'Área de Avaliação'], how='left')
+                else:
+                    stats_df_1['N'] = np.nan
 
-                df_box_1 = micro1[['Sigla Área', 'Área de Avaliação', coluna_micro]].copy()
-                df_box_1 = df_box_1.rename(columns={coluna_micro: 'Nota'})
-
-                stats_df_1 = _box_stats_table(df_box_1, 'Sigla Área', 'Área de Avaliação', 'Nota')
-
-                # Garantir presença das colunas esperadas (evita KeyError em casos vazios/degenerados)
-                desired_cols = ['Sigla Área', 'Área de Avaliação', 'Q1', 'Mediana', 'Q3', 'Bigode Inferior', 'Bigode Superior', 'Min', 'Max', 'N']
+                desired_cols = ['Sigla Área', 'Área de Avaliação', 'Q1', 'Mediana', 'Q3',
+                                'Bigode Inferior', 'Bigode Superior', 'Min', 'Max', 'N']
                 for c in desired_cols:
                     if c not in stats_df_1.columns:
                         stats_df_1[c] = np.nan
                 stats_df_1 = stats_df_1[desired_cols]
 
-                st.dataframe(stats_df_1, width='stretch', hide_index=True)
+                # Formatar
+                for col_fmt in ['Q1', 'Mediana', 'Q3', 'Bigode Inferior', 'Bigode Superior', 'Min', 'Max']:
+                    stats_df_1[col_fmt] = stats_df_1[col_fmt].apply(lambda x: format_br_number(x, 2) if pd.notna(x) else x)
+                stats_df_1['N'] = stats_df_1['N'].apply(lambda x: format_br_number(x, 0) if pd.notna(x) else x)
 
+                if not stats_df_1.empty:
+                    st.dataframe(stats_df_1, width='stretch', hide_index=True)
+                else:
+                    st.info('Nenhum dado individual de aluno disponível para os filtros aplicados.')
             else:
                 st.info('Nenhum dado individual de aluno disponível para os filtros aplicados.')
         else:
@@ -804,40 +814,40 @@ if not filtered_df.empty and not filtered_df2.empty:
     with col_tab2:
         if mostrar_ic:
             st.subheader(f'{nome_inst2} - Estatísticas')
-            micro2 = get_microdados_filtered(
-                areas_tuple=tuple(sorted(avg_df2['Área de Avaliação'].unique())),
-                uf=tuple(selected_uf2) if selected_uf2 else (),
-                municipio=tuple(selected_municipio2) if selected_municipio2 else (),
-                ies=tuple(selected_ies2) if selected_ies2 else (),
-                modalidade=tuple(selected_modalidade2) if selected_modalidade2 else (),
-                categoria=tuple(selected_categoria2) if selected_categoria2 else (),
-                grau=tuple(selected_grau2) if selected_grau2 else ()
-            )
+            if 'box_data' in dir() and box_data is not None:
+                _, _, stats_raw_cached = box_data
+                stats_df_2 = stats_raw_cached[
+                    stats_raw_cached['Instituicao'] == nome_inst2
+                ][['Sigla Área', 'Área de Avaliação', 'Q1', 'Mediana', 'Q3',
+                   'Bigode Inferior', 'Bigode Superior', 'Min', 'Max']].copy()
 
-            if micro2 is not None and not micro2.empty:
-                micro2 = micro2.copy()
-                micro2['Sigla Área'] = micro2['Área de Avaliação'].map(ABBR).fillna(micro2['Área de Avaliação'])
-                coluna_micro = {
-                    'Média': 'NT_GER',
-                    'Formação Geral': 'NT_FG',
-                    'Componente Específico': 'NT_CE'
-                }.get(coluna_nota, 'NT_GER')
+                if 'df_box' in dir() and df_box is not None and not df_box.empty:
+                    n_counts2 = (
+                        df_box[df_box['Instituicao'] == nome_inst2]
+                        .groupby(['Sigla Área', 'Área de Avaliação'])['Nota']
+                        .count()
+                        .reset_index()
+                        .rename(columns={'Nota': 'N'})
+                    )
+                    stats_df_2 = stats_df_2.merge(n_counts2, on=['Sigla Área', 'Área de Avaliação'], how='left')
+                else:
+                    stats_df_2['N'] = np.nan
 
-                df_box_2 = micro2[['Sigla Área', 'Área de Avaliação', coluna_micro]].copy()
-                df_box_2 = df_box_2.rename(columns={coluna_micro: 'Nota'})
-                df_box_2['N'] = 1  # placeholder
-
-                stats_df_2 = _box_stats_table(df_box_2, 'Sigla Área', 'Área de Avaliação', 'Nota')
-
-                # Garantir presença das colunas esperadas (evita KeyError em casos vazios/degenerados)
-                desired_cols = ['Sigla Área', 'Área de Avaliação', 'Q1', 'Mediana', 'Q3', 'Bigode Inferior', 'Bigode Superior', 'Min', 'Max', 'N']
+                desired_cols = ['Sigla Área', 'Área de Avaliação', 'Q1', 'Mediana', 'Q3',
+                                'Bigode Inferior', 'Bigode Superior', 'Min', 'Max', 'N']
                 for c in desired_cols:
                     if c not in stats_df_2.columns:
                         stats_df_2[c] = np.nan
                 stats_df_2 = stats_df_2[desired_cols]
 
-                st.dataframe(stats_df_2, width='stretch', hide_index=True)
+                for col_fmt in ['Q1', 'Mediana', 'Q3', 'Bigode Inferior', 'Bigode Superior', 'Min', 'Max']:
+                    stats_df_2[col_fmt] = stats_df_2[col_fmt].apply(lambda x: format_br_number(x, 2) if pd.notna(x) else x)
+                stats_df_2['N'] = stats_df_2['N'].apply(lambda x: format_br_number(x, 0) if pd.notna(x) else x)
 
+                if not stats_df_2.empty:
+                    st.dataframe(stats_df_2, width='stretch', hide_index=True)
+                else:
+                    st.info('Nenhum dado individual de aluno disponível para os filtros aplicados.')
             else:
                 st.info('Nenhum dado individual de aluno disponível para os filtros aplicados.')
         else:

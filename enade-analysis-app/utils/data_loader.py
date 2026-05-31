@@ -408,7 +408,7 @@ def get_microdados_filtered(areas_tuple=(), uf=(), municipio=(), ies=(), modalid
     if df.empty:
         return None
     
-    return df.copy()
+    return df
 
 
 
@@ -432,14 +432,15 @@ def build_boxplot_alunos_data(
     modalidade2: tuple,
     categoria2: tuple,
     grau2: tuple,
-    cursos_visiveis: tuple,
-    abbr_map: dict,
+    abbr_map: tuple,
 ):
     """Build cacheable data for the boxplot (students) in the comparison page.
 
     Returns:
-        (df_box, df_box_hover) or None.
+        (df_box, df_box_hover, stats_raw) or None.
     """
+    abbr_dict = dict(abbr_map)  # reconstruir de tuple hashável
+
     micro1 = get_microdados_filtered(
         areas_tuple=tuple(sorted(areas1)),
         uf=uf1,
@@ -463,13 +464,13 @@ def build_boxplot_alunos_data(
     if micro1 is not None and not micro1.empty:
         m1 = micro1.copy()
         m1['Instituicao'] = nome_inst1
-        m1['Sigla Área'] = m1['Área de Avaliação'].map(abbr_map).fillna(m1['Área de Avaliação'])
+        m1['Sigla Área'] = m1['Área de Avaliação'].map(abbr_dict).fillna(m1['Área de Avaliação'])
         box_frames.append(m1[['Sigla Área', 'Área de Avaliação', coluna_micro, 'Instituicao']])
 
     if micro2 is not None and not micro2.empty:
         m2 = micro2.copy()
         m2['Instituicao'] = nome_inst2
-        m2['Sigla Área'] = m2['Área de Avaliação'].map(abbr_map).fillna(m2['Área de Avaliação'])
+        m2['Sigla Área'] = m2['Área de Avaliação'].map(abbr_dict).fillna(m2['Área de Avaliação'])
         box_frames.append(m2[['Sigla Área', 'Área de Avaliação', coluna_micro, 'Instituicao']])
 
     if not box_frames:
@@ -478,13 +479,8 @@ def build_boxplot_alunos_data(
     df_box = pd.concat(box_frames, ignore_index=True)
     df_box = df_box.rename(columns={coluna_micro: 'Nota'})
 
-    cursos_visiveis_local = set(cursos_visiveis)
-    df_box = df_box[df_box['Sigla Área'].isin(cursos_visiveis_local)]
-    if df_box.empty:
-        return None
-
     stats_raw = (
-        df_box.groupby(['Sigla Área', 'Área de Avaliação'], dropna=False)['Nota']
+        df_box.groupby(['Sigla Área', 'Área de Avaliação', 'Instituicao'], dropna=False)['Nota']
         .agg(
             Q1=lambda s: np.percentile(pd.to_numeric(s, errors='coerce').dropna(), 25)
             if len(pd.to_numeric(s, errors='coerce').dropna())
@@ -509,8 +505,29 @@ def build_boxplot_alunos_data(
     stats_raw['Bigode Inferior'] = np.maximum(stats_raw['Min'], stats_raw['Q1'] - 1.5 * iqr)
     stats_raw['Bigode Superior'] = np.minimum(stats_raw['Max'], stats_raw['Q3'] + 1.5 * iqr)
 
+    # stats_raw sem Instituicao para o hover (agregado geral)
+    stats_hover = (
+        df_box.groupby(['Sigla Área', 'Área de Avaliação'], dropna=False)['Nota']
+        .agg(
+            Q1=lambda s: np.percentile(pd.to_numeric(s, errors='coerce').dropna(), 25)
+            if len(pd.to_numeric(s, errors='coerce').dropna()) else np.nan,
+            Mediana=lambda s: np.percentile(pd.to_numeric(s, errors='coerce').dropna(), 50)
+            if len(pd.to_numeric(s, errors='coerce').dropna()) else np.nan,
+            Q3=lambda s: np.percentile(pd.to_numeric(s, errors='coerce').dropna(), 75)
+            if len(pd.to_numeric(s, errors='coerce').dropna()) else np.nan,
+            Min=lambda s: float(pd.to_numeric(s, errors='coerce').dropna().min())
+            if not pd.to_numeric(s, errors='coerce').dropna().empty else np.nan,
+            Max=lambda s: float(pd.to_numeric(s, errors='coerce').dropna().max())
+            if not pd.to_numeric(s, errors='coerce').dropna().empty else np.nan,
+        )
+        .reset_index()
+    )
+    iqr_h = stats_hover['Q3'] - stats_hover['Q1']
+    stats_hover['Bigode Inferior'] = np.maximum(stats_hover['Min'], stats_hover['Q1'] - 1.5 * iqr_h)
+    stats_hover['Bigode Superior'] = np.minimum(stats_hover['Max'], stats_hover['Q3'] + 1.5 * iqr_h)
+
     df_box_hover = df_box.merge(
-        stats_raw[
+        stats_hover[
             [
                 'Sigla Área',
                 'Área de Avaliação',
@@ -525,7 +542,7 @@ def build_boxplot_alunos_data(
         how='left',
     )
 
-    return df_box, df_box_hover
+    return df_box, df_box_hover, stats_raw
 
 
 
