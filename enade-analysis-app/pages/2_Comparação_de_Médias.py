@@ -5,6 +5,7 @@ import plotly.express as px
 from utils.header import show_logo
 from utils.footer import show_footer
 from utils.formatting import format_br_number, format_br_percentage
+from utils.theme import init_theme
 
 def safe_tuple(val):
     """Convert value to tuple safely, handling Streamlit Never/None."""
@@ -13,7 +14,7 @@ def safe_tuple(val):
     return tuple(val) if hasattr(val, '__iter__') else (val,)
 
 
-st.set_page_config(layout="wide", page_title="Comparação de Médias - ENADE 2023")
+init_theme(page_title="Comparação de Médias - ENADE 2023", layout="wide")
 
 # Estilo para alinhar tabelas à esquerda
 st.markdown("""
@@ -465,10 +466,17 @@ if not filtered_df.empty and not filtered_df2.empty:
         "Formação Geral": "Nota Padronizada - Formação Geral",
         "Componente Específico": "Nota Padronizada - Componente Específico"
     }
+
+    # A troca de tema via Settings do Streamlit acontece no cliente;
+    # por isso evitamos forçar tema no backend e usamos estilos neutros.
+    legend_bg = "rgba(0,0,0,0)"
+    legend_border = "rgba(0,0,0,0)"
+    legend_title_color = "gray"
+    hover_bg = "rgba(0,0,0,0.82)"
+    hover_font_color = "#f8fafc"
     
     fig_comparativo.update_layout(
         xaxis_tickangle=0,
-        template="plotly_white",
         xaxis_title='Curso',
         yaxis_title=labels_y[coluna_nota],
         yaxis=dict(range=[0, 5]),
@@ -483,8 +491,8 @@ if not filtered_df.empty and not filtered_df2.empty:
             yanchor="top",
 
         # Visual de card/pill
-            bgcolor="rgba(255,255,255,0.9)",
-            bordercolor="rgba(0,0,0,0.1)",
+            bgcolor=legend_bg,
+            bordercolor=legend_border,
             borderwidth=1,
 
         # Tipografia
@@ -493,7 +501,7 @@ if not filtered_df.empty and not filtered_df2.empty:
         # Título clicável
             title=dict(
                 text="",
-                font=dict(size=11, color="gray"),
+                font=dict(size=11, color=legend_title_color),
             ),
 
         # Orientação horizontal (estilo strip de pills)
@@ -528,7 +536,7 @@ if not filtered_df.empty and not filtered_df2.empty:
     
     fig_comparativo.update_traces(
         hovertemplate=hover_template,
-        hoverlabel=dict(font=dict(size=14)),
+        hoverlabel=dict(bgcolor=hover_bg, font=dict(size=14, color=hover_font_color)),
         line=dict(width=4),
         marker=dict(size=8)
     )
@@ -602,7 +610,6 @@ if not filtered_df.empty and not filtered_df2.empty:
                 points='outliers',
                 title='',
                 labels={'Nota': labels_y[coluna_nota], 'Sigla Área': 'Curso'},
-                template='plotly_white',
                 height=500,
             )
 
@@ -618,11 +625,11 @@ if not filtered_df.empty and not filtered_df2.empty:
                 legend=dict(
                     title=dict(
                     text="",
-                    font=dict(size=11, color="gray"),
+                    font=dict(size=11, color=legend_title_color),
                     ),
                     font=dict(size=12, family="Source Sans Pro, sans-serif"),
-                    bgcolor="rgba(255,255,255,0.9)",
-                    bordercolor="rgba(0,0,0,0.1)",
+                    bgcolor=legend_bg,
+                    bordercolor=legend_border,
                     borderwidth=1,
 
                     # Strip abaixo do gráfico
@@ -654,6 +661,7 @@ if not filtered_df.empty and not filtered_df2.empty:
                     df_box_hover['Bigode Superior'],
                     df_box_hover['Área de Avaliação'],
                 ], axis=-1),
+                hoverlabel=dict(bgcolor=hover_bg, font=dict(size=14, color=hover_font_color)),
             )
 
             st.caption(

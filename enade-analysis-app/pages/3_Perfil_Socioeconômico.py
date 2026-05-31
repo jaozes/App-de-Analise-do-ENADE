@@ -7,8 +7,9 @@ from utils.header import show_logo
 from utils.footer import show_footer
 from utils.formatting import format_br_number, format_br_percentage
 from utils.naming import resolve_institution_name, disambiguate_names
+from utils.theme import init_theme
 
-st.set_page_config(layout="wide", page_title="Perfil Socioeconômico - ENADE 2023")
+init_theme(page_title="Perfil Socioeconômico - ENADE 2023", layout="wide")
 
 # Estilo para alinhar tabelas à esquerda
 st.markdown("""
@@ -18,7 +19,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-#streamlit run enade-analysis-app/Home.py
+#streamlit run Home.py
 
 show_logo()
 
@@ -585,7 +586,7 @@ from utils.data_loader import load_conceito
 @st.cache_data(ttl=300)
 def build_question_file_index() -> dict[str, Path]:
     """Indexa quais arquivos de microdados contêm cada variável (QE_Ixx / TP_SEXO / NU_IDADE)."""
-    base = Path("enade-analysis-app/data")
+    base = Path(__file__).resolve().parent.parent / "data"
     files = sorted(base.glob("microdados2023_arq*.txt"))
     index = {}
     for f in files:

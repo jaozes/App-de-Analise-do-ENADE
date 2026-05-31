@@ -1,3 +1,16 @@
+[server]
+fileWatcherType = "none"
+
+[theme]
+baseFontSize=18
+primaryColor = "#FF6B35"
+
+[global]
+developmentMode = false
+
+[browser]
+gatherUsageStats = false
+
 [client]
 toolbarMode = "viewer"
 

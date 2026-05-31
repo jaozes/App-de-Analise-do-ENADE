@@ -9,8 +9,9 @@ from utils.footer import show_footer
 from utils.formatting import format_br_number, format_br_percentage
 from utils.data_loader import load_conceito
 from utils.naming import resolve_institution_name, disambiguate_names
+from utils.theme import init_theme
 
-st.set_page_config(layout="wide", page_title="Questionário Complementar - ENADE 2023")
+init_theme(page_title="Questionário Complementar - ENADE 2023", layout="wide")
 
 # Estilo para alinhar tabelas à esquerda
 st.markdown(
@@ -112,7 +113,7 @@ def sort_responses(df: pd.DataFrame, column: str, var_name: str | None) -> pd.Da
 
 def build_question_file_index_arq4() -> dict[str, Path]:
     """Indexa quais arquivos de microdados contêm cada variável arq4 (QE_I27..QE_I68)."""
-    base = Path("enade-analysis-app/data")
+    base = Path(__file__).resolve().parent.parent / "data"
     files = sorted(base.glob("microdados2023_arq*.txt"))
     index = {}
 
