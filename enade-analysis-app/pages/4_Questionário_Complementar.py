@@ -693,7 +693,7 @@ if enable_comparison and not merged2.empty:
 
     col_tab1, col_tab2 = st.columns(2)
     with col_tab1:
-        st.markdown(f"**{nome_inst1}**")
+        st.subheader(f"**{nome_inst1}**")
 
         display_df1 = freq1.reset_index()[["Resposta", "count"]].rename(columns={"Resposta": "Resposta", "count": "Contagem"}).copy()
         display_df1["Contagem"] = display_df1["Contagem"].apply(lambda x: format_br_number(int(x), 0) if pd.notna(x) else x)
@@ -711,7 +711,7 @@ if enable_comparison and not merged2.empty:
         )
 
     with col_tab2:
-        st.markdown(f"**{nome_inst2}**")
+        st.subheader(f"**{nome_inst2}**")
 
         display_df2 = freq2.reset_index()[["Resposta", "count"]].rename(columns={"Resposta": "Resposta", "count": "Contagem"}).copy()
         display_df2["Contagem"] = display_df2["Contagem"].apply(lambda x: format_br_number(int(x), 0) if pd.notna(x) else x)

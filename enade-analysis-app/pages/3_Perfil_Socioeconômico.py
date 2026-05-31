@@ -1155,7 +1155,7 @@ else:
 
         col_tab1, col_tab2 = st.columns(2)
         with col_tab1:
-            st.markdown(f"**{nome_inst1}**")
+            st.subheader(f"**{nome_inst1}**")
             if selected_var == "NU_IDADE":
                 display_df1 = freq1_prep[['Resposta_Completa', 'Contagem']].copy()
                 perc1 = (display_df1['Contagem'] / display_df1['Contagem'].sum() * 100).round(1)
@@ -1171,7 +1171,7 @@ else:
                 display_df1.columns = ['Resposta', 'Abreviação', 'Contagem', '%']
             st.dataframe(display_df1, width='stretch', hide_index=True)
         with col_tab2:
-            st.markdown(f"**{nome_inst2}**")
+            st.subheader(f"**{nome_inst2}**")
             if selected_var == "NU_IDADE":
                 display_df2 = freq2_prep[['Resposta_Completa', 'Contagem']].copy()
                 perc2 = (display_df2['Contagem'] / display_df2['Contagem'].sum() * 100).round(1)

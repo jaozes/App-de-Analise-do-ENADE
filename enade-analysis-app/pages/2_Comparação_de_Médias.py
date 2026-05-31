@@ -483,34 +483,21 @@ if not filtered_df.empty and not filtered_df2.empty:
         height=600,
 
         legend=dict(
-        # Posição — canto superior direito dentro do gráfico
-            orientation="h",
-            x=0.99,
-            y=0.99,
-            xanchor="right",
-            yanchor="top",
-
-        # Visual de card/pill
-            bgcolor=legend_bg,
-            bordercolor=legend_border,
-            borderwidth=1,
-
-        # Tipografia
-            font=dict(size=12, family="Source Sans Pro, sans-serif"),
-
-        # Título clicável
-            title=dict(
+                title=dict(
                 text="",
-                font=dict(size=11, color=legend_title_color),
-            ),
+                font=dict(size=11, color="gray"),
+                ),
+                font=dict(size=12, family="Source Sans Pro, sans-serif"),
+                bgcolor="rgba(255,255,255,0.9)",
+                bordercolor="rgba(0,0,0,0.1)",
+                borderwidth=1,
 
-        # Orientação horizontal (estilo strip de pills)
-            #orientation="h",
-            #x=0.5,
-            #xanchor="center",
-            #y=-0.15,          # abaixo do gráfico
-            #yanchor="top",
-    ),
+                orientation="h",
+                x=0.99,
+                xanchor="right",
+                y=0.99,
+                yanchor="top",
+            ),
 )
     
     # Definir hovertemplate conforme o IC está ativo ou não
@@ -625,11 +612,11 @@ if not filtered_df.empty and not filtered_df2.empty:
                 legend=dict(
                     title=dict(
                     text="",
-                    font=dict(size=11, color=legend_title_color),
+                    font=dict(size=11, color="gray"),
                     ),
                     font=dict(size=12, family="Source Sans Pro, sans-serif"),
-                    bgcolor=legend_bg,
-                    bordercolor=legend_border,
+                    bgcolor="rgba(255,255,255,0.9)",
+                    bordercolor="rgba(0,0,0,0.1)",
                     borderwidth=1,
 
                     # Strip abaixo do gráfico
@@ -769,7 +756,7 @@ if not filtered_df.empty and not filtered_df2.empty:
 
     with col_tab1:
         if mostrar_ic:
-            st.subheader(f'{nome_inst1} - Estatísticas (Boxplot - alunos)')
+            st.subheader(f'{nome_inst1} - Estatísticas')
             # Recalcular df_box para a instituição 1
             micro1 = get_microdados_filtered(
                 areas_tuple=tuple(sorted(avg_df['Área de Avaliação'].unique())),
@@ -816,7 +803,7 @@ if not filtered_df.empty and not filtered_df2.empty:
 
     with col_tab2:
         if mostrar_ic:
-            st.subheader(f'{nome_inst2} - Estatísticas (Boxplot - alunos)')
+            st.subheader(f'{nome_inst2} - Estatísticas')
             micro2 = get_microdados_filtered(
                 areas_tuple=tuple(sorted(avg_df2['Área de Avaliação'].unique())),
                 uf=tuple(selected_uf2) if selected_uf2 else (),
