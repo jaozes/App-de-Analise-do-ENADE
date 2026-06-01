@@ -9,9 +9,10 @@ from utils.footer import show_footer
 from utils.formatting import format_br_number, format_br_percentage
 from utils.data_loader import load_conceito
 from utils.naming import resolve_institution_name, disambiguate_names
-from utils.theme import init_theme
+from utils.theme import init_theme, show_theme_toggle
 
 init_theme(page_title="Questionário Complementar - ENADE 2023", layout="wide")
+show_theme_toggle()
 
 # Estilo para alinhar tabelas à esquerda
 st.markdown(

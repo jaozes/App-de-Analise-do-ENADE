@@ -5,9 +5,10 @@ from utils.header import show_logo
 from utils.footer import show_footer
 from utils.data_loader import load_conceito
 from utils.formatting import format_br_number, format_br_percentage
-from utils.theme import init_theme
+from utils.theme import init_theme, show_theme_toggle
 
 init_theme(page_title="Análise Geral do Brasil - ENADE 2023", layout="centered")
+show_theme_toggle()
 
 # Estilo para alinhar tabelas à esquerda
 st.markdown("""

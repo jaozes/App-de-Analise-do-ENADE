@@ -4,9 +4,10 @@ import plotly.graph_objects as go
 import requests
 from utils.header import show_logo
 from utils.footer import show_footer
-from utils.theme import init_theme
+from utils.theme import init_theme, show_theme_toggle
 
 init_theme(page_title="Home - ENADE 2023", layout="wide")
+show_theme_toggle()
 
 # Estilo para alinhar tabelas à esquerda
 st.markdown("""
@@ -17,6 +18,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 show_logo()
+#show_logo(path='logoUniso.webp', path_dark='logoUniso_dark.webp')
 
 
 
