@@ -100,10 +100,46 @@ iframe[title="st.dataframe"] {{
 [data-baseweb="tab"] {{
     color: var(--text-secondary) !important;
 }}
+
+/* evita que chaves do f-string quebrem caso algum trecho tenha {{}} */
+
+
+
+
+/* Títulos/labels do menu e itens (sidebar) */
+[data-testid="stSidebar"] span,
+[data-testid="stSidebar"] div {{
+    color: var(--text-primary) !important;
+}}
+
+/* “strip” superior (menu de 3 pontos / popover do Streamlit) */
+[data-baseweb="menu"],
+[data-baseweb="popover"],
+[data-testid="stToolbar"],
+[data-testid="stTopBar"],
+.st-expander > div,
+.stMarkdown p {{
+    color: var(--text-primary) !important;
+}}
+
+/* garante cor em texto/tokens do popover/topbar (3 pontos) */
+/* (Streamlit usa vários seletores/estruturas diferentes; estas regras são bem agressivas) */
+[data-baseweb="popover"] *,
+[data-baseweb="menu"] *,
+[data-testid="stToolbar"] *,
+[data-testid="stTopBar"] *, {{
+    color: var(--text-primary) !important;
+    background: transparent !important;
+}}
+
+
+
+
 [aria-selected="true"] {{
     color: var(--accent) !important;
     border-bottom-color: var(--accent) !important;
 }}
+
 
 [data-testid="baseButton-secondary"] {{
     background-color: var(--bg-card) !important;
@@ -123,6 +159,20 @@ def init_theme(page_title: str, layout: str = "wide") -> None:
 
     palette = _DARK if st.session_state.dark_mode else _LIGHT
     st.markdown(_build_css(palette), unsafe_allow_html=True)
+
+    # Reforço para cabeçalho (barra superior / toolbar) via classe
+    # (ajuste de cor por tema para ficar consistente com o toggle)
+    app_header_bg = "#1e293b" if st.session_state.dark_mode else "#f8fafc"
+    st.markdown(
+        f"""
+<style>
+    .stAppHeader {{
+        background-color: {app_header_bg} !important;
+    }}
+</style>
+""",
+        unsafe_allow_html=True,
+    )
 
 
 def show_theme_toggle() -> None:
