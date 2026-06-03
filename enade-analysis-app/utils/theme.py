@@ -163,11 +163,30 @@ def init_theme(page_title: str, layout: str = "wide") -> None:
     # Reforço para cabeçalho (barra superior / toolbar) via classe
     # (ajuste de cor por tema para ficar consistente com o toggle)
     app_header_bg = "#1e293b" if st.session_state.dark_mode else "#f8fafc"
+    toggle_bg = "#111827" if st.session_state.dark_mode else "#e5e7eb"
+    toggle_border = "#374151" if st.session_state.dark_mode else "#cbd5e1"
+    toggle_text = "#f9fafb" if st.session_state.dark_mode else "#0f172a"
+
     st.markdown(
         f"""
 <style>
     .stAppHeader {{
         background-color: {app_header_bg} !important;
+    }}
+
+    /* Toggle (botão do modo) na sidebar */
+    section[data-testid="stSidebar"] button,
+    section[data-testid="stSidebar"] [data-testid="stButton"] button,
+    section[data-testid="stSidebar"] div[data-testid="stButton"] button {{
+        background-color: {toggle_bg} !important;
+        border-color: {toggle_border} !important;
+        color: {toggle_text} !important;
+    }}
+
+    section[data-testid="stSidebar"] button span,
+    section[data-testid="stSidebar"] button svg,
+    section[data-testid="stSidebar"] button .stMarkdown {{
+        color: {toggle_text} !important;
     }}
 </style>
 """,
