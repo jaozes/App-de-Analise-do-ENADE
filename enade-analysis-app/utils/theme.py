@@ -126,11 +126,11 @@ def init_theme(page_title: str, layout: str = "wide") -> None:
 
 
 def show_theme_toggle() -> None:
-    """
-    Exibe o toggle de tema na sidebar (🌙 / ☀️).
+    """Exibe o toggle de tema na sidebar (🌙 / ☀️).
+
     Chame esta função uma vez por página, logo após init_theme().
     """
-    dark = st.session_state.get("dark_mode", False)
+    dark  = st.session_state.get("dark_mode", False)
     icon  = "☀️ Modo Claro"  if dark else "🌙 Modo Escuro"
     label = "Mudar para modo claro" if dark else "Mudar para modo escuro"
 
@@ -139,3 +139,59 @@ def show_theme_toggle() -> None:
         if st.button(icon, help=label, use_container_width=True):
             st.session_state.dark_mode = not dark
             st.rerun()
+
+
+def is_dark_mode() -> bool:
+    return bool(st.session_state.get("dark_mode", False))
+
+
+def get_plotly_template() -> str:
+    """Template principal do Plotly conforme o tema atual."""
+    return "plotly_dark" if is_dark_mode() else "plotly_white"
+
+
+def get_plotly_layout_common() -> dict:
+    """Parâmetros de layout para manter fonte/legend/hover legíveis no light/dark."""
+    if is_dark_mode():
+        fg        = "#E5E7EB"
+        fg_strong = "#F9FAFB"
+        border    = "rgba(255,255,255,0.15)"
+        legend_bg = "rgba(17,24,39,0.80)"
+        hover_bg  = "rgba(17,24,39,0.95)"
+    else:
+        fg        = "#0E1117"
+        fg_strong = "#0E1117"
+        border    = "rgba(0,0,0,0.10)"
+        legend_bg = "rgba(255,255,255,0.90)"
+        hover_bg  = "rgba(255,255,255,0.95)"
+
+    return {
+        "template":      get_plotly_template(),
+        "plot_bgcolor":  "rgba(0,0,0,0)",
+        "paper_bgcolor": "rgba(0,0,0,0)",
+        "font":    {"color": fg},
+        "legend":  {
+            "bgcolor":     legend_bg,
+            "bordercolor": border,
+            "borderwidth": 1,
+            "font":        {"color": fg},
+        },
+        "hoverlabel": {
+            "bgcolor": hover_bg,
+            "font":    {"color": fg_strong},
+        },
+        "xaxis": {"tickfont": {"color": fg}},
+        "yaxis": {"tickfont": {"color": fg}},
+        "coloraxis": {
+            "colorbar": {
+                "tickfont": {"color": fg},
+                # "titlefont" foi removido no Plotly v4 — usar "title.font"
+                "title": {"font": {"color": fg}},
+            }
+        },
+    }
+
+
+def apply_plotly_dark_layout(fig) -> None:
+    """Aplica layout comum do tema atual em um fig de Plotly."""
+    fig.update_layout(**get_plotly_layout_common())

@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import unicodedata
+from utils.theme import get_plotly_template, get_plotly_layout_common
 from pathlib import Path
 from utils.header import show_logo
 from utils.footer import show_footer
@@ -1121,21 +1122,13 @@ else:
         fig_comparativo.update_layout(
             title="",
             xaxis_tickangle=0,
-            template="plotly_white",
+            **get_plotly_layout_common(),
             xaxis_title='Resposta',
             yaxis_title='Percentual (%)',
             height=600,
-
             legend=dict(
-                title=dict(
-                text="",
-                font=dict(size=11, color="gray"),
-                ),
+                title=dict(text="", font=dict(size=11, color="#9CA3AF")),
                 font=dict(size=12, family="Source Sans Pro, sans-serif"),
-                bgcolor="rgba(255,255,255,0.9)",
-                bordercolor="rgba(0,0,0,0.1)",
-                borderwidth=1,
-
                 orientation="h",
                 x=0.99,
                 xanchor="right",
@@ -1225,7 +1218,7 @@ else:
             )
         fig.update_layout(
             title="",
-            template="plotly_white",
+            **get_plotly_layout_common(),
             xaxis_title='Resposta',
             yaxis_title='Percentual (%)',
             xaxis_tickangle=0,
@@ -1273,8 +1266,9 @@ show_footer(
         ("LinkedIn", "https://www.linkedin.com/in/jo%C3%A3o-octavio-vb/"),
         ("Currículo Lattes", "http://lattes.cnpq.br/0821075410761662"),
     ],
-    bg_color="#ffffff",
-    text_color="#000000",
+    bg_color=None,
+    text_color=None,
     height_px=56,
     citation="Como citar: BORBA, J. O. V. ; XAVIER, C. C. Mapeando o desempenho e o perfil do estudante no Enade: uma plataforma interativa para comparações interinstitucionais. Sorocaba, SP, 2026. Disponível em: https://app-exploracao-enade2023.streamlit.app. Acesso em: [data de acesso].",
 )
+

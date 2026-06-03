@@ -5,7 +5,10 @@ from utils.header import show_logo
 from utils.footer import show_footer
 from utils.data_loader import load_conceito
 from utils.formatting import format_br_number, format_br_percentage
-from utils.theme import init_theme, show_theme_toggle
+from utils.theme import init_theme, show_theme_toggle, get_plotly_template, get_plotly_layout_common
+
+
+
 
 init_theme(page_title="Análise Geral do Brasil - ENADE 2023", layout="centered")
 show_theme_toggle()
@@ -138,12 +141,13 @@ if grafico_selecionado == "Média de Conceitos por Área de Avaliação":
         y='Média',
         color='Média',
         color_continuous_scale='Viridis',
-        custom_data=['Área de Avaliação']
+        custom_data=['Área de Avaliação'],
+        template=get_plotly_template(),
     )
     fig1.update_layout(
         title="",
-        title_font=dict(size=26, family="Arial Black", color="#1f1f1f"),
-        xaxis_tickangle=0, 
+        title_font=dict(size=26, family="Arial Black"),
+        xaxis_tickangle=0,
         xaxis_title='Curso',
         height=500,
         coloraxis=dict(
@@ -151,12 +155,18 @@ if grafico_selecionado == "Média de Conceitos por Área de Avaliação":
                 len=1,
                 yanchor='middle',
                 y=0.5,
-                thickness=15
+                thickness=15,
             )
-        )
+        ),
     )
-    fig1.update_traces(hovertemplate='<b>%{customdata[0]}</b><br>Média: %{y:.2f}<extra></extra>', hoverlabel=dict(font=dict(size=14)))
+    fig1.update_layout(**get_plotly_layout_common())
+    fig1.update_traces(
+        hovertemplate='<b>%{customdata[0]}</b><br>Média: %{y:.2f}<extra></extra>',
+        hoverlabel=dict(font=dict(size=14)),
+    )
     st.plotly_chart(fig1, use_container_width=True)
+
+
 
     st.subheader("📋 Dados da Análise")
     avg_area_display = avg_area.copy()
@@ -238,21 +248,32 @@ elif grafico_selecionado == "Média por Estado":
     avg_uf = avg_uf.sort_values('Média', ascending=False)
 
     st.subheader("🗺️ Média por Estado")
-    fig2 = px.bar(avg_uf, x='Estado', y='Média', color='Média', color_continuous_scale='Blues')
+    fig2 = px.bar(
+        avg_uf,
+        x='Estado',
+        y='Média',
+        color='Média',
+        color_continuous_scale='Blues',
+        template=get_plotly_template(),
+    )
+
     fig2.update_layout(
         title="",  # Remove title from inside chart
-        title_font=dict(size=26, family="Arial Black", color="#1f1f1f"),
+        title_font=dict(size=26, family="Arial Black"),
         coloraxis=dict(
             colorbar=dict(
                 len=1,
                 yanchor='middle',
                 y=0.5,
-                thickness=15
+                thickness=15,
             )
-        )
+        ),
     )
+    fig2.update_layout(**get_plotly_layout_common())
+
     fig2.update_traces(hoverlabel=dict(font=dict(size=14)))
     st.plotly_chart(fig2, width='stretch')
+
 
     st.subheader("Dados da Análise")
     avg_uf_display = avg_uf.copy()
@@ -321,9 +342,18 @@ elif grafico_selecionado == "Média por Modalidade de Ensino":
     avg_mod.columns = ['Modalidade', 'Média']
 
     st.subheader("📋 Média por Modalidade de Ensino")
-    fig3 = px.pie(avg_mod, names='Modalidade', values='Média', title="")
+    fig3 = px.pie(
+
+        avg_mod,
+        names='Modalidade',
+        values='Média',
+        title="",
+        template=get_plotly_template(),
+    )
+    fig3.update_layout(**get_plotly_layout_common())
     fig3.update_traces(hoverlabel=dict(font=dict(size=14)))
     st.plotly_chart(fig3, width='stretch')
+
 
     st.subheader("Dados da Análise")
     avg_mod_display = avg_mod.copy()
@@ -423,6 +453,7 @@ elif grafico_selecionado == "Quantidade de Alunos por Curso ou Estado":
     if tipo_visualizacao == "Por Estado":
         # Agrupar por Estado
         qtd_por_estado = df_filtrado.groupby('Sigla da UF** ')[coluna_quantidade].sum().reset_index()
+
         qtd_por_estado.columns = ['Estado', 'Valor']
         qtd_por_estado = qtd_por_estado.sort_values('Valor', ascending=False)
 
@@ -431,12 +462,14 @@ elif grafico_selecionado == "Quantidade de Alunos por Curso ou Estado":
 
         st.subheader("👥 Quantidade de Alunos por Estado")
         fig4 = px.bar(
-            qtd_por_estado, 
-            x='Estado', 
-            y='Valor', 
-            color='Valor', 
+            qtd_por_estado,
+
+            x='Estado',
+            y='Valor',
+            color='Valor',
             color_continuous_scale='Greens',
-            custom_data=['Quantidade']
+            custom_data=['Quantidade'],
+            template=get_plotly_template(),
         )
         fig4.update_layout(
             title="",
@@ -447,14 +480,19 @@ elif grafico_selecionado == "Quantidade de Alunos por Curso ou Estado":
                     len=1,
                     yanchor='middle',
                     y=0.5,
-                    thickness=15
+                    thickness=15,
                 )
-            )
+            ),
         )
-        fig4.update_traces(hovertemplate='<b>%{x}</b><br>Quantidade: %{customdata[0]}<extra></extra>', hoverlabel=dict(font=dict(size=14)))
+        fig4.update_layout(**get_plotly_layout_common())
+        fig4.update_traces(
+            hovertemplate='<b>%{x}</b><br>Quantidade: %{customdata[0]}<extra></extra>',
+            hoverlabel=dict(font=dict(size=14)),
+        )
         st.plotly_chart(fig4, width='stretch')
-        
+
         st.subheader("Dados da Análise")
+
         st.dataframe(
             qtd_por_estado[['Estado', 'Quantidade']], 
             width='stretch',
@@ -473,16 +511,18 @@ elif grafico_selecionado == "Quantidade de Alunos por Curso ou Estado":
 
         st.subheader("📚 Quantidade de Alunos por Curso")
         fig5 = px.bar(
-            qtd_por_curso, 
-            x='Área_abrev', 
-            y='Valor', 
-            color='Valor', 
+
+            qtd_por_curso,
+            x='Área_abrev',
+            y='Valor',
+            color='Valor',
             color_continuous_scale='Oranges',
-            custom_data=['Quantidade']
+            custom_data=['Quantidade'],
+            template=get_plotly_template(),
         )
         fig5.update_layout(
             title="",
-            title_font=dict(size=26, family="Arial Black", color="#1f1f1f"),
+            title_font=dict(size=26, family="Arial Black"),
             xaxis_tickangle=0,
             xaxis_title='Curso',
             height=500,
@@ -491,12 +531,17 @@ elif grafico_selecionado == "Quantidade de Alunos por Curso ou Estado":
                     len=1,
                     yanchor='middle',
                     y=0.5,
-                    thickness=15
+                    thickness=15,
                 )
-            )
+            ),
         )
-        fig5.update_traces(hovertemplate='<b>%{x}</b><br>Quantidade: %{customdata[0]}<extra></extra>', hoverlabel=dict(font=dict(size=14)))
+        fig5.update_layout(**get_plotly_layout_common())
+        fig5.update_traces(
+            hovertemplate='<b>%{x}</b><br>Quantidade: %{customdata[0]}<extra></extra>',
+            hoverlabel=dict(font=dict(size=14)),
+        )
         st.plotly_chart(fig5, width='stretch')
+
         
         st.subheader("Dados da Análise")
         display_df = qtd_por_curso[['Área de Avaliação', 'Área_abrev', 'Quantidade']].copy()
@@ -805,8 +850,9 @@ show_footer(
     advisor_link=("Currículo Lattes", "http://lattes.cnpq.br/2281060219061831"),
     text="Pesquisador: João Octavio Venâncio Borba • UNISO - Universidade de Sorocaba • Email: joaooctaviov.borba@gmail.com",
     links=[("Github", "https://github.com/jaozes"), ("LinkedIn", "https://www.linkedin.com/in/jo%C3%A3o-octavio-vb/"), ("Currículo Lattes", "http://lattes.cnpq.br/0821075410761662")],
-    bg_color="#ffffff",
-    text_color="#000000",
+    bg_color=None,
+    text_color=None,
     height_px=56,
     citation="Como citar: BORBA, J. O. V. ; XAVIER, C. C. Mapeando o desempenho e o perfil do estudante no Enade: uma plataforma interativa para comparações interinstitucionais. Sorocaba, SP, 2026. Disponível em: https://app-exploracao-enade2023.streamlit.app. Acesso em: [data de acesso]"
 )
+

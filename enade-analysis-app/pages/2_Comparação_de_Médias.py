@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 from utils.header import show_logo
+from utils.theme import get_plotly_template, get_plotly_layout_common
 from utils.footer import show_footer
 from utils.formatting import format_br_number, format_br_percentage
 from utils.theme import init_theme, show_theme_toggle
@@ -460,6 +461,13 @@ if not filtered_df.empty and not filtered_df2.empty:
         fig_params['error_y'] = error_column
     
     fig_comparativo = px.line(**fig_params)
+
+    # Ajuste de tema para Plotly
+    fig_comparativo.update_layout(
+        **get_plotly_layout_common(),
+    )
+    fig_comparativo.update_xaxes(showgrid=False)
+    fig_comparativo.update_yaxes(showgrid=False)
     
     # Definir rótulo do eixo Y conforme a nota selecionada
     labels_y = {
@@ -482,23 +490,18 @@ if not filtered_df.empty and not filtered_df2.empty:
         yaxis_title=labels_y[coluna_nota],
         yaxis=dict(range=[0, 5]),
         height=600,
-
         legend=dict(
-                title=dict(
+            title=dict(
                 text="",
-                font=dict(size=11, color="gray"),
-                ),
-                font=dict(size=12, family="Source Sans Pro, sans-serif"),
-                bgcolor="rgba(255,255,255,0.9)",
-                bordercolor="rgba(0,0,0,0.1)",
-                borderwidth=1,
-
-                orientation="h",
-                x=0.99,
-                xanchor="right",
-                y=0.99,
-                yanchor="top",
+                font=dict(size=11, color=("#9CA3AF")),
             ),
+            font=dict(size=12, family="Source Sans Pro, sans-serif"),
+            orientation="h",
+            x=0.99,
+            xanchor="right",
+            y=0.99,
+            yanchor="top",
+        ),
 )
     
     # Definir hovertemplate conforme o IC está ativo ou não
@@ -872,8 +875,8 @@ show_footer(
     advisor_link=("Currículo Lattes", "http://lattes.cnpq.br/2281060219061831"),
     text="Pesquisador: João Octavio Venâncio Borba • UNISO - Universidade de Sorocaba • Email: joaooctaviov.borba@gmail.com",
     links=[("Github", "https://github.com/jaozes"), ("LinkedIn", "https://www.linkedin.com/in/jo%C3%A3o-octavio-vb/"), ("Currículo Lattes", "http://lattes.cnpq.br/0821075410761662")],
-    bg_color="#ffffff",
-    text_color="#000000",
+    bg_color=None,
+    text_color=None,
     height_px=56,
     citation="Como citar: BORBA, J. O. V. ; XAVIER, C. C. Mapeando o desempenho e o perfil do estudante no Enade: uma plataforma interativa para comparações interinstitucionais. Sorocaba, SP, 2026. Disponível em: https://app-exploracao-enade2023.streamlit.app. Acesso em: [data de acesso]"
 )

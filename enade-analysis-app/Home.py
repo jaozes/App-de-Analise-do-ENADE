@@ -4,7 +4,7 @@ import plotly.graph_objects as go
 import requests
 from utils.header import show_logo
 from utils.footer import show_footer
-from utils.theme import init_theme, show_theme_toggle
+from utils.theme import init_theme, show_theme_toggle, is_dark_mode
 
 init_theme(page_title="Home - ENADE 2023", layout="wide")
 show_theme_toggle()
@@ -122,7 +122,7 @@ fig = go.Figure(go.Choropleth(
 
 fig.update_geos(fitbounds="locations", visible=False)
 fig.update_layout(
-    title_font=dict(size=26, family="Arial Black", color="#1f1f1f"),
+    title_font=dict(size=26, family="Arial Black", color=("#fafafa" if is_dark_mode() else "#1f1f1f")),
     margin=dict(r=0, t=0, l=0, b=0), 
     height=750, 
     width=None
@@ -281,11 +281,13 @@ with st.expander("📊 Legenda do Mapa", expanded=True):
 
 show_footer(
     advisor_text="Orientador: Prof. Dr. César Candido Xavier • Email: cesarcx@gmail.com",
+    bg_color=None,
+    text_color=None,
     advisor_link=("Currículo Lattes", "http://lattes.cnpq.br/2281060219061831"),
     text="Pesquisador: João Octavio Venâncio Borba • UNISO - Universidade de Sorocaba • Email: joaooctaviov.borba@gmail.com",
     links=[("Github", "https://github.com/jaozes"), ("LinkedIn", "https://www.linkedin.com/in/jo%C3%A3o-octavio-vb/"), ("Currículo Lattes", "http://lattes.cnpq.br/0821075410761662")],
-    bg_color="#ffffff",
-    text_color="#000000",
     height_px=56,
     citation="Como citar: BORBA, J. O. V. ; XAVIER, C. C. Mapeando o desempenho e o perfil do estudante no Enade: uma plataforma interativa para comparações interinstitucionais. Sorocaba, SP, 2026. Disponível em: https://app-exploracao-enade2023.streamlit.app. Acesso em: [data de acesso]"
 )
+
+

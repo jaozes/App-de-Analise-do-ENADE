@@ -7,16 +7,28 @@ def show_footer(
     advisor_text: Optional[str] = None,
     advisor_link: Optional[Tuple[str, str]] = None,
     links: Optional[List[Tuple[str, str]]] = None,
-    bg_color: str = "#0f1724",
-    text_color: str = "#ffffff",
+    bg_color: str | None = None,
+    text_color: str | None = None,
     height_px: int = 56,
     citation: Optional[str] = None,
 ):
+
     """
     Exibe um footer que acompanha o conteúdo (sem fixed position).
     """
     if links is None:
         links = [("GitHub", "https://github.com/"), ("LinkedIn", "https://www.linkedin.com/")]
+
+    # Auto-correção por tema (se não informado nas páginas)
+    if bg_color is None or text_color is None:
+        dark = bool(st.session_state.get("dark_mode", False))
+        if dark:
+            bg_color = bg_color or "#0f1724"
+            text_color = text_color or "#ffffff"
+        else:
+            bg_color = bg_color or "#ffffff"
+            text_color = text_color or "#000000"
+
 
     links_html = " &nbsp; | &nbsp; ".join(
         [f'<a href="{url}" target="_blank" style="color:{text_color}; text-decoration:underline;">{label}</a>' for label, url in links]
