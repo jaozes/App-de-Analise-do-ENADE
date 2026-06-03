@@ -490,6 +490,9 @@ if not filtered_df.empty and not filtered_df2.empty:
         yaxis_title=labels_y[coluna_nota],
         yaxis=dict(range=[0, 5]),
         height=600,
+    )
+    fig_comparativo.update_layout(**get_plotly_layout_common())
+    fig_comparativo.update_layout(
         legend=dict(
             title=dict(
                 text="",
@@ -618,17 +621,16 @@ if not filtered_df.empty and not filtered_df2.empty:
                     xaxis=dict(
                     categoryorder='array',
                     categoryarray=sorted(df_box['Sigla Área'].unique())
-                    ),
-
+                    )
+                )
+                fig_box.update_layout(**get_plotly_layout_common())
+                fig_box.update_layout(
                     legend=dict(
                         title=dict(
                         text="",
                         font=dict(size=11, color="gray"),
                         ),
                         font=dict(size=12, family="Source Sans Pro, sans-serif"),
-                        bgcolor="rgba(255,255,255,0.9)",
-                        bordercolor="rgba(0,0,0,0.1)",
-                        borderwidth=1,
 
                         # Strip abaixo do gráfico
                         orientation="h",

@@ -1122,10 +1122,12 @@ else:
         fig_comparativo.update_layout(
             title="",
             xaxis_tickangle=0,
-            **get_plotly_layout_common(),
             xaxis_title='Resposta',
             yaxis_title='Percentual (%)',
             height=600,
+        )
+        fig_comparativo.update_layout(**get_plotly_layout_common())
+        fig_comparativo.update_layout(
             legend=dict(
                 title=dict(text="", font=dict(size=11, color="#9CA3AF")),
                 font=dict(size=12, family="Source Sans Pro, sans-serif"),
@@ -1218,12 +1220,12 @@ else:
             )
         fig.update_layout(
             title="",
-            **get_plotly_layout_common(),
             xaxis_title='Resposta',
             yaxis_title='Percentual (%)',
             xaxis_tickangle=0,
-            height=600
+            height=600,
         )
+        fig.update_layout(**get_plotly_layout_common())
         fig.update_yaxes(ticksuffix='%')
         if chart_type == "Barras":
             fig.update_traces(
