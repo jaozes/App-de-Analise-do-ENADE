@@ -466,8 +466,7 @@ if not filtered_df.empty and not filtered_df2.empty:
     fig_comparativo.update_layout(
         **get_plotly_layout_common(),
     )
-    fig_comparativo.update_xaxes(showgrid=False)
-    fig_comparativo.update_yaxes(showgrid=False)
+    
     
     # Definir rótulo do eixo Y conforme a nota selecionada
     labels_y = {
