@@ -120,14 +120,40 @@ fig = go.Figure(go.Choropleth(
     customdata=aggregated_df[['inscritos', 'participantes', 'qtd_ies', 'nota_fg_media', 'nota_ce_media', 'top_ies', 'top_ies_conceito']].values
 ))
 
-fig.update_geos(fitbounds="locations", visible=False)
-fig.update_layout(
-    title_font=dict(size=26, family="Arial Black", color=("#fafafa" if is_dark_mode() else "#1f1f1f")),
-    margin=dict(r=0, t=0, l=0, b=0), 
-    height=750, 
-    width=None
+_dark = is_dark_mode()
+_geo_bg   = "#0e1117" if _dark else "#ffffff"
+_geo_land = "#1e2130" if _dark else "#f0f2f6"
+_geo_ocean = "#0e1117" if _dark else "#d6e8f7"
+_paper_bg  = "rgba(0,0,0,0)"
+_fg        = "#fafafa" if _dark else "#1f1f1f"
+_cb_bg     = "#1e2130" if _dark else "#ffffff"
+
+fig.update_geos(
+    fitbounds="locations",
+    visible=False,
+    bgcolor=_geo_bg,
+    landcolor=_geo_land,
+    oceancolor=_geo_ocean,
+    showocean=False,
 )
-fig.update_traces(hoverlabel=dict(font=dict(size=14)))
+fig.update_layout(
+    title_font=dict(size=26, family="Arial Black", color=_fg),
+    margin=dict(r=0, t=0, l=0, b=0),
+    height=750,
+    width=None,
+    paper_bgcolor=_paper_bg,
+    plot_bgcolor=_paper_bg,
+    font=dict(color=_fg),
+    coloraxis=dict(
+        colorbar=dict(
+            tickfont=dict(color=_fg),
+            title=dict(font=dict(color=_fg)),
+            bgcolor=_cb_bg,
+            outlinecolor="rgba(0,0,0,0)",
+        )
+    ),
+)
+fig.update_traces(hoverlabel=dict(font=dict(size=14, color=_fg), bgcolor=_cb_bg))
 
 #col1, col2 = st.columns(2)
 

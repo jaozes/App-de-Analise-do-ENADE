@@ -200,6 +200,30 @@ section[role="dialog"] button {{
 
 
 
+/* ── Expanders ── */
+[data-testid="stExpander"] {{
+    background-color: var(--bg-card) !important;
+    border-color: var(--border-color) !important;
+}}
+[data-testid="stExpander"] summary,
+[data-testid="stExpander"] summary *,
+[data-testid="stExpander"] details > summary,
+[data-testid="stExpander"] details[open] > summary,
+[data-testid="stExpander"] details[open] > summary * {{
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+}}
+[data-testid="stExpanderDetails"],
+[data-testid="stExpanderDetails"] *:not(svg):not(path) {{
+    background-color: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+}}
+/* Barra de gradiente dentro do expander não deve ser invertida */
+[data-testid="stExpanderDetails"] div[style*="background: linear-gradient"],
+[data-testid="stExpanderDetails"] div[style*="linear-gradient"] {{
+    background-color: unset !important;
+}}
+
 [aria-selected="true"] {{
     color: var(--accent) !important;
     border-bottom-color: var(--accent) !important;
