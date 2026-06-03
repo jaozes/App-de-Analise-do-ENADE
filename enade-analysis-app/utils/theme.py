@@ -35,6 +35,7 @@ def _build_css(palette: dict) -> str:
 
     return f"""
 <style>
+
 :root {{
 {vars_css}
 }}
@@ -122,15 +123,79 @@ iframe[title="st.dataframe"] {{
     color: var(--text-primary) !important;
 }}
 
+/* Popover/menus do Streamlit (conteúdo ao abrir e itens internos) */
+[data-baseweb="popover"],
+[data-baseweb="menu"],
+[data-testid="stPopover"],
+[data-testid="stMenu"],
+div[role="menu"],
+div[role="dialog"],
+section[role="dialog"] {{
+    background-color: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}}
+
+/* itens clicáveis dentro do menu */
+[data-baseweb="menu"] button,
+[data-baseweb="menu"] [role="menuitem"],
+[data-baseweb="popover"] button,
+[data-baseweb="popover"] [role="menuitem"],
+div[role="menuitem"],
+div[role="menuitemradio"],
+div[role="menuitemcheckbox"] {{
+    background-color: transparent !important;
+    color: var(--text-primary) !important;
+    border-color: transparent !important;
+}}
+
+/* ações do topo (Print/Settings) podem usar botões internos */
+[data-baseweb="popover"] button,
+[data-testid="stToolbar"] button,
+[data-testid="stTopBar"] button,
+section[role="dialog"] button {{
+    background-color: transparent !important;
+    color: var(--text-primary) !important;
+    border-color: transparent !important;
+}}
+
+
+/* hover/selecionado no menu */
+[data-baseweb="menu"] [role="menuitem"]:hover,
+[data-baseweb="popover"] [role="menuitem"]:hover,
+[data-baseweb="menu"] [aria-selected="true"],
+[data-baseweb="popover"] [aria-selected="true"] {{
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+}}
+
 /* garante cor em texto/tokens do popover/topbar (3 pontos) */
 /* (Streamlit usa vários seletores/estruturas diferentes; estas regras são bem agressivas) */
 [data-baseweb="popover"] *,
 [data-baseweb="menu"] *,
 [data-testid="stToolbar"] *,
-[data-testid="stTopBar"] *, {{
+[data-testid="stTopBar"] * {{
     color: var(--text-primary) !important;
     background: transparent !important;
 }}
+
+/* Hambúrguer / print / settings: tentativa final com seletores gerais */
+[data-testid="stPopover"],
+[data-testid="stMenu"],
+[data-baseweb="popover"],
+[data-baseweb="menu"] {{
+    background-color: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+}}
+
+[data-testid="stPopover"] *:not(svg):not(path),
+[data-testid="stMenu"] *:not(svg):not(path),
+[data-baseweb="popover"] *:not(svg):not(path),
+[data-baseweb="menu"] *:not(svg):not(path) {{
+    background-color: transparent !important;
+    color: var(--text-primary) !important;
+}}
+
 
 
 
