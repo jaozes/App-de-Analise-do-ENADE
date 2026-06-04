@@ -480,8 +480,12 @@ if not filtered_df.empty and not filtered_df2.empty:
     legend_bg = "rgba(0,0,0,0)"
     legend_border = "rgba(0,0,0,0)"
     legend_title_color = "gray"
-    hover_bg = "rgba(0,0,0,0.82)"
-    hover_font_color = "#f8fafc"
+    if st.session_state.get("dark_mode", False):
+        hover_bg = "rgba(17,24,39,0.95)"
+        hover_font_color = "#F9FAFB"
+    else:
+        hover_bg = "rgba(255,255,255,0.95)"
+        hover_font_color = "#0E1117"
     
     fig_comparativo.update_layout(
         xaxis_tickangle=0,
