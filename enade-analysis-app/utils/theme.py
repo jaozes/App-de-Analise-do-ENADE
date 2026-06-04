@@ -286,6 +286,17 @@ section[role="dialog"] button {{
 }}
 
 
+/* ── Toggles e Checkboxes ── */
+[data-testid="stToggle"] label,
+[data-testid="stToggle"] p,
+[data-testid="stCheckbox"] label,
+[data-testid="stCheckbox"] p,
+[data-testid="stRadio"] label,
+[data-testid="stRadio"] p,
+[data-testid="stRadio"] span {{
+    color: var(--text-primary) !important;
+}}
+
 [data-testid="baseButton-secondary"] {{
     background-color: var(--bg-card) !important;
     color: var(--text-primary) !important;

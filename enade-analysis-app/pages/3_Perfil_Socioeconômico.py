@@ -23,7 +23,7 @@ st.markdown("""
 
 #streamlit run Home.py
 
-show_logo()
+show_logo(path='logoUniso.webp', path_dark='logoUnisoDark.png')
 
 # Mapeamento das questões QE (texto para exibição)
 QUESTION_METADATA = {

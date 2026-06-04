@@ -26,7 +26,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-show_logo()
+show_logo(path='logoUniso.webp', path_dark='logoUnisoDark.png')
 
 # Carregar os dados
 from utils.data_loader import load_conceito, load_grades_with_ic, get_ic_filtered, get_microdados_filtered, build_boxplot_alunos_data

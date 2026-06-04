@@ -17,8 +17,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-show_logo()
-#show_logo(path='logoUniso.webp', path_dark='logoUniso_dark.webp')
+show_logo(path='logoUniso.webp', path_dark='logoUnisoDark.png')
 
 
 
