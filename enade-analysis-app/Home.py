@@ -183,23 +183,29 @@ desc_col1, desc_col2 = st.columns(2)
 
 with desc_col1:
     st.markdown("""
+    **🗺️ Análise Geral do Brasil**
+
+    Visão geral do conjunto de dados nacionais: performance por curso, mapa coroplético da participação percentual dos cursos
+    por estado, densidade relativa de cursos por estado. Filtros podem ser aplicados — os dados exibidos representam o Brasil inteiro.
+                
     **📊 Comparação de Médias**
 
     Compara o Conceito ENADE Contínuo (escala 0–5) entre dois grupos de filtros simultâneos —
     por UF, município, IES, curso, modalidade, categoria administrativa e grau acadêmico.
     Exibe gráficos de linha interativos, boxplots por aluno (quando disponíveis nos microdados)
     e tabelas com estatísticas descritivas por curso.
+    
+    """)
 
+with desc_col2:
+    st.markdown("""
     **👤 Perfil Socioeconômico**
 
     Analisa as respostas do Questionário Socioeconômico do ENADE 2023 (QE_I01 a QE_I26),
     cobrindo variáveis como cor/raça, renda familiar, situação de trabalho, tipo de escola
     do ensino médio, bolsas recebidas e motivação para escolha do curso. Permite comparação
     interinstitucional em gráficos de barras ou linha.
-    """)
-
-with desc_col2:
-    st.markdown("""
+    
     **📘 Questionário Complementar**
 
     Apresenta as respostas às assertivas QE_I27 a QE_I68 do questionário complementar,
@@ -208,11 +214,7 @@ with desc_col2:
     Likert de 1 (Discordo totalmente) a 6 (Concordo totalmente), com opções adicionais
     "Não sei responder" e "Não se aplica".
 
-    **🗺️ Esta Página (Home)**
-
-    Visão geral do conjunto de dados: métricas nacionais, mapa coroplético do Conceito
-    Médio ENADE por estado e apresentação dos módulos da plataforma. Nenhum filtro é
-    aplicado aqui — os dados exibidos representam o Brasil inteiro.
+    
     """)
 
 st.markdown("---")

@@ -13,3 +13,4 @@ __pycache__/
 
 # Arquivos temporários do Excel
 ~$*.xlsx
+enade-analysis-app/utils/__pycache__/formatting.cpython-313.pyc
