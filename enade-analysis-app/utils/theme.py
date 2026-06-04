@@ -2,29 +2,31 @@ import streamlit as st
 
 # ── Paletas ────────────────────────────────────────────────────────────────────
 _LIGHT = {
-    "--bg-primary":     "#ffffff",
-    "--bg-secondary":   "#f0f2f6",
-    "--bg-card":        "#ffffff",
-    "--text-primary":   "#0e1117",
-    "--text-secondary": "#555555",
-    "--text-muted":     "#888888",
-    "--border-color":   "#d0d0d0",
-    "--accent":         "#1f77b4",
-    "--accent-hover":   "#155a8a",
-    "--shadow":         "rgba(0,0,0,0.08)",
+    "--bg-primary":        "#ffffff",
+    "--bg-secondary":      "#f0f2f6",
+    "--bg-card":           "#ffffff",
+    "--text-primary":      "#0e1117",
+    "--text-secondary":    "#555555",
+    "--text-muted":        "#888888",
+    "--border-color":      "#d0d0d0",
+    "--accent":            "#1f77b4",
+    "--accent-hover":      "#155a8a",
+    "--shadow":            "rgba(0,0,0,0.08)",
+    "--df-canvas-filter":  "none",
 }
 
 _DARK = {
-    "--bg-primary":     "#0e1117",
-    "--bg-secondary":   "#1a1d27",
-    "--bg-card":        "#1e2130",
-    "--text-primary":   "#fafafa",
-    "--text-secondary": "#b0b8c8",
-    "--text-muted":     "#6b7280",
-    "--border-color":   "#2e3347",
-    "--accent":         "#4da3e0",
-    "--accent-hover":   "#74bbf0",
-    "--shadow":         "rgba(0,0,0,0.35)",
+    "--bg-primary":        "#0e1117",
+    "--bg-secondary":      "#1a1d27",
+    "--bg-card":           "#1e2130",
+    "--text-primary":      "#fafafa",
+    "--text-secondary":    "#b0b8c8",
+    "--text-muted":        "#6b7280",
+    "--border-color":      "#2e3347",
+    "--accent":            "#4da3e0",
+    "--accent-hover":      "#74bbf0",
+    "--shadow":            "rgba(0,0,0,0.35)",
+    "--df-canvas-filter":  "invert(1) hue-rotate(180deg)",
 }
 
 
@@ -73,9 +75,6 @@ h1, h2, h3, h4, h5, h6,
 [data-testid="stDataFrame"] {{
     background-color: var(--bg-card) !important;
     color: var(--text-primary) !important;
-}}
-iframe[title="st.dataframe"] {{
-    filter: {df_filter};
 }}
 
 [data-testid="stMetric"] {{
@@ -224,6 +223,63 @@ section[role="dialog"] button {{
     background-color: unset !important;
 }}
 
+/* ── Multiselect tags (chips selecionados) ── */
+[data-baseweb="tag"] {{
+    background-color: var(--accent) !important;
+    color: #ffffff !important;
+}}
+[data-baseweb="tag"] span {{
+    color: #ffffff !important;
+}}
+
+/* ── Inputs / selects: container, texto e placeholder ── */
+[data-baseweb="select"] > div {{
+    background-color: var(--bg-card) !important;
+    border-color: var(--border-color) !important;
+}}
+[data-baseweb="select"] > div *,
+[data-baseweb="select"] input,
+[data-baseweb="select"] span,
+[data-baseweb="select"] div {{
+    color: var(--text-primary) !important;
+}}
+/* placeholder "Choose options" */
+[data-baseweb="select"] [data-testid="stMultiSelectOption"],
+[data-baseweb="select"] [aria-label="Choose options"],
+[data-baseweb="select"] > div > div > div {{
+    color: var(--text-muted) !important;
+}}
+
+/* ── Dropdown aberto (listbox de opções) ── */
+[role="listbox"] {{
+    background-color: var(--bg-card) !important;
+}}
+[role="option"] {{
+    background-color: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+}}
+[role="option"]:hover,
+[role="option"][aria-selected="true"] {{
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+}}
+
+/* ── Dataframes ── */
+[data-testid="stDataFrame"] {{
+    border-radius: 8px;
+    overflow: hidden;
+}}
+[data-testid="stDataFrame"] > div {{
+    background-color: var(--bg-card) !important;
+    border-color: var(--border-color) !important;
+    border-radius: 8px;
+}}
+/* Glide data grid (canvas): inverte no dark mode */
+[data-testid="stDataFrame"] canvas {{
+    filter: var(--df-canvas-filter, none);
+}}
+
+/* ── Tabs (standalone aria-selected para abas, não menus) ── */
 [aria-selected="true"] {{
     color: var(--accent) !important;
     border-bottom-color: var(--accent) !important;

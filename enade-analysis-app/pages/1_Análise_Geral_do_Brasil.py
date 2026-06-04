@@ -677,21 +677,40 @@ elif grafico_selecionado == "Densidade de Cursos no Brasil":
         customdata=cursos_por_estado[['Quantidade de Cursos', 'Densidade Relativa (%)']].values
     ))
     
+    _dark = st.session_state.get("dark_mode", False)
+    _fg       = "#fafafa" if _dark else "#1f1f1f"
+    _geo_bg   = "#0e1117" if _dark else "#ffffff"
+    _geo_land = "#1e2130" if _dark else "#f0f2f6"
+    _cb_bg    = "#1e2130" if _dark else "#ffffff"
+
     fig_densidade.update_geos(
         scope='south america',
         showlakes=True,
-        lakecolor='rgb(255, 255, 255)',
+        lakecolor=_geo_bg,
         fitbounds="locations",
-        visible=False
+        visible=False,
+        bgcolor=_geo_bg,
+        landcolor=_geo_land,
     )
-    
+
     fig_densidade.update_layout(
-        title="",  # Remove title from inside chart
-        title_font=dict(size=26, family="Arial Black", color="#1f1f1f"),
+        title="",
+        title_font=dict(size=26, family="Arial Black", color=_fg),
         margin=dict(r=0, t=30, l=0, b=0),
-        height=600
+        height=600,
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(color=_fg),
+        coloraxis=dict(
+            colorbar=dict(
+                tickfont=dict(color=_fg),
+                title=dict(font=dict(color=_fg)),
+                bgcolor=_cb_bg,
+                outlinecolor="rgba(0,0,0,0)",
+            )
+        ),
     )
-    fig_densidade.update_traces(hoverlabel=dict(font=dict(size=14)))
+    fig_densidade.update_traces(hoverlabel=dict(font=dict(size=14, color=_fg), bgcolor=_cb_bg))
     st.plotly_chart(fig_densidade, width='stretch')
     
     st.subheader("Dados da Análise")
@@ -818,22 +837,41 @@ elif grafico_selecionado == "Densidade de Alunos por Instituição de Ensino":
         customdata=merged[['Alunos_fmt', 'Instituições_fmt', 'Ratio_fmt']].values
     ))
 
+    _dark = st.session_state.get("dark_mode", False)
+    _fg       = "#fafafa" if _dark else "#1f1f1f"
+    _geo_bg   = "#0e1117" if _dark else "#ffffff"
+    _geo_land = "#1e2130" if _dark else "#f0f2f6"
+    _cb_bg    = "#1e2130" if _dark else "#ffffff"
+
     fig_ratio.update_geos(
         scope='south america',
         showlakes=True,
-        lakecolor='rgb(255, 255, 255)',
+        lakecolor=_geo_bg,
         fitbounds="locations",
-        visible=False
+        visible=False,
+        bgcolor=_geo_bg,
+        landcolor=_geo_land,
     )
 
     st.subheader("📊 Densidade de Alunos por Instituição de Ensino")
     fig_ratio.update_layout(
-        title="",  # Remove title from inside chart
-        title_font=dict(size=26, family="Arial Black", color="#1f1f1f"),
+        title="",
+        title_font=dict(size=26, family="Arial Black", color=_fg),
         margin=dict(r=0, t=30, l=0, b=0),
-        height=600
+        height=600,
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(color=_fg),
+        coloraxis=dict(
+            colorbar=dict(
+                tickfont=dict(color=_fg),
+                title=dict(font=dict(color=_fg)),
+                bgcolor=_cb_bg,
+                outlinecolor="rgba(0,0,0,0)",
+            )
+        ),
     )
-    fig_ratio.update_traces(hoverlabel=dict(font=dict(size=14)))
+    fig_ratio.update_traces(hoverlabel=dict(font=dict(size=14, color=_fg), bgcolor=_cb_bg))
     st.plotly_chart(fig_ratio, width='stretch')
 
     st.subheader("Dados da Análise")
