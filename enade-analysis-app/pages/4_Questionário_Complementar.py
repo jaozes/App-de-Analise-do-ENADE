@@ -269,9 +269,15 @@ selected_var = st.selectbox(
 micro_q = load_question_df_arq4(selected_var)
 
 # Toggle filtros comparativos
-col_insts, _ = st.columns([1, 3])
-with col_insts:
-    enable_comparison = st.toggle("**Comparação Interinstitucional**", key="toggle_comparison_arq4")
+# (Toggle e opções lado-a-lado)
+col_toggle, col_chart = st.columns([1, 3])
+with col_toggle:
+    enable_comparison = st.toggle(
+        "**Comparação Interinstitucional**",
+        key="toggle_comparison_arq4",
+    )
+
+with col_chart:
     chart_type = st.radio(
         "Tipo de gráfico",
         options=["Linha", "Barras"],
@@ -279,6 +285,7 @@ with col_insts:
         horizontal=True,
         key="toggle_chart_type_arq4",
     )
+
 
 col1, col2 = st.columns(2)
 

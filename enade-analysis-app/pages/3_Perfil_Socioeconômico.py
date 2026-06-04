@@ -719,16 +719,23 @@ def get_filtered_df(uf=None, municipio=None, ies=None, curso=None, modalidade=No
     return filtered
 
 # Filtros em colunas com lógica em cascata
-col_insts, _ = st.columns([1, 3])
-with col_insts:
-   enable_comparison = st.toggle("**Comparação Interinstitucional**", key="toggle_comparison")
-   chart_type = st.radio(
-       "Tipo de gráfico",
-       options=["Linha", "Barras"],
-       index=0,
-       horizontal=True,
-       key="toggle_chart_type",
-   )
+# (Toggle e opções lado-a-lado)
+col_toggle, col_chart = st.columns([1, 3])
+with col_toggle:
+    enable_comparison = st.toggle(
+        "**Comparação Interinstitucional**",
+        key="toggle_comparison",
+    )
+
+with col_chart:
+    chart_type = st.radio(
+        "Tipo de gráfico",
+        options=["Linha", "Barras"],
+        index=0,
+        horizontal=True,
+        key="toggle_chart_type",
+    )
+
 
 col1, col2 = st.columns(2)
 

@@ -185,10 +185,11 @@ with desc_col1:
     st.markdown("""
     **🗺️ Análise Geral do Brasil**
 
-    Visão geral do conjunto de dados nacionais: performance por curso, mapa coroplético da participação percentual dos cursos
-    por estado, densidade relativa de cursos por estado. Filtros podem ser aplicados — os dados exibidos representam o Brasil inteiro.
+    Visão geral do conjunto de dados nacional: performance por curso, performance por estado, performance por modalidade, mapa coroplético da participação percentual dos cursos por estado
+    e densidade relativa de cursos por UF. Filtros podem ser aplicados — os dados exibidos representam o Brasil inteiro.
                 
     **📊 Comparação de Médias**
+
 
     Compara o Conceito ENADE Contínuo (escala 0–5) entre dois grupos de filtros simultâneos —
     por UF, município, IES, curso, modalidade, categoria administrativa e grau acadêmico.
