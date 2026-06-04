@@ -342,17 +342,39 @@ elif grafico_selecionado == "Média por Modalidade de Ensino":
     avg_mod.columns = ['Modalidade', 'Média']
 
     st.subheader("📋 Média por Modalidade de Ensino")
-    fig3 = px.pie(
-
+    fig3 = px.bar(
         avg_mod,
-        names='Modalidade',
-        values='Média',
-        title="",
+        x='Modalidade',
+        y='Média',
+        color='Média',
+        # Paleta com tons mais contrastantes em light mode
+        color_continuous_scale='Viridis',
+
+        custom_data=['Média'],
         template=get_plotly_template(),
     )
+
+    fig3.update_layout(
+        title="",
+        xaxis_tickangle=0,
+        xaxis_title='Modalidade',
+        height=500,
+        coloraxis=dict(
+            colorbar=dict(
+                len=1,
+                yanchor='middle',
+                y=0.5,
+                thickness=15,
+            )
+        ),
+    )
     fig3.update_layout(**get_plotly_layout_common())
-    fig3.update_traces(hoverlabel=dict(font=dict(size=14)))
+    fig3.update_traces(
+        hovertemplate='<b>%{x}</b><br>Média: %{y:.2f}<extra></extra>',
+        hoverlabel=dict(font=dict(size=14)),
+    )
     st.plotly_chart(fig3, width='stretch')
+
 
 
     st.subheader("Dados da Análise")
