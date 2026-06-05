@@ -713,6 +713,9 @@ if enable_comparison and not merged2.empty:
             hide_index=True,
             width="stretch",
         )
+        @st.cache_data
+        def _conv_p4_df1(df): return df.to_csv(index=False).encode('utf-8')
+        st.download_button('⬇️ Baixar CSV', _conv_p4_df1(display_df1), 'distribuicao_inst1.csv', 'text/csv', key='dl_p4_df1')
 
     with col_tab2:
         st.subheader(f"**{nome_inst2}**")
@@ -731,6 +734,9 @@ if enable_comparison and not merged2.empty:
             hide_index=True,
             width="stretch",
         )
+        @st.cache_data
+        def _conv_p4_df2(df): return df.to_csv(index=False).encode('utf-8')
+        st.download_button('⬇️ Baixar CSV', _conv_p4_df2(display_df2), 'distribuicao_inst2.csv', 'text/csv', key='dl_p4_df2')
 
 else:
     st.subheader(
@@ -795,6 +801,9 @@ else:
         hide_index=True,
         width="stretch",
     )
+    @st.cache_data
+    def _conv_p4_freq(df): return df.to_csv(index=False).encode('utf-8')
+    st.download_button('⬇️ Baixar CSV', _conv_p4_freq(df_display), 'distribuicao.csv', 'text/csv', key='dl_p4_freq')
 
 
 show_footer(

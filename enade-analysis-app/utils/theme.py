@@ -302,6 +302,36 @@ section[role="dialog"] button {{
     color: var(--text-primary) !important;
     border-color: var(--border-color) !important;
 }}
+
+/* ── Botão de Download ── */
+
+[data-testid="stDownloadButton"] button {{
+
+    background-color: var(--accent) !important;
+
+    color: #ffffff !important;
+
+    border-color: var(--accent) !important;
+
+}}
+
+[data-testid="stDownloadButton"] button:hover {{
+
+    background-color: var(--accent-hover) !important;
+
+    border-color: var(--accent-hover) !important;
+
+}}
+
+[data-testid="stDownloadButton"] button p,
+
+[data-testid="stDownloadButton"] button span {{
+
+    color: #ffffff !important;
+
+}}
+
+
 </style>
 """
 

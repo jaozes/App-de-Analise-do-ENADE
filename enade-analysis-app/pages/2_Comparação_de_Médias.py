@@ -808,6 +808,9 @@ if not filtered_df.empty and not filtered_df2.empty:
 
                 if not stats_df_1.empty:
                     st.dataframe(stats_df_1, width='stretch', hide_index=True)
+                    @st.cache_data
+                    def _conv_stats1(df): return df.to_csv(index=False).encode("utf-8")
+                    st.download_button("⬇️ Baixar CSV", _conv_stats1(stats_df_1), "estatisticas_inst1.csv", "text/csv", key="dl_stats1")
                 else:
                     st.info('Nenhum dado individual de aluno disponível para os filtros aplicados.')
             else:
@@ -819,6 +822,9 @@ if not filtered_df.empty and not filtered_df2.empty:
             avg_df_display['Formação Geral'] = avg_df_display['Formação Geral'].apply(lambda x: format_br_number(x, 2))
             avg_df_display['Componente Específico'] = avg_df_display['Componente Específico'].apply(lambda x: format_br_number(x, 2))
             st.dataframe(avg_df_display, width='stretch', hide_index=True)
+            @st.cache_data
+            def _conv_avg1(df): return df.to_csv(index=False).encode("utf-8")
+            st.download_button("⬇️ Baixar CSV", _conv_avg1(avg_df_display), "medias_inst1.csv", "text/csv", key="dl_avg1")
 
     with col_tab2:
         if mostrar_ic:
@@ -855,6 +861,9 @@ if not filtered_df.empty and not filtered_df2.empty:
 
                 if not stats_df_2.empty:
                     st.dataframe(stats_df_2, width='stretch', hide_index=True)
+                    @st.cache_data
+                    def _conv_stats2(df): return df.to_csv(index=False).encode("utf-8")
+                    st.download_button("⬇️ Baixar CSV", _conv_stats2(stats_df_2), "estatisticas_inst2.csv", "text/csv", key="dl_stats2")
                 else:
                     st.info('Nenhum dado individual de aluno disponível para os filtros aplicados.')
             else:
@@ -866,6 +875,9 @@ if not filtered_df.empty and not filtered_df2.empty:
             avg_df2_display['Formação Geral'] = avg_df2_display['Formação Geral'].apply(lambda x: format_br_number(x, 2))
             avg_df2_display['Componente Específico'] = avg_df2_display['Componente Específico'].apply(lambda x: format_br_number(x, 2))
             st.dataframe(avg_df2_display, width='stretch', hide_index=True)
+            @st.cache_data
+            def _conv_avg2(df): return df.to_csv(index=False).encode("utf-8")
+            st.download_button("⬇️ Baixar CSV", _conv_avg2(avg_df2_display), "medias_inst2.csv", "text/csv", key="dl_avg2")
 
     
 elif filtered_df.empty and filtered_df2.empty:

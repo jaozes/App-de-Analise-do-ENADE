@@ -1173,6 +1173,9 @@ else:
                 display_df1['%'] = [format_br_percentage(p).replace('%', '').strip() for p in perc1]
                 display_df1.columns = ['Resposta', 'Abreviação', 'Contagem', '%']
             st.dataframe(display_df1, width='stretch', hide_index=True)
+            @st.cache_data
+            def _conv_p3_df1(df): return df.to_csv(index=False).encode("utf-8")
+            st.download_button("⬇️ Baixar CSV", _conv_p3_df1(display_df1), "distribuicao_inst1.csv", "text/csv", key="dl_p3_df1")
         with col_tab2:
             st.subheader(f"**{nome_inst2}**")
             if selected_var == "NU_IDADE":
@@ -1189,6 +1192,9 @@ else:
                 display_df2['%'] = [format_br_percentage(p).replace('%', '').strip() for p in perc2]
                 display_df2.columns = ['Resposta', 'Abreviação', 'Contagem', '%']
             st.dataframe(display_df2, width='stretch', hide_index=True)
+            @st.cache_data
+            def _conv_p3_df2(df): return df.to_csv(index=False).encode("utf-8")
+            st.download_button("⬇️ Baixar CSV", _conv_p3_df2(display_df2), "distribuicao_inst2.csv", "text/csv", key="dl_p3_df2")
     else:
         st.subheader(f"📊 Contagem de respostas: {available_labels[selected_var]}")
         # Single institution line chart (existing)
@@ -1265,6 +1271,9 @@ else:
             freq_display = freq_line[["Resposta", "Abreviacao", "count_fmt", "percent_fmt"]].copy()
             freq_display.columns = ["Resposta", "Abreviação", "Contagem", "%"]
         st.dataframe(freq_display, width='stretch', hide_index=True)
+        @st.cache_data
+        def _conv_p3_freq(df): return df.to_csv(index=False).encode("utf-8")
+        st.download_button("⬇️ Baixar CSV", _conv_p3_freq(freq_display), "distribuicao.csv", "text/csv", key="dl_p3_freq")
 
 show_footer(
     advisor_text="Orientador: Prof. Dr. César Candido Xavier • Email: cesarcx@gmail.com",
