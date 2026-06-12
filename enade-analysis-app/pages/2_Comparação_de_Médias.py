@@ -657,6 +657,7 @@ if not filtered_df.empty and not filtered_df2.empty:
                     fig_box.update_traces(
                         hoverinfo='skip',
                         hovertemplate=(
+                            '<b>%{x}</b><br>'
                             '<b>%{customdata[6]}</b><br>'
                             'Instituição: %{customdata[0]}<br>'
                             'Mediana (linha central): %{customdata[1]:.2f}<br>'
