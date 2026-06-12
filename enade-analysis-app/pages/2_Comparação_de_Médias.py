@@ -563,7 +563,11 @@ if not filtered_df.empty and not filtered_df2.empty:
     # ------------------------------------------------------------------
     # Box plot com notas individuais dos alunos (incluindo outliers)
     # ------------------------------------------------------------------
-    if tipo_grafico == "Boxplot (alunos)" and mostrar_ic:
+    box_data = None
+    df_box = None
+    df_box_hover = None
+
+    if mostrar_ic:
         # Mapear tipo de nota para coluna dos microdados
         coluna_micro = {
             "Média": "NT_GER",
@@ -572,6 +576,10 @@ if not filtered_df.empty and not filtered_df2.empty:
         }.get(coluna_nota, "NT_GER")
 
         # Pipeline pesado cacheado (agora no utils/data_loader.py)
+        # Calculado sempre que "Agregar Médias dos Alunos" está ativo,
+        # independente do tipo de gráfico selecionado, para que as
+        # tabelas de estatísticas (abaixo) também fiquem disponíveis
+        # no modo "Linha (normal)".
         box_data = build_boxplot_alunos_data(
             nome_inst1=nome_inst1,
             nome_inst2=nome_inst2,
@@ -593,9 +601,9 @@ if not filtered_df.empty and not filtered_df2.empty:
             abbr_map=tuple(sorted(ABBR.items())),
         )
 
-
         if box_data is None:
-            st.info("Nenhum dado individual de aluno disponível para os cursos selecionados.")
+            if tipo_grafico == "Boxplot (alunos)":
+                st.info("Nenhum dado individual de aluno disponível para os cursos selecionados.")
         else:
             df_box, df_box_hover, stats_raw = box_data
 
@@ -604,10 +612,11 @@ if not filtered_df.empty and not filtered_df2.empty:
             df_box = df_box[df_box['Sigla Área'].isin(cursos_visiveis_set)]
             df_box_hover = df_box_hover[df_box_hover['Sigla Área'].isin(cursos_visiveis_set)]
 
-            if df_box.empty:
-                st.info("Nenhum dado individual de aluno disponível para os cursos selecionados.")
-            else:
-                fig_box = px.box(
+            if tipo_grafico == "Boxplot (alunos)":
+                if df_box.empty:
+                    st.info("Nenhum dado individual de aluno disponível para os cursos selecionados.")
+                else:
+                    fig_box = px.box(
                     df_box,
                     x='Sigla Área',
                     y='Nota',
@@ -617,62 +626,62 @@ if not filtered_df.empty and not filtered_df2.empty:
                     labels={'Nota': labels_y[coluna_nota], 'Sigla Área': 'Curso'},
                     height=500,
                 )
-
-                fig_box.update_layout(
-                    boxmode='group',
-                    xaxis_tickangle=0,
-                    yaxis=dict(range=[0, 5]),
-                    xaxis=dict(
-                    categoryorder='array',
-                    categoryarray=sorted(df_box['Sigla Área'].unique())
+    
+                    fig_box.update_layout(
+                        boxmode='group',
+                        xaxis_tickangle=0,
+                        yaxis=dict(range=[0, 5]),
+                        xaxis=dict(
+                        categoryorder='array',
+                        categoryarray=sorted(df_box['Sigla Área'].unique())
+                        )
                     )
-                )
-                fig_box.update_layout(**get_plotly_layout_common())
-                fig_box.update_layout(
-                    legend=dict(
-                        title=dict(
-                        text="",
-                        font=dict(size=11, color="gray"),
+                    fig_box.update_layout(**get_plotly_layout_common())
+                    fig_box.update_layout(
+                        legend=dict(
+                            title=dict(
+                            text="",
+                            font=dict(size=11, color="gray"),
+                            ),
+                            font=dict(size=12, family="Source Sans Pro, sans-serif"),
+    
+                            # Strip abaixo do gráfico
+                            orientation="h",
+                            x=0.5,
+                            xanchor="center",
+                            y=-0.18,
+                            yanchor="top",
                         ),
-                        font=dict(size=12, family="Source Sans Pro, sans-serif"),
-
-                        # Strip abaixo do gráfico
-                        orientation="h",
-                        x=0.5,
-                        xanchor="center",
-                        y=-0.18,
-                        yanchor="top",
-                    ),
-                )
-
-                fig_box.update_traces(
-                    hoverinfo='skip',
-                    hovertemplate=(
-                        '<b>%{customdata[6]}</b><br>'
-                        'Instituição: %{customdata[0]}<br>'
-                        'Mediana (linha central): %{customdata[1]:.2f}<br>'
-                        'Quartil 1 (Q1): %{customdata[2]:.2f}<br>'
-                        'Quartil 3 (Q3): %{customdata[3]:.2f}<br>'
-                        'Bigodes (1,5× IQR): %{customdata[4]:.2f} - %{customdata[5]:.2f}<br>'
-                        'Outlier (ponto): %{y:.2f}<extra></extra>'
-                    ),
-                    customdata=np.stack([
-                        df_box_hover['Instituicao'],
-                        df_box_hover['Mediana'],
-                        df_box_hover['Q1'],
-                        df_box_hover['Q3'],
-                        df_box_hover['Bigode Inferior'],
-                        df_box_hover['Bigode Superior'],
-                        df_box_hover['Área de Avaliação'],
-                    ], axis=-1),
-                    hoverlabel=dict(bgcolor=hover_bg, font=dict(size=14, color=hover_font_color)),
-                )
-
-                st.caption(
-                    "📊 Cada box mostra a distribuição completa das notas dos alunos: "
-                    "mediana (linha central), quartis (caixa), bigodes (1,5× IQR) e outliers (pontos individuais). "
-                )
-                st.plotly_chart(fig_box, use_container_width=True)
+                    )
+    
+                    fig_box.update_traces(
+                        hoverinfo='skip',
+                        hovertemplate=(
+                            '<b>%{customdata[6]}</b><br>'
+                            'Instituição: %{customdata[0]}<br>'
+                            'Mediana (linha central): %{customdata[1]:.2f}<br>'
+                            'Quartil 1 (Q1): %{customdata[2]:.2f}<br>'
+                            'Quartil 3 (Q3): %{customdata[3]:.2f}<br>'
+                            'Bigodes (1,5× IQR): %{customdata[4]:.2f} - %{customdata[5]:.2f}<br>'
+                            'Outlier (ponto): %{y:.2f}<extra></extra>'
+                        ),
+                        customdata=np.stack([
+                            df_box_hover['Instituicao'],
+                            df_box_hover['Mediana'],
+                            df_box_hover['Q1'],
+                            df_box_hover['Q3'],
+                            df_box_hover['Bigode Inferior'],
+                            df_box_hover['Bigode Superior'],
+                            df_box_hover['Área de Avaliação'],
+                        ], axis=-1),
+                        hoverlabel=dict(bgcolor=hover_bg, font=dict(size=14, color=hover_font_color)),
+                    )
+    
+                    st.caption(
+                        "📊 Cada box mostra a distribuição completa das notas dos alunos: "
+                        "mediana (linha central), quartis (caixa), bigodes (1,5× IQR) e outliers (pontos individuais). "
+                    )
+                    st.plotly_chart(fig_box, use_container_width=True)
     
     # Exibir tabelas por curso (Médias ou Estatísticas do Boxplot)
     col_tab1, col_tab2 = st.columns(2)

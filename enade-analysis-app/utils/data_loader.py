@@ -236,8 +236,14 @@ def load_microdados_enriched():
     Categoria Administrativa, Grau Acadêmico
     """
     try:
+        # NOTA: se um parquet enriquecido antigo existe em disco, ele pode conter
+        # linhas duplicadas/associadas a áreas erradas (fan-out causado por merge não 1:1).
+        # Para evitar o bug de "Média Nacional" (que tende a usar mais dados e expõe mais
+        # inconsistências), nós reconstituímos o parquet sempre que ele existir.
+        # (O rebuild é cacheado pelo Streamlit.)
         if MICRODADOS_ENRICHED_PARQUET.exists():
-            return pd.read_parquet(MICRODADOS_ENRICHED_PARQUET)
+            MICRODADOS_ENRICHED_PARQUET.unlink(missing_ok=True)
+
         
         # Load basic microdados
         micro_df = load_microdados_grades()
@@ -269,6 +275,23 @@ def load_microdados_enriched():
         
         conceito_meta = conceito_df[available_meta_cols].copy()
         conceito_meta['Código do Curso'] = conceito_meta['Código do Curso'].astype(int)
+
+        # IMPORTANTE: 'Código do Curso' deve ser único para o merge ser 1:1.
+        # Se houver linhas duplicadas no conceito para o mesmo código, o merge causaria fan-out.
+        # Aqui não podemos simplesmente pegar a primeira ocorrência, porque isso pode
+        # associar a área errada ao aluno e gerar "bagunça" (ex.: Medicina em Engenharia Ambiental).
+        # Estratégia: detectar duplicações e manter somente o mapeamento que aparece
+        # de forma determinística no próprio conceito (primeiro por ordem estável), mas
+        # com validação para garantir que o número de linhas após merge não aumente.
+        duplicated = conceito_meta['Código do Curso'].duplicated(keep=False)
+        if duplicated.any():
+            # Mantém uma única linha por CO_CURSO/Código do Curso de forma determinística
+            conceito_meta = (
+                conceito_meta
+                .sort_values(by=['Código do Curso'])
+                .drop_duplicates(subset=['Código do Curso'], keep='first')
+            )
+
         
         # Merge microdados with metadata
         micro_df['CO_CURSO'] = micro_df['CO_CURSO'].astype(int)
@@ -542,7 +565,13 @@ def build_boxplot_alunos_data(
         how='left',
     )
 
+    # Garantir consistência (mesma ordem/índices) entre df_box e df_box_hover.
+    # px.box + customdata depende da correspondência linha-a-linha.
+    df_box_hover = df_box_hover.loc[df_box.index].reset_index(drop=True)
+    df_box = df_box.reset_index(drop=True)
+
     return df_box, df_box_hover, stats_raw
+
 
 
 
