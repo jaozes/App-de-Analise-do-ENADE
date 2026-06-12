@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import io
 from utils.header import show_logo
 from utils.footer import show_footer
 from utils.data_loader import load_conceito
@@ -173,8 +174,17 @@ if grafico_selecionado == "Média de Conceitos por Área de Avaliação":
     avg_area_display['Média'] = avg_area_display['Média'].apply(lambda x: format_br_number(x, 2))
     st.dataframe(avg_area_display, width='stretch', hide_index=True)
     @st.cache_data
-    def _conv_area(df): return df.to_csv(index=False).encode("utf-8")
-    st.download_button("⬇️ Baixar CSV", _conv_area(avg_area_display), "media_por_area.csv", "text/csv", key="dl_area")
+    def _conv_area(df):
+        buffer = io.BytesIO()
+        df.to_excel(buffer, index=False, engine="openpyxl")
+        return buffer.getvalue()
+    st.download_button(
+        "⬇️ Baixar Excel",
+        _conv_area(avg_area_display),
+        "media_por_area.xlsx",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        key="dl_area",
+    )
 
 # Análise por UF
 elif grafico_selecionado == "Média por Estado":
@@ -283,8 +293,17 @@ elif grafico_selecionado == "Média por Estado":
     avg_uf_display['Média'] = avg_uf_display['Média'].apply(lambda x: format_br_number(x, 2))
     st.dataframe(avg_uf_display, width='stretch', hide_index=True)
     @st.cache_data
-    def _conv_uf(df): return df.to_csv(index=False).encode("utf-8")
-    st.download_button("⬇️ Baixar CSV", _conv_uf(avg_uf_display), "media_por_uf.csv", "text/csv", key="dl_uf")
+    def _conv_uf(df):
+        buffer = io.BytesIO()
+        df.to_excel(buffer, index=False, engine="openpyxl")
+        return buffer.getvalue()
+    st.download_button(
+        "⬇️ Baixar Excel",
+        _conv_uf(avg_uf_display),
+        "media_por_uf.xlsx",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        key="dl_uf",
+    )
 
 # Análise por Modalidade
 elif grafico_selecionado == "Média por Modalidade de Ensino":
@@ -388,8 +407,17 @@ elif grafico_selecionado == "Média por Modalidade de Ensino":
     avg_mod_display['Média'] = avg_mod_display['Média'].apply(lambda x: format_br_number(x, 2))
     st.dataframe(avg_mod_display, width='stretch', hide_index=True)
     @st.cache_data
-    def _conv_mod(df): return df.to_csv(index=False).encode("utf-8")
-    st.download_button("⬇️ Baixar CSV", _conv_mod(avg_mod_display), "media_por_modalidade.csv", "text/csv", key="dl_mod")
+    def _conv_mod(df):
+        buffer = io.BytesIO()
+        df.to_excel(buffer, index=False, engine="openpyxl")
+        return buffer.getvalue()
+    st.download_button(
+        "⬇️ Baixar Excel",
+        _conv_mod(avg_mod_display),
+        "media_por_modalidade.xlsx",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        key="dl_mod",
+    )
 
 # Análise de Quantidade de Alunos por Curso ou Estado
 elif grafico_selecionado == "Quantidade de Alunos por Curso ou Estado":
@@ -530,8 +558,17 @@ elif grafico_selecionado == "Quantidade de Alunos por Curso ou Estado":
             hide_index=True
         )
         @st.cache_data
-        def _conv_qtd_estado(df): return df.to_csv(index=False).encode('utf-8')
-        st.download_button('⬇️ Baixar CSV', _conv_qtd_estado(qtd_por_estado[['Estado', 'Quantidade']]), 'qtd_por_estado.csv', 'text/csv', key='dl_qtd_estado')
+        def _conv_qtd_estado(df):
+            buffer = io.BytesIO()
+            df.to_excel(buffer, index=False, engine="openpyxl")
+            return buffer.getvalue()
+        st.download_button(
+            '⬇️ Baixar Excel',
+            _conv_qtd_estado(qtd_por_estado[['Estado', 'Quantidade']]),
+            'qtd_por_estado.xlsx',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            key='dl_qtd_estado',
+        )
 
     else:
         # Agrupar por Curso (Área de Avaliação) e criar abreviação
@@ -586,8 +623,17 @@ elif grafico_selecionado == "Quantidade de Alunos por Curso ou Estado":
             hide_index=True
         )
         @st.cache_data
-        def _conv_qtd_curso(df): return df.to_csv(index=False).encode('utf-8')
-        st.download_button('⬇️ Baixar CSV', _conv_qtd_curso(display_df), 'qtd_por_curso.csv', 'text/csv', key='dl_qtd_curso')
+        def _conv_qtd_curso(df):
+            buffer = io.BytesIO()
+            df.to_excel(buffer, index=False, engine="openpyxl")
+            return buffer.getvalue()
+        st.download_button(
+            '⬇️ Baixar Excel',
+            _conv_qtd_curso(display_df),
+            'qtd_por_curso.xlsx',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            key='dl_qtd_curso',
+        )
 
 # Análise de Densidade de Cursos no Brasil
 elif grafico_selecionado == "Densidade de Cursos no Brasil":
@@ -761,8 +807,17 @@ elif grafico_selecionado == "Densidade de Cursos no Brasil":
         hide_index=True
     )
     @st.cache_data
-    def _conv_densidade(df): return df.to_csv(index=False).encode('utf-8')
-    st.download_button('⬇️ Baixar CSV', _conv_densidade(tabela_dados), 'densidade_cursos.csv', 'text/csv', key='dl_densidade')
+    def _conv_densidade(df):
+        buffer = io.BytesIO()
+        df.to_excel(buffer, index=False, engine="openpyxl")
+        return buffer.getvalue()
+    st.download_button(
+        '⬇️ Baixar Excel',
+        _conv_densidade(tabela_dados),
+        'densidade_cursos.xlsx',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        key='dl_densidade',
+    )
 
 # Novo mapa: Densidade Relativa de Percentual de Cursos
 elif grafico_selecionado == "Densidade de Alunos por Instituição de Ensino":
@@ -923,8 +978,17 @@ elif grafico_selecionado == "Densidade de Alunos por Instituição de Ensino":
         hide_index=True
     )
     @st.cache_data
-    def _conv_ratio(df): return df.to_csv(index=False).encode('utf-8')
-    st.download_button('⬇️ Baixar CSV', _conv_ratio(tabela_ratio), 'densidade_alunos_ies.csv', 'text/csv', key='dl_ratio')
+    def _conv_ratio(df):
+        buffer = io.BytesIO()
+        df.to_excel(buffer, index=False, engine="openpyxl")
+        return buffer.getvalue()
+    st.download_button(
+        '⬇️ Baixar Excel',
+        _conv_ratio(tabela_ratio),
+        'densidade_alunos_ies.xlsx',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        key='dl_ratio',
+    )
 
 show_footer(
     advisor_text="Orientador: Prof. Dr. César Candido Xavier • Email: cesarcx@gmail.com",

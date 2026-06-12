@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import unicodedata
+import io
 from pathlib import Path
 from utils.theme import get_plotly_template, get_plotly_layout_common
 
@@ -714,8 +715,17 @@ if enable_comparison and not merged2.empty:
             width="stretch",
         )
         @st.cache_data
-        def _conv_p4_df1(df): return df.to_csv(index=False).encode('utf-8')
-        st.download_button('⬇️ Baixar CSV', _conv_p4_df1(display_df1), 'distribuicao_inst1.csv', 'text/csv', key='dl_p4_df1')
+        def _conv_p4_df1(df):
+            buffer = io.BytesIO()
+            df.to_excel(buffer, index=False, engine="openpyxl")
+            return buffer.getvalue()
+        st.download_button(
+            '⬇️ Baixar Excel',
+            _conv_p4_df1(display_df1),
+            'distribuicao_inst1.xlsx',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            key='dl_p4_df1',
+        )
 
     with col_tab2:
         st.subheader(f"**{nome_inst2}**")
@@ -735,8 +745,17 @@ if enable_comparison and not merged2.empty:
             width="stretch",
         )
         @st.cache_data
-        def _conv_p4_df2(df): return df.to_csv(index=False).encode('utf-8')
-        st.download_button('⬇️ Baixar CSV', _conv_p4_df2(display_df2), 'distribuicao_inst2.csv', 'text/csv', key='dl_p4_df2')
+        def _conv_p4_df2(df):
+            buffer = io.BytesIO()
+            df.to_excel(buffer, index=False, engine="openpyxl")
+            return buffer.getvalue()
+        st.download_button(
+            '⬇️ Baixar Excel',
+            _conv_p4_df2(display_df2),
+            'distribuicao_inst2.xlsx',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            key='dl_p4_df2',
+        )
 
 else:
     st.subheader(
@@ -802,8 +821,17 @@ else:
         width="stretch",
     )
     @st.cache_data
-    def _conv_p4_freq(df): return df.to_csv(index=False).encode('utf-8')
-    st.download_button('⬇️ Baixar CSV', _conv_p4_freq(df_display), 'distribuicao.csv', 'text/csv', key='dl_p4_freq')
+    def _conv_p4_freq(df):
+        buffer = io.BytesIO()
+        df.to_excel(buffer, index=False, engine="openpyxl")
+        return buffer.getvalue()
+    st.download_button(
+        '⬇️ Baixar Excel',
+        _conv_p4_freq(df_display),
+        'distribuicao.xlsx',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        key='dl_p4_freq',
+    )
 
 
 show_footer(
