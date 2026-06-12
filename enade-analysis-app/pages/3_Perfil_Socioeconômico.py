@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import unicodedata
+import io
 from utils.theme import get_plotly_template, get_plotly_layout_common
 from pathlib import Path
 from utils.header import show_logo
