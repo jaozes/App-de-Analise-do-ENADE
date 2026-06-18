@@ -390,7 +390,6 @@ def show_theme_toggle() -> None:
     label = "Mudar para modo claro" if dark else "Mudar para modo escuro"
 
     with st.sidebar:
-        st.markdown("---")
         if st.button(icon, help=label, use_container_width=True):
             st.session_state.dark_mode = not dark
             st.rerun()
