@@ -184,7 +184,7 @@ with desc_col1:
     st.markdown("""
     **🗺️ Análise Geral do Brasil**
 
-    Visão geral do conjunto de dados nacional: performance por curso, performance por estado, performance por modalidade, mapa coroplético da participação percentual dos cursos por estado
+    Exibe uma visão geral do conjunto de dados nacional contendo performance por curso, performance por estado, performance por modalidade, mapa coroplético da participação percentual dos cursos por estado
     e densidade relativa de cursos por UF. Filtros podem ser aplicados — os dados exibidos representam o Brasil inteiro.
                 
     **📊 Comparação de Médias**
@@ -271,24 +271,6 @@ with st.expander("📊 Legenda do Mapa", expanded=True):
         """)
         
         st.markdown("**Escala de Cores (Azul):**")
-        
-        # Barra de gradiente visual usando HTML - escala customizada com transição mais rápida para escuro a partir de 3
-        st.markdown("""
-        <div style="background: linear-gradient(to right, #f7fbff, #deebf7, #c6dbef, #9ecae1, #6baed6, #3182bd, #08519c, #08306b); 
-                    height: 25px; 
-                    border-radius: 4px; 
-                    margin: 10px 0;
-                    border: 1px solid #ccc;"></div>
-        """, unsafe_allow_html=True)
-        
-        # Labels abaixo da barra
-        col_scale1, col_scale2, col_scale3 = st.columns([1, 2, 1])
-        with col_scale1:
-            st.caption("Baixo (0 - 2)")
-        with col_scale2:
-            st.caption("→ Médio (2 - 3) →")
-        with col_scale3:
-            st.caption("Alto (4 - 5)")
         
         # Explicação das cores
         st.markdown("""
