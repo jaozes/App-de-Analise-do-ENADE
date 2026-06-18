@@ -654,6 +654,56 @@ if not filtered_df.empty and not filtered_df2.empty:
                         ),
                     )
     
+                    # IMPORTANTE: px.box cria UMA trace por combinação
+                    # (Sigla Área x Instituição). Atribuir um único array de
+                    # customdata "global" (linhas de df_box_hover na ordem
+                    # original) via update_traces faz cada trace receber a
+                    # tabela inteira, e o Plotly então casa essas linhas com
+                    # os PONTOS daquela trace pela posição/índice — não pelo
+                    # nome do curso. Isso é o que causava nomes de curso
+                    # trocados no hover dos outliers.
+                    #
+                    # A correção: para cada trace, montar o customdata
+                    # consultando df_box_hover apenas pela combinação
+                    # (Sigla Área, Instituição) daquela trace específica.
+                    #
+                    # df_box_hover tem uma linha por NOTA INDIVIDUAL (aluno),
+                    # então as estatísticas (Mediana, Q1, Q3, ...) se repetem
+                    # várias vezes para a mesma combinação Sigla Área/Instituição.
+                    # Precisamos de apenas uma linha por combinação para montar
+                    # o lookup, então removemos duplicatas antes de indexar.
+                    hover_cols = ['Sigla Área', 'Instituicao', 'Mediana', 'Q1', 'Q3',
+                                  'Bigode Inferior', 'Bigode Superior', 'Área de Avaliação']
+                    hover_unique = (
+                        df_box_hover[hover_cols]
+                        .drop_duplicates(subset=['Sigla Área', 'Instituicao'])
+                        .set_index(['Sigla Área', 'Instituicao'])
+                    )
+                    hover_lookup = hover_unique.to_dict('index')
+
+                    def _build_trace_customdata(trace):
+                        instituicao = trace.name
+                        # trace.x contém a Sigla Área repetida para cada nota individual
+                        siglas = trace.x if trace.x is not None else []
+                        linhas = []
+                        for sigla in siglas:
+                            info = hover_lookup.get((sigla, instituicao))
+                            if info is None:
+                                linhas.append([instituicao, np.nan, np.nan, np.nan, np.nan, np.nan, sigla])
+                            else:
+                                linhas.append([
+                                    instituicao,
+                                    info['Mediana'],
+                                    info['Q1'],
+                                    info['Q3'],
+                                    info['Bigode Inferior'],
+                                    info['Bigode Superior'],
+                                    info['Área de Avaliação'],
+                                ])
+                        trace.customdata = np.array(linhas, dtype=object)
+
+                    fig_box.for_each_trace(_build_trace_customdata)
+
                     fig_box.update_traces(
                         hoverinfo='skip',
                         hovertemplate=(
@@ -666,15 +716,6 @@ if not filtered_df.empty and not filtered_df2.empty:
                             'Bigodes (1,5× IQR): %{customdata[4]:.2f} - %{customdata[5]:.2f}<br>'
                             'Outlier (ponto): %{y:.2f}<extra></extra>'
                         ),
-                        customdata=np.stack([
-                            df_box_hover['Instituicao'],
-                            df_box_hover['Mediana'],
-                            df_box_hover['Q1'],
-                            df_box_hover['Q3'],
-                            df_box_hover['Bigode Inferior'],
-                            df_box_hover['Bigode Superior'],
-                            df_box_hover['Área de Avaliação'],
-                        ], axis=-1),
                         hoverlabel=dict(bgcolor=hover_bg, font=dict(size=14, color=hover_font_color)),
                     )
     
