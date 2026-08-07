@@ -286,11 +286,52 @@ section[role="dialog"] button {{
 }}
 
 
+/* ── Toggles e Checkboxes ── */
+[data-testid="stToggle"] label,
+[data-testid="stToggle"] p,
+[data-testid="stCheckbox"] label,
+[data-testid="stCheckbox"] p,
+[data-testid="stRadio"] label,
+[data-testid="stRadio"] p,
+[data-testid="stRadio"] span {{
+    color: var(--text-primary) !important;
+}}
+
 [data-testid="baseButton-secondary"] {{
     background-color: var(--bg-card) !important;
     color: var(--text-primary) !important;
     border-color: var(--border-color) !important;
 }}
+
+/* ── Botão de Download ── */
+
+[data-testid="stDownloadButton"] button {{
+
+    background-color: var(--accent) !important;
+
+    color: #ffffff !important;
+
+    border-color: var(--accent) !important;
+
+}}
+
+[data-testid="stDownloadButton"] button:hover {{
+
+    background-color: var(--accent-hover) !important;
+
+    border-color: var(--accent-hover) !important;
+
+}}
+
+[data-testid="stDownloadButton"] button p,
+
+[data-testid="stDownloadButton"] button span {{
+
+    color: #ffffff !important;
+
+}}
+
+
 </style>
 """
 
@@ -349,7 +390,6 @@ def show_theme_toggle() -> None:
     label = "Mudar para modo claro" if dark else "Mudar para modo escuro"
 
     with st.sidebar:
-        st.markdown("---")
         if st.button(icon, help=label, use_container_width=True):
             st.session_state.dark_mode = not dark
             st.rerun()

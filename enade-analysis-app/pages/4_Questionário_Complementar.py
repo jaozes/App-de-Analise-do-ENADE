@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import unicodedata
+import io
 from pathlib import Path
 from utils.theme import get_plotly_template, get_plotly_layout_common
 
@@ -26,7 +27,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-show_logo()
+show_logo(path='logoUniso.webp', path_dark='logoUnisoDark.png')
 
 # -------------------------
 # Configuração do Questionário Complementar (arq4)
@@ -269,9 +270,15 @@ selected_var = st.selectbox(
 micro_q = load_question_df_arq4(selected_var)
 
 # Toggle filtros comparativos
-col_insts, _ = st.columns([1, 3])
-with col_insts:
-    enable_comparison = st.toggle("**Comparação Interinstitucional**", key="toggle_comparison_arq4")
+# (Toggle e opções lado-a-lado)
+col_toggle, col_chart = st.columns([1, 3])
+with col_toggle:
+    enable_comparison = st.toggle(
+        "**Comparação Interinstitucional**",
+        key="toggle_comparison_arq4",
+    )
+
+with col_chart:
     chart_type = st.radio(
         "Tipo de gráfico",
         options=["Linha", "Barras"],
@@ -279,6 +286,7 @@ with col_insts:
         horizontal=True,
         key="toggle_chart_type_arq4",
     )
+
 
 col1, col2 = st.columns(2)
 
@@ -706,6 +714,18 @@ if enable_comparison and not merged2.empty:
             hide_index=True,
             width="stretch",
         )
+        @st.cache_data
+        def _conv_p4_df1(df):
+            buffer = io.BytesIO()
+            df.to_excel(buffer, index=False, engine="openpyxl")
+            return buffer.getvalue()
+        st.download_button(
+            '⬇️ Baixar Excel',
+            _conv_p4_df1(display_df1),
+            'distribuicao_inst1.xlsx',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            key='dl_p4_df1',
+        )
 
     with col_tab2:
         st.subheader(f"**{nome_inst2}**")
@@ -723,6 +743,18 @@ if enable_comparison and not merged2.empty:
             display_df2,
             hide_index=True,
             width="stretch",
+        )
+        @st.cache_data
+        def _conv_p4_df2(df):
+            buffer = io.BytesIO()
+            df.to_excel(buffer, index=False, engine="openpyxl")
+            return buffer.getvalue()
+        st.download_button(
+            '⬇️ Baixar Excel',
+            _conv_p4_df2(display_df2),
+            'distribuicao_inst2.xlsx',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            key='dl_p4_df2',
         )
 
 else:
@@ -787,6 +819,18 @@ else:
         df_display,
         hide_index=True,
         width="stretch",
+    )
+    @st.cache_data
+    def _conv_p4_freq(df):
+        buffer = io.BytesIO()
+        df.to_excel(buffer, index=False, engine="openpyxl")
+        return buffer.getvalue()
+    st.download_button(
+        '⬇️ Baixar Excel',
+        _conv_p4_freq(df_display),
+        'distribuicao.xlsx',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        key='dl_p4_freq',
     )
 
 

@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import unicodedata
+import io
 from utils.theme import get_plotly_template, get_plotly_layout_common
 from pathlib import Path
 from utils.header import show_logo
@@ -23,7 +24,7 @@ st.markdown("""
 
 #streamlit run Home.py
 
-show_logo()
+show_logo(path='logoUniso.webp', path_dark='logoUnisoDark.png')
 
 # Mapeamento das questões QE (texto para exibição)
 QUESTION_METADATA = {
@@ -719,16 +720,23 @@ def get_filtered_df(uf=None, municipio=None, ies=None, curso=None, modalidade=No
     return filtered
 
 # Filtros em colunas com lógica em cascata
-col_insts, _ = st.columns([1, 3])
-with col_insts:
-   enable_comparison = st.toggle("**Comparação Interinstitucional**", key="toggle_comparison")
-   chart_type = st.radio(
-       "Tipo de gráfico",
-       options=["Linha", "Barras"],
-       index=0,
-       horizontal=True,
-       key="toggle_chart_type",
-   )
+# (Toggle e opções lado-a-lado)
+col_toggle, col_chart = st.columns([1, 3])
+with col_toggle:
+    enable_comparison = st.toggle(
+        "**Comparação Interinstitucional**",
+        key="toggle_comparison",
+    )
+
+with col_chart:
+    chart_type = st.radio(
+        "Tipo de gráfico",
+        options=["Linha", "Barras"],
+        index=0,
+        horizontal=True,
+        key="toggle_chart_type",
+    )
+
 
 col1, col2 = st.columns(2)
 
@@ -1166,6 +1174,19 @@ else:
                 display_df1['%'] = [format_br_percentage(p).replace('%', '').strip() for p in perc1]
                 display_df1.columns = ['Resposta', 'Abreviação', 'Contagem', '%']
             st.dataframe(display_df1, width='stretch', hide_index=True)
+
+            @st.cache_data
+            def _conv_p3_df1(df):
+                buffer = io.BytesIO()
+                df.to_excel(buffer, index=False, engine="openpyxl")
+                return buffer.getvalue()
+            st.download_button(
+                "⬇️ Baixar Excel",
+                _conv_p3_df1(display_df1),
+                "distribuicao_inst1.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                key="dl_p3_df1",
+            )
         with col_tab2:
             st.subheader(f"**{nome_inst2}**")
             if selected_var == "NU_IDADE":
@@ -1182,6 +1203,19 @@ else:
                 display_df2['%'] = [format_br_percentage(p).replace('%', '').strip() for p in perc2]
                 display_df2.columns = ['Resposta', 'Abreviação', 'Contagem', '%']
             st.dataframe(display_df2, width='stretch', hide_index=True)
+
+            @st.cache_data
+            def _conv_p3_df2(df):
+                buffer = io.BytesIO()
+                df.to_excel(buffer, index=False, engine="openpyxl")
+                return buffer.getvalue()
+            st.download_button(
+                "⬇️ Baixar Excel",
+                _conv_p3_df2(display_df2),
+                "distribuicao_inst2.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                key="dl_p3_df2",
+            )
     else:
         st.subheader(f"📊 Contagem de respostas: {available_labels[selected_var]}")
         # Single institution line chart (existing)
@@ -1258,6 +1292,19 @@ else:
             freq_display = freq_line[["Resposta", "Abreviacao", "count_fmt", "percent_fmt"]].copy()
             freq_display.columns = ["Resposta", "Abreviação", "Contagem", "%"]
         st.dataframe(freq_display, width='stretch', hide_index=True)
+
+        @st.cache_data
+        def _conv_p3_freq(df):
+            buffer = io.BytesIO()
+            df.to_excel(buffer, index=False, engine="openpyxl")
+            return buffer.getvalue()
+        st.download_button(
+            "⬇️ Baixar Excel",
+            _conv_p3_freq(freq_display),
+            "distribuicao.xlsx",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            key="dl_p3_freq",
+        )
 
 show_footer(
     advisor_text="Orientador: Prof. Dr. César Candido Xavier • Email: cesarcx@gmail.com",

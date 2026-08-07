@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import io
 import plotly.express as px
 from utils.header import show_logo
 from utils.theme import get_plotly_template, get_plotly_layout_common
@@ -26,7 +27,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-show_logo()
+show_logo(path='logoUniso.webp', path_dark='logoUnisoDark.png')
 
 # Carregar os dados
 from utils.data_loader import load_conceito, load_grades_with_ic, get_ic_filtered, get_microdados_filtered, build_boxplot_alunos_data
@@ -480,8 +481,12 @@ if not filtered_df.empty and not filtered_df2.empty:
     legend_bg = "rgba(0,0,0,0)"
     legend_border = "rgba(0,0,0,0)"
     legend_title_color = "gray"
-    hover_bg = "rgba(0,0,0,0.82)"
-    hover_font_color = "#f8fafc"
+    if st.session_state.get("dark_mode", False):
+        hover_bg = "rgba(17,24,39,0.95)"
+        hover_font_color = "#F9FAFB"
+    else:
+        hover_bg = "rgba(255,255,255,0.95)"
+        hover_font_color = "#0E1117"
     
     fig_comparativo.update_layout(
         xaxis_tickangle=0,
@@ -558,7 +563,11 @@ if not filtered_df.empty and not filtered_df2.empty:
     # ------------------------------------------------------------------
     # Box plot com notas individuais dos alunos (incluindo outliers)
     # ------------------------------------------------------------------
-    if tipo_grafico == "Boxplot (alunos)" and mostrar_ic:
+    box_data = None
+    df_box = None
+    df_box_hover = None
+
+    if mostrar_ic:
         # Mapear tipo de nota para coluna dos microdados
         coluna_micro = {
             "Média": "NT_GER",
@@ -567,6 +576,10 @@ if not filtered_df.empty and not filtered_df2.empty:
         }.get(coluna_nota, "NT_GER")
 
         # Pipeline pesado cacheado (agora no utils/data_loader.py)
+        # Calculado sempre que "Agregar Médias dos Alunos" está ativo,
+        # independente do tipo de gráfico selecionado, para que as
+        # tabelas de estatísticas (abaixo) também fiquem disponíveis
+        # no modo "Linha (normal)".
         box_data = build_boxplot_alunos_data(
             nome_inst1=nome_inst1,
             nome_inst2=nome_inst2,
@@ -588,9 +601,9 @@ if not filtered_df.empty and not filtered_df2.empty:
             abbr_map=tuple(sorted(ABBR.items())),
         )
 
-
         if box_data is None:
-            st.info("Nenhum dado individual de aluno disponível para os cursos selecionados.")
+            if tipo_grafico == "Boxplot (alunos)":
+                st.info("Nenhum dado individual de aluno disponível para os cursos selecionados.")
         else:
             df_box, df_box_hover, stats_raw = box_data
 
@@ -599,10 +612,11 @@ if not filtered_df.empty and not filtered_df2.empty:
             df_box = df_box[df_box['Sigla Área'].isin(cursos_visiveis_set)]
             df_box_hover = df_box_hover[df_box_hover['Sigla Área'].isin(cursos_visiveis_set)]
 
-            if df_box.empty:
-                st.info("Nenhum dado individual de aluno disponível para os cursos selecionados.")
-            else:
-                fig_box = px.box(
+            if tipo_grafico == "Boxplot (alunos)":
+                if df_box.empty:
+                    st.info("Nenhum dado individual de aluno disponível para os cursos selecionados.")
+                else:
+                    fig_box = px.box(
                     df_box,
                     x='Sigla Área',
                     y='Nota',
@@ -612,62 +626,104 @@ if not filtered_df.empty and not filtered_df2.empty:
                     labels={'Nota': labels_y[coluna_nota], 'Sigla Área': 'Curso'},
                     height=500,
                 )
-
-                fig_box.update_layout(
-                    boxmode='group',
-                    xaxis_tickangle=0,
-                    yaxis=dict(range=[0, 5]),
-                    xaxis=dict(
-                    categoryorder='array',
-                    categoryarray=sorted(df_box['Sigla Área'].unique())
+    
+                    fig_box.update_layout(
+                        boxmode='group',
+                        xaxis_tickangle=0,
+                        yaxis=dict(range=[0, 5]),
+                        xaxis=dict(
+                        categoryorder='array',
+                        categoryarray=sorted(df_box['Sigla Área'].unique())
+                        )
                     )
-                )
-                fig_box.update_layout(**get_plotly_layout_common())
-                fig_box.update_layout(
-                    legend=dict(
-                        title=dict(
-                        text="",
-                        font=dict(size=11, color="gray"),
+                    fig_box.update_layout(**get_plotly_layout_common())
+                    fig_box.update_layout(
+                        legend=dict(
+                            title=dict(
+                            text="",
+                            font=dict(size=11, color="gray"),
+                            ),
+                            font=dict(size=12, family="Source Sans Pro, sans-serif"),
+    
+                            # Strip abaixo do gráfico
+                            orientation="h",
+                            x=0.5,
+                            xanchor="center",
+                            y=-0.18,
+                            yanchor="top",
                         ),
-                        font=dict(size=12, family="Source Sans Pro, sans-serif"),
+                    )
+    
+                    # IMPORTANTE: px.box cria UMA trace por combinação
+                    # (Sigla Área x Instituição). Atribuir um único array de
+                    # customdata "global" (linhas de df_box_hover na ordem
+                    # original) via update_traces faz cada trace receber a
+                    # tabela inteira, e o Plotly então casa essas linhas com
+                    # os PONTOS daquela trace pela posição/índice — não pelo
+                    # nome do curso. Isso é o que causava nomes de curso
+                    # trocados no hover dos outliers.
+                    #
+                    # A correção: para cada trace, montar o customdata
+                    # consultando df_box_hover apenas pela combinação
+                    # (Sigla Área, Instituição) daquela trace específica.
+                    #
+                    # df_box_hover tem uma linha por NOTA INDIVIDUAL (aluno),
+                    # então as estatísticas (Mediana, Q1, Q3, ...) se repetem
+                    # várias vezes para a mesma combinação Sigla Área/Instituição.
+                    # Precisamos de apenas uma linha por combinação para montar
+                    # o lookup, então removemos duplicatas antes de indexar.
+                    hover_cols = ['Sigla Área', 'Instituicao', 'Mediana', 'Q1', 'Q3',
+                                  'Bigode Inferior', 'Bigode Superior', 'Área de Avaliação']
+                    hover_unique = (
+                        df_box_hover[hover_cols]
+                        .drop_duplicates(subset=['Sigla Área', 'Instituicao'])
+                        .set_index(['Sigla Área', 'Instituicao'])
+                    )
+                    hover_lookup = hover_unique.to_dict('index')
 
-                        # Strip abaixo do gráfico
-                        orientation="h",
-                        x=0.5,
-                        xanchor="center",
-                        y=-0.18,
-                        yanchor="top",
-                    ),
-                )
+                    def _build_trace_customdata(trace):
+                        instituicao = trace.name
+                        # trace.x contém a Sigla Área repetida para cada nota individual
+                        siglas = trace.x if trace.x is not None else []
+                        linhas = []
+                        for sigla in siglas:
+                            info = hover_lookup.get((sigla, instituicao))
+                            if info is None:
+                                linhas.append([instituicao, np.nan, np.nan, np.nan, np.nan, np.nan, sigla])
+                            else:
+                                linhas.append([
+                                    instituicao,
+                                    info['Mediana'],
+                                    info['Q1'],
+                                    info['Q3'],
+                                    info['Bigode Inferior'],
+                                    info['Bigode Superior'],
+                                    info['Área de Avaliação'],
+                                ])
+                        trace.customdata = np.array(linhas, dtype=object)
 
-                fig_box.update_traces(
-                    hoverinfo='skip',
-                    hovertemplate=(
-                        '<b>%{customdata[6]}</b><br>'
-                        'Instituição: %{customdata[0]}<br>'
-                        'Mediana (linha central): %{customdata[1]:.2f}<br>'
-                        'Quartil 1 (Q1): %{customdata[2]:.2f}<br>'
-                        'Quartil 3 (Q3): %{customdata[3]:.2f}<br>'
-                        'Bigodes (1,5× IQR): %{customdata[4]:.2f} - %{customdata[5]:.2f}<br>'
-                        'Outlier (ponto): %{y:.2f}<extra></extra>'
-                    ),
-                    customdata=np.stack([
-                        df_box_hover['Instituicao'],
-                        df_box_hover['Mediana'],
-                        df_box_hover['Q1'],
-                        df_box_hover['Q3'],
-                        df_box_hover['Bigode Inferior'],
-                        df_box_hover['Bigode Superior'],
-                        df_box_hover['Área de Avaliação'],
-                    ], axis=-1),
-                    hoverlabel=dict(bgcolor=hover_bg, font=dict(size=14, color=hover_font_color)),
-                )
+                    fig_box.for_each_trace(_build_trace_customdata)
 
-                st.caption(
-                    "📊 Cada box mostra a distribuição completa das notas dos alunos: "
-                    "mediana (linha central), quartis (caixa), bigodes (1,5× IQR) e outliers (pontos individuais). "
-                )
-                st.plotly_chart(fig_box, use_container_width=True)
+                    fig_box.update_traces(
+                        hoverinfo='skip',
+                        hovertemplate=(
+                            '<b>%{x}</b><br>'
+                            '<b>%{customdata[6]}</b><br>'
+                            'Instituição: %{customdata[0]}<br>'
+                            'Mediana (linha central): %{customdata[1]:.2f}<br>'
+                            'Quartil 1 (Q1): %{customdata[2]:.2f}<br>'
+                            'Quartil 3 (Q3): %{customdata[3]:.2f}<br>'
+                            'Bigodes (1,5× IQR): %{customdata[4]:.2f} - %{customdata[5]:.2f}<br>'
+                            'Outlier (ponto): %{y:.2f}<extra></extra>'
+                        ),
+                        hoverlabel=dict(bgcolor=hover_bg, font=dict(size=14, color=hover_font_color)),
+                    )
+    
+                    st.caption(
+                        "📊 Cada box mostra a distribuição completa das notas dos alunos: "
+                        "mediana (linha central), quartis (caixa), bigodes (1,5× IQR) e outliers (pontos individuais). "
+                    )
+                    st.plotly_chart(fig_box, use_container_width=True)
     
     # Exibir tabelas por curso (Médias ou Estatísticas do Boxplot)
     col_tab1, col_tab2 = st.columns(2)
@@ -804,6 +860,18 @@ if not filtered_df.empty and not filtered_df2.empty:
 
                 if not stats_df_1.empty:
                     st.dataframe(stats_df_1, width='stretch', hide_index=True)
+                    @st.cache_data
+                    def _conv_stats1(df):
+                        buffer = io.BytesIO()
+                        df.to_excel(buffer, index=False, engine="openpyxl")
+                        return buffer.getvalue()
+                    st.download_button(
+                        "⬇️ Baixar Excel",
+                        _conv_stats1(stats_df_1),
+                        "estatisticas_inst1.xlsx",
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        key="dl_stats1",
+                    )
                 else:
                     st.info('Nenhum dado individual de aluno disponível para os filtros aplicados.')
             else:
@@ -815,6 +883,18 @@ if not filtered_df.empty and not filtered_df2.empty:
             avg_df_display['Formação Geral'] = avg_df_display['Formação Geral'].apply(lambda x: format_br_number(x, 2))
             avg_df_display['Componente Específico'] = avg_df_display['Componente Específico'].apply(lambda x: format_br_number(x, 2))
             st.dataframe(avg_df_display, width='stretch', hide_index=True)
+            @st.cache_data
+            def _conv_avg1(df):
+                buffer = io.BytesIO()
+                df.to_excel(buffer, index=False, engine="openpyxl")
+                return buffer.getvalue()
+            st.download_button(
+                "⬇️ Baixar Excel",
+                _conv_avg1(avg_df_display),
+                "medias_inst1.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                key="dl_avg1",
+            )
 
     with col_tab2:
         if mostrar_ic:
@@ -851,6 +931,18 @@ if not filtered_df.empty and not filtered_df2.empty:
 
                 if not stats_df_2.empty:
                     st.dataframe(stats_df_2, width='stretch', hide_index=True)
+                    @st.cache_data
+                    def _conv_stats2(df):
+                        buffer = io.BytesIO()
+                        df.to_excel(buffer, index=False, engine="openpyxl")
+                        return buffer.getvalue()
+                    st.download_button(
+                        "⬇️ Baixar Excel",
+                        _conv_stats2(stats_df_2),
+                        "estatisticas_inst2.xlsx",
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        key="dl_stats2",
+                    )
                 else:
                     st.info('Nenhum dado individual de aluno disponível para os filtros aplicados.')
             else:
@@ -862,6 +954,18 @@ if not filtered_df.empty and not filtered_df2.empty:
             avg_df2_display['Formação Geral'] = avg_df2_display['Formação Geral'].apply(lambda x: format_br_number(x, 2))
             avg_df2_display['Componente Específico'] = avg_df2_display['Componente Específico'].apply(lambda x: format_br_number(x, 2))
             st.dataframe(avg_df2_display, width='stretch', hide_index=True)
+            @st.cache_data
+            def _conv_avg2(df):
+                buffer = io.BytesIO()
+                df.to_excel(buffer, index=False, engine="openpyxl")
+                return buffer.getvalue()
+            st.download_button(
+                "⬇️ Baixar Excel",
+                _conv_avg2(avg_df2_display),
+                "medias_inst2.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                key="dl_avg2",
+            )
 
     
 elif filtered_df.empty and filtered_df2.empty:
