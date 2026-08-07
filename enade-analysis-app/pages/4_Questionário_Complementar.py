@@ -685,7 +685,7 @@ if enable_comparison and not merged2.empty:
         ),
     )
 
-    
+    fig.update_yaxes(ticksuffix="%")
 
     fig.update_traces(
         hovertemplate="<b>%{customdata[0]}</b><br>Instituição: %{customdata[1]}<br>Percentual: %{customdata[2]:.2f}%<br>Contagem: %{customdata[3]}<extra></extra>"

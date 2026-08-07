@@ -1146,7 +1146,7 @@ else:
                 yanchor="top",
             ),
         )
-        
+        fig_comparativo.update_yaxes(ticksuffix='%')
         # Garantir que não haverá sobrescrita indevida de 'marker.line' em traces de barras/linha
 
 
